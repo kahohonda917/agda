@@ -10,7 +10,7 @@ open import Data.Unit using (⊤; tt)
 open import Relation.Binary.PropositionalEquality
 
 infixr 5 _⇒_,⟨_⟩,_,⟨_⟩,_
--- type
+-- type 
 mutual
   data typ : Set where
     Nat : typ
@@ -243,16 +243,16 @@ mutual
   pframe-plug {μβ = μβ}(App₂ v₁) e₂ = App (Val v₁) e₂
 
   data same-pframe {var : typ → Set}{τ₇ τ₆  : typ}{μβ μσ : trail} :
-                   {τ τ₅ τ₁ τ₂ τ₃ : typ}{μα μγ : trail} →
+                   {τ τ₅ τ₁ τ₃ τ' τ₅' : typ}{μα μα' μγ : trail} →
          pframe[ var , τ ,⟨ μα ⟩, τ₅ ,⟨ μβ ⟩, τ₆ ] τ₁ ,⟨ μγ ⟩, τ₃ ,⟨ μβ ⟩, τ₆  →
-         pframe[ var , τ ,⟨ μα ⟩, τ₅ ,⟨ μσ ⟩, τ₇ ] τ₁ ,⟨ μγ ⟩, τ₃ ,⟨ μσ ⟩, τ₇  →
+         pframe[ var , τ' ,⟨ μα' ⟩, τ₅' ,⟨ μσ ⟩, τ₇ ] τ₁ ,⟨ μγ ⟩, τ₃ ,⟨ μσ ⟩, τ₇  →
          Set where
    App₁ : {τ₁ τ₂ τ₃ τ₄ τ₅ : typ}{μ₄ μ₅ μγ : trail} →
           (e₂ : term[ var ] τ₂ ,⟨ μ₄ ⟩, τ₄ ,⟨ μ₅ ⟩, τ₅) →
-          same-pframe {τ₁ = τ₁}{τ₂ = τ₂}{τ₃ = τ₃}{μγ = μγ} (App₁ e₂) (App₁ e₂)
+          same-pframe {τ₁ = τ₁}{τ₃ = τ₃}{μγ = μγ} (App₁ e₂) (App₁ e₂)
    App₂ : {α β τ₁ τ₂ σ : typ}{μα μβ : trail} →
           (v₁ : value[ var ] (τ₂ ⇒ τ₁ ,⟨ μα ⟩, α ,⟨ μβ ⟩, β) ) →
-          same-pframe {τ₂ = τ₂} (App₂ {σ = σ} v₁) (App₂ {σ = σ} v₁)
+          same-pframe  (App₂ {σ = σ} v₁) (App₂ {σ = σ} v₁)
 
   -- pure context
   data pcontext[_,_,⟨_⟩,_,⟨_⟩,_]_,⟨_⟩,_,⟨_⟩,_ (var : typ → Set)
@@ -279,12 +279,12 @@ mutual
                      pcontext[ var , τ₁ ,⟨ μ₂ ⟩, τ₂ ,⟨ μ₂ ⟩, τ₂ ] τ₆ ,⟨ μ' ⟩, τ' ,⟨ μ₂ ⟩, τ₂   →
                      Set where
        Hole  : {μα μβ μ' : trail} → same-pcontext {μα = μα}{μβ = μβ}{μ' = μ'}  Hole Hole
-       Frame : {τ₄ τ₅ τ₆ τ₇ : typ}{μ₅ μ₇ μα μβ μ₄ : trail} →
-               {f₁ : pframe[ var , τ₄ ,⟨ μ₅ ⟩, τ₅ ,⟨ μα ⟩, τ₃ ] τ₆ ,⟨ μ₇ ⟩, τ₇ ,⟨ μα ⟩, τ₃ } →
-               {f₂ : pframe[ var , τ₄ ,⟨ μ₅ ⟩, τ₅ ,⟨ μβ ⟩, τ₂ ] τ₆ ,⟨ μ₇ ⟩, τ₇ ,⟨ μβ ⟩, τ₂ } →
-               same-pframe {τ₂ = τ₂} f₁ f₂ →
-               {p₁ : pcontext[ var , τ₁ ,⟨ μβ ⟩, τ₂ ,⟨ μα ⟩, τ₃ ] τ₄ ,⟨ μ₅ ⟩, τ₅ ,⟨ μα ⟩, τ₃ } →
-               {p₂ : pcontext[ var , τ₁ ,⟨ μβ ⟩, τ₂ ,⟨ μβ ⟩, τ₂ ] τ₄ ,⟨ μ₅ ⟩, τ₅ ,⟨ μβ ⟩, τ₂ } →
+       Frame : {τ₄  τ₆ τ₇ τ' τ₈ τ₉  : typ}{μ₂ μ₃ μ₇ μα μβ μγ μ' : trail} →
+               {f₁ : pframe[ var , τ₄ ,⟨ μγ ⟩, τ₇ ,⟨ μβ ⟩, τ₃ ] τ₉ ,⟨ μ₇ ⟩, τ₈ ,⟨ μβ ⟩, τ₃ } →
+               {f₂ : pframe[ var , τ₆ ,⟨ μ' ⟩, τ' ,⟨ μ₂ ⟩, τ₂ ] τ₉ ,⟨ μ₇ ⟩, τ₈ ,⟨ μ₂ ⟩, τ₂ } →
+               same-pframe  f₁ f₂ →
+               {p₁ : pcontext[ var , τ₁ ,⟨ μα ⟩, τ₂ ,⟨ μ₃ ⟩, τ₃ ] τ₄ ,⟨ μγ ⟩, τ₇ ,⟨ μβ ⟩, τ₃ } →
+               {p₂ : pcontext[ var , τ₁ ,⟨ μ₂ ⟩, τ₂ ,⟨ μ₂ ⟩, τ₂ ] τ₆ ,⟨ μ' ⟩, τ' ,⟨ μ₂ ⟩, τ₂ } →
                same-pcontext p₁ p₂ →
                same-pcontext (Frame f₁ p₁) (Frame f₂ p₂)
  
@@ -350,7 +350,3 @@ mutual
     --                  (Prompt x₁ (App (Val
     --                  (Fun γ (τ ⇒ t₁ ,⟨ μ₁ ⟩, t₂ ,⟨ μβ ⟩, α) e))
     --                  (Val (Fun t₁ τ λ x → pcontext-plug τ p₂ (Val (Var x))))))
-
-    
-
-              
