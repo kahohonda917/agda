@@ -274,34 +274,23 @@ mutual
 
 
   data same-pcontext {var : typ → Set} {τ₁ τ₂ τ₃ : typ} :
-                     {τ₄ τ₆ τ₇ τ' : typ}{μα μβ μγ μ' μ₂ μ₃  : trail} →
+                     {τ₄ τ₆ τ₇ τ' τ₃' : typ}{μα μβ μγ μ' μ₂ μ₃ μ₄ μ₃' : trail} →
                      pcontext[ var , τ₁ ,⟨ μα ⟩, τ₂ ,⟨ μ₃ ⟩, τ₃ ] τ₄ ,⟨ μγ ⟩, τ₇ ,⟨ μβ ⟩, τ₃  →
-                     pcontext[ var , τ₁ ,⟨ μ₂ ⟩, τ₂ ,⟨ μ₂ ⟩, τ₂ ] τ₆ ,⟨ μ' ⟩, τ' ,⟨ μ₂ ⟩, τ₂   →
+                     pcontext[ var , τ₁ ,⟨ μ₂ ⟩, τ₂ ,⟨ μ₃' ⟩, τ₃' ] τ₆ ,⟨ μ' ⟩, τ' ,⟨ μ₄ ⟩, τ₃'   →
                      Set where
-       Hole  : {μα μβ μ' : trail} → same-pcontext {μα = μα}{μβ = μβ}{μ' = μ'}  Hole Hole
-       Frame : {τ₄  τ₆ τ₇ τ' τ₈ τ₉  : typ}{μ₂ μ₃ μ₇ μα μβ μγ μ' : trail} →
+       Hole  : {τ₃' : typ}{μα μβ μ' μ₄ : trail} →
+               same-pcontext {τ₃' = τ₃'}{μα = μα}{μβ = μβ}{μ' = μ'}{μ₄ = μ₄}  Hole Hole
+       Frame : {τ₄  τ₆ τ₇ τ' τ₈ τ₉ τ₃' : typ}{μ₂ μ₃ μ₇ μα μβ μγ μ' μ₄ μ₃' : trail} →
                {f₁ : pframe[ var , τ₄ ,⟨ μγ ⟩, τ₇ ,⟨ μβ ⟩, τ₃ ] τ₉ ,⟨ μ₇ ⟩, τ₈ ,⟨ μβ ⟩, τ₃ } →
-               {f₂ : pframe[ var , τ₆ ,⟨ μ' ⟩, τ' ,⟨ μ₂ ⟩, τ₂ ] τ₉ ,⟨ μ₇ ⟩, τ₈ ,⟨ μ₂ ⟩, τ₂ } →
+               {f₂ : pframe[ var , τ₆ ,⟨ μ' ⟩, τ' ,⟨ μ₄ ⟩, τ₃' ] τ₉ ,⟨ μ₇ ⟩, τ₈ ,⟨ μ₄ ⟩, τ₃' } →
                same-pframe  f₁ f₂ →
                {p₁ : pcontext[ var , τ₁ ,⟨ μα ⟩, τ₂ ,⟨ μ₃ ⟩, τ₃ ] τ₄ ,⟨ μγ ⟩, τ₇ ,⟨ μβ ⟩, τ₃ } →
-               {p₂ : pcontext[ var , τ₁ ,⟨ μ₂ ⟩, τ₂ ,⟨ μ₂ ⟩, τ₂ ] τ₆ ,⟨ μ' ⟩, τ' ,⟨ μ₂ ⟩, τ₂ } →
+               {p₂ : pcontext[ var , τ₁ ,⟨ μ₂ ⟩, τ₂ ,⟨ μ₃' ⟩, τ₃' ] τ₆ ,⟨ μ' ⟩, τ' ,⟨ μ₄ ⟩, τ₃' } →
                same-pcontext p₁ p₂ →
                same-pcontext (Frame f₁ p₁) (Frame f₂ p₂)
  
                
-    -- Hole  : same-pcontext Hole Hole
-    -- Frame : {τ₄ τ₅ τ₆ τ₇ : typ} →
-    --         {f₁ : pframe[ var , τ₄ cps[ τ₅ , τ₃ ]] τ₆
-    --                     cps[ τ₇ , τ₃ ]} →
-    --         {f₂ : pframe[ var , τ₄ cps[ τ₅ , τ₂ ]] τ₆
-    --                     cps[ τ₇ , τ₂ ]} →
-    --         same-pframe f₁ f₂ →
-    --         {p₁ : pcontext[ var , τ₁ cps[ τ₂ , τ₃ ]] τ₄
-    --                       cps[ τ₅ , τ₃ ]} →
-    --         {p₂ : pcontext[ var , τ₁ cps[ τ₂ , τ₂ ]] τ₄
-    --                       cps[ τ₅ , τ₂ ]} →
-    --         same-pcontext p₁ p₂ →
-    --         same-pcontext (Frame f₁ p₁) (Frame f₂ p₂)
+
           
   -- reduction rules
   data Reduce {var : typ → Set} :
@@ -327,13 +316,13 @@ mutual
     RPrompt : {τ₁ τ₂ β : typ}{μα μβ : trail} →
               {v₁ : value[ var ] β} →
               Reduce {τ₂ = τ₂}{μα = ∙}(Prompt refl (Val v₁)) (Val v₁)
- 
+
                   
     RControl : {τ α β γ γ' t₁ t₂ τ₄ τ₁ τ₂ : typ}{μ₀ μ₁  μᵢ μα μβ μ₂ μ₃ μ₄ μ₅ : trail} →
               (p₁ : pcontext[ var , τ ,⟨ μα ⟩, α ,⟨ μβ ⟩, β ]
                              γ ,⟨ μᵢ ⟩, γ' ,⟨ ∙ ⟩, β ) →
               (p₂ : pcontext[ var , τ ,⟨ μ₂ ⟩, α ,⟨ μ₂ ⟩, α ]
-                             t₁ ,⟨ μ₁ ⟩, t₂ ,⟨ μ₂ ⟩, α ) → -- μᵢとγを揃えなきゃならん
+                             t₁ ,⟨ μ₁ ⟩, t₂ ,⟨ μ₂ ⟩, α ) → 
               (x₁ : is-id-trail γ γ' μᵢ) →
               (x₂ : compatible (t₁ ⇒ t₂ , μ₁) μ₂ μ₀) →
               (x₃ : compatible μβ μ₀ μα) →
@@ -344,9 +333,6 @@ mutual
                      (Prompt x₁ (App (Val
                      (Fun γ (τ ⇒ t₁ ,⟨ μ₁ ⟩, t₂ ,⟨ μ₂ ⟩, α) e))
                      (Val (Fun t₁ τ λ x → pcontext-plug τ p₂ (Val (Var x))))))
-    --           -- t₂はγ'で、μ₁はμᵢにしないといけなくなった (本来のeは var (τ ⇒ t₁ ,⟨ μ₁ ⟩, t₂ ,⟨ μ₂ ⟩, α))
-    --           Reduce {τ₂ = τ₂}{μα = μα}(Prompt x₁
-    --                  (pcontext-plug τ p₁ (Control x₁ x₂ x₃ e)))
-    --                  (Prompt x₁ (App (Val
-    --                  (Fun γ (τ ⇒ t₁ ,⟨ μ₁ ⟩, t₂ ,⟨ μβ ⟩, α) e))
-    --                  (Val (Fun t₁ τ λ x → pcontext-plug τ p₂ (Val (Var x))))))
+
+
+
