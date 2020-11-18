@@ -242,13 +242,13 @@ mutual
   pframe-plug {μβ = μβ}(App₂ v₁) e₂ = App (Val v₁) e₂
 
   data same-pframe {var : typ → Set}{τ₇ τ₆  : typ}{μβ μδ : trail} :
-                   {τ τ₅ τ₁ τ₃ τ' τ₅' : typ}{μα μα' μγ μβ' μδ' : trail} →
+                   {τ τ₅ τ₁ τ₃ τ' τ₅' τ₃' : typ}{μα μα' μγ μβ' μδ' μγ' : trail} →
          pframe[ var , τ ,⟨ μα ⟩, τ₅ ,⟨ μβ ⟩, τ₆ ] τ₁ ,⟨ μγ ⟩, τ₃ ,⟨ μβ' ⟩, τ₆  →
-         pframe[ var , τ' ,⟨ μα' ⟩, τ₅' ,⟨ μδ ⟩, τ₇ ] τ₁ ,⟨ μγ ⟩, τ₃ ,⟨ μδ' ⟩, τ₇  →
+         pframe[ var , τ' ,⟨ μα' ⟩, τ₅' ,⟨ μδ ⟩, τ₇ ] τ₁ ,⟨ μγ' ⟩, τ₃' ,⟨ μδ' ⟩, τ₇  →
          Set where
-   App₁ : {τ₁ τ₂ τ₃ τ₄ τ₅ : typ}{μ₄ μ₅ μγ : trail} →
+   App₁ : {τ₁ τ₂ τ₃ τ₄ τ₅ τ₃' : typ}{μ₄ μ₅ μγ μγ' : trail} →
           (e₂ : term[ var ] τ₂ ,⟨ μ₄ ⟩, τ₄ ,⟨ μ₅ ⟩, τ₅) →
-          same-pframe {τ₁ = τ₁}{τ₃ = τ₃}{μγ = μγ} (App₁ e₂) (App₁ e₂)
+          same-pframe {τ₁ = τ₁}{τ₃ = τ₃}{τ₃' = τ₃'}{μγ = μγ}{μγ' = μγ'} (App₁ e₂) (App₁ e₂)
    App₂ : {α β τ₁ τ₂ : typ}{μα μβ : trail} →
           (v₁ : value[ var ] (τ₂ ⇒ τ₁ ,⟨ μα ⟩, α ,⟨ μβ ⟩, β) ) →
           same-pframe  (App₂  v₁) (App₂  v₁)
