@@ -1,4 +1,4 @@
-module lambda-cp2 where
+module rplus where
 
 open import Data.Nat
 open import Data.Bool using (true; false) renaming (Bool to 𝔹)
@@ -49,9 +49,9 @@ mutual
           (e₂ : term[ var ] τ₂ ⟨ μβ ⟩ β ⟨ μγ ⟩ γ) →
           term[ var ] τ₁ ⟨ μα ⟩ α ⟨ μδ ⟩ δ
     Plus : {α β γ : typ} {μα μβ μγ : trail} →
+           term[ var ] Nat ⟨ μβ ⟩ β ⟨ μγ ⟩ γ →
            term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β →
-           term[ var ] Nat ⟨ μγ ⟩ γ ⟨ μα ⟩ α →
-           term[ var ] Nat ⟨ μγ ⟩ γ ⟨ μβ ⟩ β
+           term[ var ] Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ
     -- Equal : {τ₁ τ₂ β γ σ : typ} →
     --       (e₁ : term[ var ] Nat , γ , σ) → (e₂ : term[ var ] Nat , β , γ) →
     --       term[ var ] Tbool , β , σ
@@ -109,7 +109,7 @@ mutual
            → ( ⟦ τ ⟧τ →  ⟦ µα ⟧μ → ⟦ α ⟧τ ) → ⟦ µβ ⟧μ → ⟦ β ⟧τ
   ⟦ Val v ⟧ k t = k ⟦ v ⟧v t
   ⟦ App e₁ e₂ ⟧ k t = ⟦ e₁ ⟧ (λ x → ⟦ e₂ ⟧ (λ y → x y k )) t
-  ⟦ Plus e₁ e₂ ⟧ k t =  ⟦ e₁ ⟧ (λ x → ⟦ e₂ ⟧ (λ y → k ( x + y ) )) t
+  ⟦ Plus e₁ e₂ ⟧ k t = ⟦ e₁ ⟧ (λ x → ⟦ e₂ ⟧ (λ y → k ( x + y ) )) t
   ⟦ Control x x₂ x₃ e ⟧ k t = ⟦ e (λ v k' t' → k v (append-trail x₃ t (cons-trail x₂ k' t'))) ⟧ (idk x) tt 
   ⟦ Prompt x e ⟧ k t = k (⟦ e ⟧ (idk x) tt) t
 
@@ -140,7 +140,7 @@ mutual
              value[ var ] τ₁ →
              term[ var ] τ₂ ⟨ μα ⟩ τ₃ ⟨ μβ ⟩ τ₄ → Set where
 
-     sVal  : {τ τ₁ : typ}{μα μβ : trail} →
+     sVal  : {τ τ₁ : typ}{μα : trail} →
              {v₁ : var τ → value[ var ] τ₁} →
              {v : value[ var ] τ} →
              {v₁′ : value[ var ] τ₁} →
@@ -159,13 +159,15 @@ mutual
                    (App e₁′ e₂′)
 
      sPlu : {τ α β γ : typ} {μα μβ μγ : trail} →
-            {e₁ : var τ → term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β }
-            {e₂ : var τ → term[ var ] Nat ⟨ μγ ⟩ γ ⟨ μα ⟩ α }
+            {e₁ : var τ → term[ var ] Nat ⟨ μβ ⟩ β ⟨ μγ ⟩ γ}
+            {e₂ : var τ → term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β }
             {v : value[ var ] τ}
-            {e₁′ : term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β }
-            {e₂′ : term[ var ] Nat ⟨ μγ ⟩ γ ⟨ μα ⟩ α } →
+            {e₁′ : term[ var ] Nat ⟨ μβ ⟩ β ⟨ μγ ⟩ γ }
+            {e₂′ : term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β  } →
             Subst e₁ v e₁′ → Subst e₂ v e₂′ →
             Subst (λ y → Plus (e₁ y) (e₂ y)) v (Plus e₁′ e₂′)
+
+
 
      sCon : {τ t₁ t₂ τ₃ α β γ γ' : typ}{μ₀ μ₁ μ₂ μᵢ μα μβ : trail} →
             {e₁ : var τ₃ →
@@ -205,6 +207,15 @@ mutual
            frame[ var , τ₂ ⟨ μβ ⟩ β ⟨ μγ ⟩ γ ]
                   τ₁ ⟨ μα ⟩ α ⟨ μγ ⟩ γ
 
+    Plus₁ : {α β γ : typ} {μα μβ μγ : trail} →
+            (e₂ : term[ var ] Nat ⟨ μγ ⟩ γ ⟨ μα ⟩ α) →
+            frame[ var , Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β ] Nat ⟨ μγ ⟩ γ ⟨ μβ ⟩ β
+
+    Plus₂ : {α γ : typ} {μα μγ : trail} →
+            (v₁ : value[ var ] Nat) →
+            frame[ var , Nat ⟨ μγ ⟩ γ ⟨ μα ⟩ α ] Nat ⟨ μγ ⟩ γ ⟨ μα ⟩ α
+            
+
     Pro  : {τ α β β' : typ}{μᵢ μα : trail} →
            (is-id-trail β β' μᵢ) →
            frame[ var , β ⟨ μᵢ ⟩ β' ⟨ ∙ ⟩ τ ] τ ⟨ μα ⟩ α ⟨ μα ⟩ α
@@ -216,6 +227,8 @@ mutual
                term[ var ] τ₁ ⟨ μγ ⟩ τ₃ ⟨ μδ ⟩ τ₆
   frame-plug (App₁ e₂) e₁ = App e₁ e₂
   frame-plug {μβ = μβ}(App₂ v₁) e₂ = App (Val v₁) e₂
+  frame-plug (Plus₁ e₂) e₁ = Plus e₁ e₂
+  frame-plug (Plus₂ v₁) e₂ = Plus (Val v₁) e₂
 
   frame-plug {τ₁ = τ₁}{τ₂ = τ₂}{τ₃ = τ₃}{τ₄ = τ₄}{μα = μα}{μγ = μγ} (Pro x) e₁ =
              Prompt x e₁
@@ -233,6 +246,14 @@ mutual
            pframe[ var , τ₂ ⟨ μβ ⟩ β ⟨ μγ ⟩ γ ]
                    τ₁ ⟨ μα ⟩ α ⟨ μγ ⟩ γ
 
+    Plus₁ : {α β γ : typ} {μα μβ μγ : trail} →
+            (e₂ : term[ var ] Nat ⟨ μγ ⟩ γ ⟨ μα ⟩ α) →
+            pframe[ var , Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β ] Nat ⟨ μγ ⟩ γ ⟨ μβ ⟩ β
+
+    Plus₂ : {α γ : typ} {μα μγ : trail} →
+            (v₁ : value[ var ] Nat) →
+            pframe[ var , Nat ⟨ μγ ⟩ γ ⟨ μα ⟩ α ] Nat ⟨ μγ ⟩ γ ⟨ μα ⟩ α
+
   pframe-plug : {var : typ → Set}
                 {τ₁ τ₂ τ₃ τ₄ τ₅ τ₆ : typ}{μα μβ μγ μδ : trail} →
                 pframe[ var , τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ] τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆ →
@@ -241,6 +262,8 @@ mutual
 
   pframe-plug (App₁ e₂) e₁ = App e₁ e₂
   pframe-plug (App₂ v₁) e₂ = App (Val v₁) e₂
+  pframe-plug (Plus₁ e₂) e₁ = Plus e₁ e₂
+  pframe-plug (Plus₂ v₁) e₂ = Plus (Val v₁) e₂
 
   data same-pframe {var : typ → Set}:
                    {τ₁ τ₁' τ₂ τ₂' τ₃ τ₃' τ₄ τ₄' τ₅ τ₅' τ₆ τ₆' : typ}
@@ -294,9 +317,6 @@ mutual
                same-pcontext c₁ c₂ →
                same-pcontext (Frame f₁ c₁) (Frame f₂ c₂)
 
-  ⟦_⟧v′ : {var : typ → Set} → value[ var ] Nat →  ℕ
-  ⟦ Num n ⟧v′ = n
-  -- ⟦ Var x ⟧v′ = 3
 
   -- reduction rules
   data Reduce {var : typ → Set} :
@@ -310,19 +330,10 @@ mutual
               Subst e₁ v₂ e₁′ →
               Reduce (App (Val (Fun e₁)) (Val v₂)) e₁′
 
-    RPlus   : {α β γ : typ} {μα μβ μγ : trail} →
-              -- {e₁ : var Nat → term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β} →
-              -- {v₁ : value[ var ] Nat} →
-              -- {v₂ : value[ var ] Nat} →
-              -- {e₁′ : term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β} →
-              -- {e₂ : var Nat → term[ var ] Nat ⟨ μγ ⟩ γ ⟨ μα ⟩ α } →
-              -- {e₂′ : term[ var ] Nat ⟨ μγ ⟩ γ ⟨ μα ⟩ α } →
-              {v₃ : value[ var ] Nat} →
-              {v₄ : value[ var ] Nat } →
-              Reduce (Plus (Val v₃) (Val v₄)) (Val (Num (⟦ v₃ ⟧v′ + ⟦ v₄ ⟧v′)))
-              -- Subst e₁ v₁ e₁′ →
-              -- Subst e₂ v₂ e₂′ →
-              -- Reduce (Plus (App (Val (Fun e₁)) (Val v₁)) (App (Val (Fun e₂)) (Val v₂))) (Plus e₁′ e₂′)
+    RPlus   : {τ₂ : typ}{μα : trail} →
+              {n₁ : ℕ} →
+              {n₂ : ℕ} →
+              Reduce {τ₂ = τ₂}{μα = μα} (Plus (Val (Num n₁)) (Val (Num n₂))) (Val (Num (n₁ + n₂)))
 
 
 
@@ -336,7 +347,7 @@ mutual
               Reduce e₁ e₂ →
               Reduce (frame-plug f e₁) (frame-plug f e₂)
 
-    RPrompt : {τ₁ τ₂ β : typ}{μα μβ : trail} →
+    RPrompt : {τ₂ β : typ}{μα : trail} →
               {v₁ : value[ var ] β} →
               Reduce {τ₂ = τ₂}{μα = ∙}(Prompt refl (Val v₁)) (Val v₁)
 
@@ -392,13 +403,37 @@ termx : {var : typ → Set}{τ α : typ}{μα : trail} →
 
 termx = Val (Fun λ x → Val (Var x))
 
-test4 : {var : typ → Set}{μα μβ : trail} →
+test4 : {var : typ → Set}{μα : trail} →
         Reduce* {var}{μα = μα} (App termx term1) term1
 
 
 test4 = R*Trans (App (Val (Fun (λ z → Val (Var z)))) (Val (Num 1)))
         (Val (Num 1)) (Val (Num 1)) (RBeta (sVal sVar=))
         (R*Id (Val (Num 1)))
+
+
+exp3 : {var : typ → Set} {α : typ} {μα : trail} →
+       term[ var ] Nat ⟨ μα ⟩ α ⟨ μα ⟩ α
+       
+exp3 = Plus (Val (Num 1)) (Val (Num 2))
+
+test1 : {var : typ → Set}{τ₂ : typ}{μβ : trail} →
+       Reduce {var}{τ₂ = τ₂}{μβ = μβ} exp3 (Val (Num 3))
+
+test1 = RPlus
+
+valuex : {var : typ → Set}{τ α : typ}{μα : trail} →
+        value[ var ] (τ ⇒ τ ⟨ μα ⟩ α ⟨ μα ⟩ α) 
+valuex = (Fun λ x → Val (Var x))
+
+test7 : {var : typ → Set}{μα : trail} →
+         Reduce* {var} {μα = μα} (App (Val (valuex)) (Plus (Val (Num 1)) (Val (Num 2)))) (Val (Num 3))
+
+test7 = R*Trans (App (Val valuex) (Plus (Val (Num 1)) (Val (Num 2)))) (frame-plug (App₂ valuex) (Val (Num 3)))
+       (Val (Num 3))
+       (RFrame (App₂ valuex) RPlus)
+       (R*Trans (frame-plug (App₂ valuex) (Val (Num 3))) (Val (Num 3)) (Val (Num 3))
+       (RBeta (sVal sVar=)) (R*Id (Val (Num 3))))
 
 exp2 : {var : typ → Set} {α : typ} {μα : trail} →
        term[ var ] Nat ⟨ μα ⟩ α ⟨ μα ⟩ α
@@ -411,33 +446,56 @@ exp2 =
                               (λ k → App (Val (Var k))
                                          (App (Val (Var k)) (Val (Num 3)))))))
 
+test2 : {var : typ → Set} →
+        Reduce* {var} exp2 (Val (Num 8))
 
-exp3 : {var : typ → Set} {α : typ} {μα : trail} →
-       term[ var ] Nat ⟨ μα ⟩ α ⟨ μα ⟩ α
-       
-exp3 = Plus (Val (Num 1)) (Val (Num 2))
-
-test1 : {var : typ → Set} →
-       Reduce exp3 (Val (Num 3))
-
-test1 = RPlus
-
--- test2 : {var : typ → Set} →
---         Reduce* exp2 (Val (Num 8))
-
--- test2 = R*Trans exp2
---         (frame-plug (Pro refl)
---         ((Prompt (refl , refl , refl)
---                (Plus (Val (Num 2))
---                      (Control {μ₀ = Nat ⇒ Nat , ∙}
---                               refl refl refl
---                               (λ k → App (Val (Var k))
---                                          (App (Val (Var k)) (Val (Num 3)))))))))
---         (Val (Num 8)) {!RFrame!} {!!}
+test2 = R*Trans exp2
+        {!!}
+        (Val (Num 8))
+        {!!} {!!}
 
 exp4 : {var : typ → Set} {β : typ} {μβ : trail} →
        term[ var ] Nat ⟨ μβ ⟩ β ⟨ μβ ⟩ β
 
-exp4 = (Control {μ₀ = Nat ⇒ Nat , ∙} 
-                              refl refl {!refl!}
-                              (λ k → App (Val (Var k)) (Val (Num 3))))
+exp4 = Prompt (refl , refl , refl)
+               (Plus (Val (Num 2))
+                     (Control {μ₀ = Nat ⇒ Nat , ∙}
+                              refl refl refl
+                              (λ k → (Val (Num 1)))))
+
+test2′ : {var : typ → Set} →
+        Reduce* {var} exp4 (Val (Num 1))
+
+test2′ = R*Trans exp4 {!!} (Val (Num 1))
+         (RControl (Frame {!Plus₂ ?!} Hole) {!!} {!!} {!!} {!!} {!!} {!!}) {!!}
+
+exp4′ : {var : typ → Set} {β : typ} {μβ : trail} →
+       term[ var ] Nat ⟨ μβ ⟩ β ⟨ μβ ⟩ β
+
+exp4′ = Plus (Val (Num 2)) (Prompt refl (Plus (Val (Num 3)) (Val (Num 3))))
+
+test2′′ : {var : typ → Set}{τ₂ : typ} →
+          Reduce* {var} {τ₂ = τ₂} exp4′ (Val (Num 8))
+
+test2′′ = R*Trans exp4′ (frame-plug (Plus₂ (Num 2))
+          (frame-plug (Pro refl) (Val (Num 6))))
+          (Val (Num 8))
+          (RFrame (Plus₂ (Num 2)) (RFrame (Pro refl) RPlus))
+          (R*Trans (frame-plug (Plus₂ (Num 2)) (frame-plug (Pro refl) (Val (Num 6))))
+          (frame-plug (Plus₂ (Num 2)) (Val (Num 6))) (Val (Num 8))
+          (RFrame (Plus₂ (Num 2)) RPrompt)
+          (R*Trans (frame-plug (Plus₂ (Num 2)) (Val (Num 6))) (Val (Num 8)) (Val (Num 8))
+          RPlus
+          (R*Id (Val (Num 8)))))
+                              
+exp5 : {var : typ → Set} {α τ : typ} {μα : trail} →
+       term[ var ] Nat ⟨ μα ⟩ α ⟨ μα ⟩ α
+
+exp5 = Prompt refl (Plus (Val (Num 1)) (Val (Num 2)))
+
+-- λy.λz.z
+-- termyz : {var : typ → Set} {α β τ₁ τ₂ τ₃ : typ} {μα μβ : trail}  →
+--          term[ var ] ((τ₃ ⇒ τ₂ ⇒ τ₁) ⟨ μα ⟩ α ⟨ μβ ⟩ β) ⟨ μα ⟩ α ⟨ μα ⟩ α
+-- termyz = Val (Fun (λ x → {!!}))
+
+
