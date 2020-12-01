@@ -376,13 +376,8 @@ mutual
                      (pcontext-plug p₁ (Control x₁ x₂ x₃ e)))
                      (Prompt x₁ (App (Val (Fun e))
                      (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x)))))))
-              -- Reduce {τ₂ = τ₂}{μα = μα}(Prompt x₁
-              --        (pcontext-plug p₁ (Control x₁ x₂ x₃ e)))
-              --        (Prompt x₁ (App (Val
-              --        (Fun e))
-              --        (Val (Fun λ x → pcontext-plug p₂ (Val (Var x))))))
 
--- (p₁ : pcontext[ var , τ ⟨ μα ⟩ α ⟨ μβ ⟩ β ]
+-- これまでの型　　(p₁ : pcontext[ var , τ ⟨ μα ⟩ α ⟨ μβ ⟩ β ]
 --                              γ ⟨ μᵢ ⟩ γ' ⟨ ∙ ⟩ β ) →
 --               (p₂ : pcontext[ var , τ ⟨ μ₂ ⟩ α ⟨ μ₂ ⟩ α ]
 --                              t₁ ⟨ μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α ) →
@@ -560,4 +555,34 @@ exp5 = Prompt refl (Plus (Val (Num 1)) (Val (Num 2)))
 --          term[ var ] ((τ₃ ⇒ τ₂ ⇒ τ₁) ⟨ μα ⟩ α ⟨ μβ ⟩ β) ⟨ μα ⟩ α ⟨ μα ⟩ α
 -- termyz = Val (Fun (λ x → {!!}))
 
+-- equational reasoning
+infix  3 _∎
+infixr 2 _⟶⟨_⟩_ _⟶*⟨_⟩_ _≡⟨_⟩_
+infix  1 begin_
 
+begin_ : {var : typ → Set} → {τ α β : typ}{μα μβ : trail} →
+         {e₁ e₂ : term[ var ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β } → Reduce* e₁ e₂ → Reduce* e₁ e₂
+begin_ red = red
+
+_⟶⟨_⟩_ : {var : typ → Set} → {τ α β : typ}{μα μβ : trail} →
+           (e₁ {e₂ e₃} : term[ var ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β) → Reduce e₁ e₂ → Reduce* e₂ e₃ →
+           Reduce* e₁ e₃
+_⟶⟨_⟩_ e₁ {e₂} {e₃} e₁-red-e₂ e₂-red*-e₃ =
+  R*Trans e₁ e₂ e₃ e₁-red-e₂ e₂-red*-e₃
+
+_⟶*⟨_⟩_ : {var : typ → Set} → {τ α β : typ}{μα μβ : trail} →
+            (e₁ {e₂ e₃} : term[ var ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β) → Reduce* e₁ e₂ → Reduce* e₂ e₃ →
+            Reduce* e₁ e₃
+_⟶*⟨_⟩_ e₁ {.e₁} {e₃} (R*Id .e₁) e₁-red*-e₃ = e₁-red*-e₃
+_⟶*⟨_⟩_ e₁ {.e₂} {e₃} (R*Trans .e₁ e₁′ e₂ e₁-red-e₁′ e₁′-red*-e₂) e₂-red*-e₃ =
+  R*Trans e₁ e₁′ e₃ e₁-red-e₁′
+          (e₁′ ⟶*⟨ e₁′-red*-e₂ ⟩ e₂-red*-e₃)
+
+_≡⟨_⟩_ : {var : typ → Set} → {τ α β : typ}{μα μβ : trail} →
+           (e₁ {e₂ e₃} : term[ var ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β) → e₁ ≡ e₂ → Reduce* e₂ e₃ →
+           Reduce* e₁ e₃
+_≡⟨_⟩_ e₁ {e₂} {e₃} refl e₂-red*-e₃ = e₂-red*-e₃
+
+_∎ : {var : typ → Set} → {τ α β : typ}{μα μβ : trail} →
+     (e : term[ var ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β) → Reduce* e e
+_∎ e = R*Id e
