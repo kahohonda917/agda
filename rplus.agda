@@ -140,12 +140,12 @@ mutual
              value[ var ] τ₁ →
              term[ var ] τ₂ ⟨ μα ⟩ τ₃ ⟨ μβ ⟩ τ₄ → Set where
 
-     sVal  : {τ τ₁ : typ}{μα : trail} →
+     sVal  : {τ τ₁ τ₃ : typ}{μα : trail} →
              {v₁ : var τ → value[ var ] τ₁} →
              {v : value[ var ] τ} →
              {v₁′ : value[ var ] τ₁} →
              SubstVal v₁ v v₁′ →
-             Subst {τ₃ = τ₁}{μα = μα}(λ y → Val (v₁ y)) v (Val v₁′)
+             Subst {τ₃ = τ₃}{μα = μα}(λ z → Val (v₁ z)) v (Val v₁′)
 
      sApp  : {τ τ₁ τ₂ α β γ δ : typ}{μα μβ μγ μδ : trail} →
              {e₁ : var τ → term[ var ] (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β) ⟨ μγ ⟩ γ ⟨ μδ ⟩ δ}
@@ -358,7 +358,7 @@ mutual
 
     RPrompt : {τ₂ β : typ}{μα : trail} →
               {v₁ : value[ var ] β} →
-              Reduce {τ₂ = τ₂}{μα = ∙}(Prompt refl (Val v₁)) (Val v₁)
+              Reduce {τ₂ = τ₂}{μα = μα}(Prompt refl (Val v₁)) (Val v₁)
 
     RControl : {τ α α' β β' γ γ' t₁ t₂ τ₁ τ₂ τ₃ τ₄ τ₅ : typ}
                {μ₀ μ₁ μᵢ μα μα' μβ μβ' μ₂ μ₃ μ₄ μ₅ : trail} →
@@ -419,8 +419,13 @@ termx : {var : typ → Set}{τ α : typ}{μα : trail} →
 
 termx = Val (Fun λ x → Val (Var x))
 
-test4 : {var : typ → Set}{μα : trail} →
-        Reduce* {var}{μα = μα} (App termx term1) term1
+termy : {var : typ → Set}{τ α : typ}{μα : trail} →
+        term[ var ] (τ ⇒ τ ⟨ μα ⟩ α ⟨ μα ⟩ α) ⟨ μα ⟩ α ⟨ μα ⟩ α
+
+termy = Val (Fun λ y → Val (Var y))
+
+test4 : {var : typ → Set}{μα : trail}{τ₂ : typ} →
+        Reduce* {var}{τ₂ = τ₂}{μα = μα} (App termx term1) term1
 
 
 test4 = R*Trans (App (Val (Fun (λ z → Val (Var z)))) (Val (Num 1)))
@@ -442,8 +447,8 @@ valuex : {var : typ → Set}{τ α : typ}{μα : trail} →
         value[ var ] (τ ⇒ τ ⟨ μα ⟩ α ⟨ μα ⟩ α) 
 valuex = (Fun λ x → Val (Var x))
 
-test7 : {var : typ → Set}{μα : trail} →
-         Reduce* {var} {μα = μα} (App (Val (valuex)) (Plus (Val (Num 1)) (Val (Num 2)))) (Val (Num 3))
+test7 : {var : typ → Set}{τ₂ : typ}{μα : trail} →
+         Reduce* {var}{τ₂ = τ₂} {μα = μα} (App (Val (valuex)) (Plus (Val (Num 1)) (Val (Num 2)))) (Val (Num 3))
 
 test7 = R*Trans (App (Val valuex) (Plus (Val (Num 1)) (Val (Num 2)))) (frame-plug (App₂ valuex) (Val (Num 3)))
        (Val (Num 3))
@@ -451,109 +456,49 @@ test7 = R*Trans (App (Val valuex) (Plus (Val (Num 1)) (Val (Num 2)))) (frame-plu
        (R*Trans (frame-plug (App₂ valuex) (Val (Num 3))) (Val (Num 3)) (Val (Num 3))
        (RBeta (sVal sVar=)) (R*Id (Val (Num 3))))
 
-exp2 : {var : typ → Set} {α : typ} {μα : trail} →
-       term[ var ] Nat ⟨ μα ⟩ α ⟨ μα ⟩ α
-exp2 =
-  Plus (Val (Num 1))
-       (Prompt (refl , refl , refl)
-               (Plus (Val (Num 2))
-                     (Control {μ₀ = Nat ⇒ Nat , ∙}
-                              refl refl refl
-                              (λ k → App (Val (Var k))
-                                         (App (Val (Var k)) (Val (Num 3)))))))
-
--- test2 : {var : typ → Set} →
---         Reduce* {var} exp2 (Val (Num 8))
-
--- test2 = R*Trans exp2
---         {!!}
---         (Val (Num 8))
---         {!!} {!!}
 
 exp4 : {var : typ → Set} {β : typ} {μβ : trail} →
        term[ var ] Nat ⟨ μβ ⟩ β ⟨ μβ ⟩ β
 
-exp4 = Prompt refl
-                      (Control {μ₀ = ∙}
+exp4 = Prompt (refl , refl , refl)
+                      (Control {μ₀ = Nat ⇒ Nat , ∙}
+                               {μ₂ = ∙}
                                refl refl refl
                                (λ k → (Val (Num 1))))
+                               
 test2′ : {var : typ → Set}{τ₂ : typ} →
-         Reduce* {var} {τ₂ = τ₂} exp4 (Val (Num 1))
+         Reduce* {var} {τ₂ = Nat}{μα = Nat ⇒ Nat , ∙} exp4 (Val (Num 1))
 
 test2′ = R*Trans exp4
-        (Prompt refl
-          (App (Val (Fun (λ k → Val (Num 1))))
-           (Val (Fun (λ x → pcontext-plug Hole (Val (Var x))))))) (Val (Num 1))
-        (RControl Hole Hole refl refl refl  Hole λ k → (Val (Num 1)))
-        (R*Trans (Prompt refl
-                   (App (Val (Fun (λ k → Val (Num 1))))
-                    (Val (Fun (λ x → pcontext-plug Hole (Val (Var x)))))))
-                    (frame-plug (Pro refl) (Val (Num 1))) (Val (Num 1))
-                    (RFrame (Pro refl) (RBeta (sVal sNum)))
-                    (R*Trans (frame-plug (Pro refl) (Val (Num 1))) (Val (Num 1)) (Val (Num 1))
-                    RPrompt (R*Id (Val (Num 1)))))
-
-exp4-2 : {var : typ → Set} {β : typ} {μβ : trail} →
-       term[ var ] Nat ⟨ μβ ⟩ β ⟨ μβ ⟩ β
-exp4-2 = Prompt refl
-               (Plus (Val (Num 2))
-                     (Control {μ₀ = ∙}
-                              refl refl refl
-                              (λ k → (Val (Num 1)))))
-
-test4-2 : {var : typ → Set} →
-        Reduce* {var} (exp4-2) (Val (Num 1))
-
-test4-2 = R*Trans exp4-2 (Prompt refl
-                           (App (Val (Fun (λ k → Val (Num 1))))
-                            (Val
-                             (Fun
-                              (λ x → pcontext-plug (Frame (Plus₂ (Num 2)) Hole) (Val (Var x))))))) (Val (Num 1))
-         (RControl (Frame (Plus₂ (Num 2)) Hole) (Frame (Plus₂ (Num 2)) Hole)
-         refl refl refl (Frame (Plus₂ (Num 2)) Hole) λ k → (Val (Num 1)))
+         (Prompt refl
+           (App (Val (Fun (λ k → Val (Num 1))))
+            (Val (Fun (λ x → pcontext-plug Hole (Val (Var x))))))) (Val (Num 1))
+         (RControl {β' = Tbool}{τ₃ = Tbool}{τ₄ = Tbool}{τ₅ = Tbool}
+                   {μβ' = ∙}{μ₄ = ∙}{μ₅ = ∙}
+         Hole Hole refl refl refl Hole (λ k → Val (Num 1)))
          (R*Trans (Prompt refl
                     (App (Val (Fun (λ k → Val (Num 1))))
-                     (Val
-                      (Fun
-                       (λ x → pcontext-plug (Frame (Plus₂ (Num 2)) Hole) (Val (Var x)))))))
-                       (frame-plug (Pro refl) (Val (Num 1))) (Val (Num 1))
-                       (RFrame (Pro refl) (RBeta (sVal sNum)))
-                       (R*Trans (frame-plug (Pro refl) (Val (Num 1))) (Val (Num 1)) (Val (Num 1))
-                       RPrompt (R*Id (Val (Num 1)))))
+                     (Val (Fun (λ x → pcontext-plug Hole (Val (Var x)))))))
+                     (frame-plug (Pro refl) (Val (Num 1))) (Val (Num 1))
+                     (RFrame (Pro refl) (RBeta (sVal sNum)))
+                     (R*Trans (frame-plug (Pro refl) (Val (Num 1))) (Val (Num 1)) (Val (Num 1))
+                     RPrompt (R*Id (Val (Num 1)))))
 
--- test2′ = R*Trans exp4 {!!} (Val (Num 1))
---          (RControl (Frame (Plus₂ (Num 2)) Hole) (Frame (Plus₂ (Num 2)) Hole) refl {!!} refl {!!}
---          λ k → Val (Num 1))
---          {!!}
+
+
+
 
 exp4′ : {var : typ → Set} {β : typ} {μβ : trail} →
        term[ var ] Nat ⟨ μβ ⟩ β ⟨ μβ ⟩ β
 
 exp4′ = Plus (Val (Num 2)) (Prompt refl (Plus (Val (Num 3)) (Val (Num 3))))
 
-test2′′ : {var : typ → Set}{τ₂ : typ} →
-          Reduce* {var} {τ₂ = τ₂} exp4′ (Val (Num 8))
-
-test2′′ = R*Trans exp4′ (frame-plug (Plus₂ (Num 2))
-          (frame-plug (Pro refl) (Val (Num 6))))
-          (Val (Num 8))
-          (RFrame (Plus₂ (Num 2)) (RFrame (Pro refl) RPlus))
-          (R*Trans (frame-plug (Plus₂ (Num 2)) (frame-plug (Pro refl) (Val (Num 6))))
-          (frame-plug (Plus₂ (Num 2)) (Val (Num 6))) (Val (Num 8))
-          (RFrame (Plus₂ (Num 2)) RPrompt)
-          (R*Trans (frame-plug (Plus₂ (Num 2)) (Val (Num 6))) (Val (Num 8)) (Val (Num 8))
-          RPlus
-          (R*Id (Val (Num 8)))))
                               
 exp5 : {var : typ → Set} {α τ : typ} {μα : trail} →
        term[ var ] Nat ⟨ μα ⟩ α ⟨ μα ⟩ α
 
 exp5 = Prompt refl (Plus (Val (Num 1)) (Val (Num 2)))
 
--- λy.λz.z
--- termyz : {var : typ → Set} {α β τ₁ τ₂ τ₃ : typ} {μα μβ : trail}  →
---          term[ var ] ((τ₃ ⇒ τ₂ ⇒ τ₁) ⟨ μα ⟩ α ⟨ μβ ⟩ β) ⟨ μα ⟩ α ⟨ μα ⟩ α
--- termyz = Val (Fun (λ x → {!!}))
 
 -- equational reasoning
 infix  3 _∎
@@ -586,3 +531,178 @@ _≡⟨_⟩_ e₁ {e₂} {e₃} refl e₂-red*-e₃ = e₂-red*-e₃
 _∎ : {var : typ → Set} → {τ α β : typ}{μα μβ : trail} →
      (e : term[ var ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β) → Reduce* e e
 _∎ e = R*Id e
+
+
+test8 : {var : typ → Set}{μα : trail}{τ₂ : typ} →
+  Reduce* {var}{τ₂ = Nat}{μα = μα} (App termx (App termy term1)) term1
+
+test8 = begin
+     App termx (App termy term1)
+     ⟶⟨ RFrame (App₂ (Fun (λ x → Val (Var x)))) (RBeta (sVal sVar=)) ⟩
+     frame-plug (App₂ (Fun (λ x → Val (Var x)))) (Val (Num 1))
+     ≡⟨ refl ⟩
+     App (Val (Fun (λ x → Val (Var x)))) (Val (Num 1))
+     ⟶⟨ RBeta (sVal sVar=) ⟩
+     term1
+     ∎
+
+
+
+ 
+test2′e : {var : typ → Set}{τ₂ : typ} →
+         Reduce* {var} {τ₂ = Nat}{μα = Nat ⇒ Nat , ∙} exp4 (Val (Num 1))
+
+test2′e = begin
+       exp4
+       ⟶⟨ RControl {β' = Tbool}{τ₃ = Tbool}{τ₄ = Tbool}{τ₅ = Tbool}
+                    {μβ' = ∙}{μ₄ = ∙}{μ₅ = ∙}
+                     Hole Hole refl refl refl Hole (λ k → (Val (Num 1))) ⟩
+       Prompt refl
+         (App (Val (Fun (λ k → Val (Num 1))))
+          (Val (Fun (λ x → pcontext-plug Hole (Val (Var x))))))
+       ⟶⟨ RFrame (Pro refl) (RBeta (sVal sNum)) ⟩
+       frame-plug (Pro refl) (Val (Num 1))
+       ⟶⟨ RPrompt ⟩
+       Val (Num 1)
+       ∎
+exp4-2 : {var : typ → Set} {β : typ} {μβ : trail} →
+       term[ var ] Nat ⟨ μβ ⟩ β ⟨ μβ ⟩ β
+exp4-2 = Prompt (refl , refl , refl)
+               (Plus (Val (Num 2))
+                     (Control {μ₀ = Nat ⇒ Nat , ∙}{μ₂ = ∙}
+                              refl refl refl
+                              (λ k → (Val (Num 1)))))
+
+test4-2 : {var : typ → Set}{τ₂ : typ}{μα : trail} →
+        Reduce* {var}{τ₂ = Nat}{μα = Nat ⇒ Nat , ∙} (exp4-2) (Val (Num 1))
+
+test4-2 = begin
+       exp4-2
+       ⟶⟨ RControl {β' = Tbool}{τ₃ = Tbool}{τ₄ = Tbool}{τ₅ = Tbool}
+                    {μβ' = ∙}{μ₄ = ∙}{μ₅ = ∙}
+                    (Frame (Plus₂ (Num 2)) Hole) (Frame (Plus₂ (Num 2)) Hole)
+            refl refl refl (Frame (Plus₂ (Num 2)) Hole) (λ k → (Val (Num 1))) ⟩
+       Prompt refl
+         (App (Val (Fun (λ k → Val (Num 1))))
+          (Val
+           (Fun
+            (λ x → pcontext-plug (Frame (Plus₂ (Num 2)) Hole) (Val (Var x))))))
+       ⟶⟨ RFrame (Pro refl) (RBeta (sVal sNum)) ⟩
+       frame-plug (Pro refl) (Val (Num 1))
+       ⟶⟨ RPrompt ⟩
+       Val (Num 1)
+       ∎
+
+exp4-3 : {var : typ → Set} {β : typ} {μβ : trail} →
+       term[ var ] Nat ⟨ μβ ⟩ β ⟨ μβ ⟩ β
+exp4-3 =
+       Prompt (refl , refl , refl)
+               (Plus (Val (Num 2))
+                     (Control {μ₀ = Nat ⇒ Nat , ∙}{μ₂ = ∙}
+                              refl refl refl
+                              (λ k → App (Val (Var k))
+                                         (Val (Num 3)))))
+
+test4-3 : {var : typ → Set}{τ₂ : typ}{μα : trail} →
+        Reduce* {var}{τ₂ = Nat}{μα = Nat ⇒ Nat , ∙} (exp4-3) (Val (Num 5))
+
+test4-3 = begin
+      exp4-3
+      ⟶⟨ RControl{β' = Tbool}{τ₃ = Tbool}{τ₄ = Tbool}{τ₅ = Tbool}
+                    {μβ' = ∙}{μ₄ = ∙}{μ₅ = ∙}
+      (Frame (Plus₂ (Num 2)) Hole) (Frame (Plus₂ (Num 2)) Hole)
+      refl refl refl (Frame (Plus₂ (Num 2)) Hole) (λ k → App (Val (Var k))
+                                         (Val (Num 3))) ⟩
+      Prompt refl
+        (App (Val (Fun (λ k → App (Val (Var k)) (Val (Num 3)))))
+         (Val
+          (Fun
+           (λ x → pcontext-plug (Frame (Plus₂ (Num 2)) Hole) (Val (Var x))))))
+      ⟶⟨ RFrame (Pro refl) (RBeta (sApp (sVal sVar=) (sVal sNum))) ⟩
+      frame-plug (Pro refl)
+        (App (Val (Fun (λ y → Plus (Val (Num 2)) (Val (Var y)))))
+         (Val (Num 3)))
+      ⟶⟨ RFrame (Pro refl) (RBeta (sPlu (sVal sNum) (sVal sVar=))) ⟩
+      frame-plug (Pro refl) (Plus (Val (Num 2)) (Val (Num 3)))
+      ⟶⟨ RFrame (Pro refl) RPlus ⟩
+      frame-plug (Pro refl) (Val (Num (2 + 3)))
+      ⟶⟨ RPrompt ⟩
+      Val (Num 5)
+      ∎
+      
+exp4-4 : {var : typ → Set} {β : typ} {μβ : trail} →
+       term[ var ] Nat ⟨ μβ ⟩ β ⟨ μβ ⟩ β
+exp4-4 =
+     Plus (Val (Num 1))
+       (Prompt (refl , refl , refl)
+               (Plus (Val (Num 2))
+                     (Control {μ₀ = Nat ⇒ Nat , ∙}{μ₂ = ∙}
+                              refl refl refl
+                              (λ k → App (Val (Var k))
+                                         (App (Val (Var k)) (Val (Num 3)))))))
+
+
+test4-4 : {var : typ → Set}{τ₂ : typ}{μα : trail} →
+        Reduce* {var}{τ₂ = Nat}{μα = Nat ⇒ Nat , ∙} (exp4-4) (Val (Num 8))
+
+test4-4 = begin
+      exp4-4
+      ⟶⟨ RFrame (Plus₂ (Num 1))
+      (RControl {β' = Tbool}{τ₃ = Tbool}{τ₄ = Tbool}{τ₅ = Tbool}
+                    {μβ' = ∙}{μ₄ = ∙}{μ₅ = ∙}
+      (Frame (Plus₂ (Num 2)) Hole) (Frame (Plus₂ (Num 2)) Hole)
+      refl refl refl (Frame (Plus₂ (Num 2)) Hole) (λ k → App (Val (Var k))
+                                         (App (Val (Var k)) (Val (Num 3))))) ⟩
+      frame-plug (Plus₂ (Num 1))
+      (Prompt refl
+        (App
+         (Val
+          (Fun (λ k → App (Val (Var k)) (App (Val (Var k)) (Val (Num 3))))))
+         (Val
+          (Fun
+           (λ x → pcontext-plug (Frame (Plus₂ (Num 2)) Hole) (Val (Var x)))))))
+      ⟶⟨ RFrame (Plus₂ (Num 1)) (RFrame (Pro refl)
+      (RBeta (sApp (sVal sVar=) (sApp (sVal sVar=) (sVal sNum))))) ⟩
+      frame-plug (Plus₂ (Num 1))
+        (frame-plug (Pro refl)
+         (App
+          (Val
+           (Fun
+            (λ x → pcontext-plug (Frame (Plus₂ (Num 2)) Hole) (Val (Var x)))))
+          (App
+           (Val
+            (Fun
+             (λ x → pcontext-plug (Frame (Plus₂ (Num 2)) Hole) (Val (Var x)))))
+           (Val (Num 3)))))
+      ⟶⟨ RFrame (Plus₂ (Num 1)) (RFrame (Pro refl)
+      (RFrame (App₂ (Fun
+      (λ x → pcontext-plug (Frame (Plus₂ (Num 2)) Hole) (Val (Var x)))))
+      (RBeta (sPlu (sVal sNum) (sVal sVar=))))) ⟩
+      frame-plug (Plus₂ (Num 1)) (frame-plug (Pro refl)
+      (frame-plug
+        (App₂
+         (Fun
+          (λ x → pcontext-plug (Frame (Plus₂ (Num 2)) Hole) (Val (Var x)))))
+        (Plus (Val (Num 2)) (Val (Num 3)))))
+      ⟶⟨ RFrame (Plus₂ (Num 1)) (RFrame (Pro refl)
+      (RFrame
+      (App₂ (Fun
+              (λ x → pcontext-plug (Frame (Plus₂ (Num 2)) Hole) (Val (Var x))))) RPlus)) ⟩
+      frame-plug (Plus₂ (Num 1))
+        (frame-plug (Pro refl)
+         (frame-plug
+          (App₂
+           (Fun
+            (λ x → pcontext-plug (Frame (Plus₂ (Num 2)) Hole) (Val (Var x)))))
+          (Val (Num (2 + 3)))))
+      ⟶⟨ RFrame (Plus₂ (Num 1)) (RFrame (Pro refl) (RBeta (sPlu (sVal sNum) (sVal sVar=)))) ⟩
+      frame-plug (Plus₂ (Num 1))
+        (frame-plug (Pro refl) (Plus (Val (Num 2)) (Val (Num (2 + 3)))))
+      ⟶⟨ RFrame (Plus₂ (Num 1)) (RFrame (Pro refl) RPlus) ⟩
+      frame-plug (Plus₂ (Num 1))
+        (frame-plug (Pro refl) (Val (Num (2 + (2 + 3)))))
+      ⟶⟨ RFrame (Plus₂ (Num 1)) RPrompt ⟩
+      frame-plug (Plus₂ (Num 1)) (Val (Num (2 + (2 + 3))))
+      ⟶⟨ RPlus ⟩
+      Val (Num 8)
+      ∎
