@@ -19,9 +19,6 @@ data cpstyp : Set where
   _⇒_ : cpstyp → cpstyp → cpstyp
   ∙ : cpstyp
 
-data cpstrail : Set where
-  ∙ : cpstrail
-  _⇒_,_ : cpstyp → cpstyp → cpstyp → cpstrail
 
 
 --target
