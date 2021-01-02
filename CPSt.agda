@@ -104,33 +104,33 @@ mutual
 
 
 --cpsframe
-data cpsframe[_,_]_ (var : cpstyp → Set) : cpstyp → cpstyp → Set where
-  CPSApp₁ : {τ₁ τ₂ : cpstyp} → (e₂ : cpsterm[ var ] τ₂) →
-            cpsframe[ var , τ₂ ⇛ τ₁ ] τ₁
-  CPSApp₂ : {τ₁ τ₂ : cpstyp} → (v₁ : cpsvalue[ var ] (τ₂ ⇛ τ₁)) →
-            cpsframe[ var , τ₂ ] τ₁
+-- data cpsframe[_,_]_ (var : cpstyp → Set) : cpstyp → cpstyp → Set where
+--   CPSApp₁ : {τ₁ τ₂ : cpstyp} → (e₂ : cpsterm[ var ] τ₂) →
+--             cpsframe[ var , τ₂ ⇛ τ₁ ] τ₁
+--   CPSApp₂ : {τ₁ τ₂ : cpstyp} → (v₁ : cpsvalue[ var ] (τ₂ ⇛ τ₁)) →
+--             cpsframe[ var , τ₂ ] τ₁
 
-cpsframe-plug : {var : cpstyp → Set} → {τ₁ τ₂ : cpstyp} →
-                cpsframe[ var , τ₁ ] τ₂ →
-                cpsterm[ var ] τ₁ →
-                cpsterm[ var ] τ₂
-cpsframe-plug (CPSApp₁ e₂) e₁ = CPSApp e₁ e₂
-cpsframe-plug (CPSApp₂ v₁) e₂ = CPSApp (CPSVal v₁) e₂
+-- cpsframe-plug : {var : cpstyp → Set} → {τ₁ τ₂ : cpstyp} →
+--                 cpsframe[ var , τ₁ ] τ₂ →
+--                 cpsterm[ var ] τ₁ →
+--                 cpsterm[ var ] τ₂
+-- cpsframe-plug (CPSApp₁ e₂) e₁ = CPSApp e₁ e₂
+-- cpsframe-plug (CPSApp₂ v₁) e₂ = CPSApp (CPSVal v₁) e₂
 
 --cpscontext
-data cpscontext[_,_]_ (var : cpstyp → Set) : cpstyp → cpstyp → Set where
-  CPSHole  : {τ₁ : cpstyp} → cpscontext[ var , τ₁ ] τ₁
-  CPSFrame : {τ₁ τ₂ τ₃ : cpstyp} → cpsframe[ var , τ₂ ] τ₃ →
-             cpscontext[ var , τ₁ ] τ₂ →
-             cpscontext[ var , τ₁ ] τ₃
+-- data cpscontext[_,_]_ (var : cpstyp → Set) : cpstyp → cpstyp → Set where
+--   CPSHole  : {τ₁ : cpstyp} → cpscontext[ var , τ₁ ] τ₁
+--   CPSFrame : {τ₁ τ₂ τ₃ : cpstyp} → cpsframe[ var , τ₂ ] τ₃ →
+--              cpscontext[ var , τ₁ ] τ₂ →
+--              cpscontext[ var , τ₁ ] τ₃
 
 
-cpscontext-plug : {var : cpstyp → Set} → {τ₁ τ₂ : cpstyp} →
-                  cpscontext[ var , τ₁ ] τ₂ →
-                  cpsterm[ var ] τ₁ →
-                  cpsterm[ var ] τ₂
-cpscontext-plug CPSHole e₁ = e₁
-cpscontext-plug (CPSFrame f p) e₁ = cpsframe-plug f (cpscontext-plug p e₁)
+-- cpscontext-plug : {var : cpstyp → Set} → {τ₁ τ₂ : cpstyp} →
+--                   cpscontext[ var , τ₁ ] τ₂ →
+--                   cpsterm[ var ] τ₁ →
+--                   cpsterm[ var ] τ₂
+-- cpscontext-plug CPSHole e₁ = e₁
+-- cpscontext-plug (CPSFrame f p) e₁ = cpsframe-plug f (cpscontext-plug p e₁)
 
 
 --subst
@@ -364,12 +364,12 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
 
 
 
-data cpsReduce {var : cpstyp → Set} : {τ : cpstyp} →
-               cpsterm[ var ] τ →
-               cpsterm[ var ] τ → Set where
+-- data cpsReduce {var : cpstyp → Set} : {τ : cpstyp} →
+--                cpsterm[ var ] τ →
+--                cpsterm[ var ] τ → Set where
 
-  Re* : {τ : cpstyp} →
-        {e₁ : cpsterm[ var ] τ} →
-        {e₂ : cpsterm[ var ] τ} →
-        cpsreduce e₁ e₂ →
-        cpsReduce e₁ e₂
+--   Re* : {τ : cpstyp} →
+--         {e₁ : cpsterm[ var ] τ} →
+--         {e₂ : cpsterm[ var ] τ} →
+--         cpsreduce e₁ e₂ →
+--         cpsReduce e₁ e₂
