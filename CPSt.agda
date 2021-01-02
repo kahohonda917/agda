@@ -298,13 +298,7 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
              cpsreduce (CPSApp (CPSLet e₁ (λ x → e₂ x)) e₃)
                        (CPSLet e₁ (λ x → CPSApp (e₂ x) e₃))
 
-  rLetApp₁ : {τ₁ τ₂ : cpstyp} →
-             {v₁ : cpsvalue[ var ] τ₁} →
-             {e₂ : var τ₁ → cpsterm[ var ] τ₂} →
-             cpsreduce (CPSLet (CPSVal v₁) (λ x → e₂ x))
-                       (CPSApp (CPSVal (CPSFun (λ x → e₂ x))) (CPSVal v₁))
-
-  rLetApp₂ : {τ₁ τ₂ : cpstyp} →
+  rLetApp  : {τ₁ τ₂ : cpstyp} →
              {e₁ : cpsterm[ var ] τ₁} →
              {e₂ : var τ₁ → cpsterm[ var ] τ₂} →
              cpsreduce (CPSLet e₁ (λ x → e₂ x))
@@ -364,12 +358,12 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
 
 
 
--- data cpsReduce {var : cpstyp → Set} : {τ : cpstyp} →
---                cpsterm[ var ] τ →
---                cpsterm[ var ] τ → Set where
+data cpsreduce* {var : cpstyp → Set} : {τ : cpstyp} →
+               cpsterm[ var ] τ →
+               cpsterm[ var ] τ → Set where
 
---   Re* : {τ : cpstyp} →
---         {e₁ : cpsterm[ var ] τ} →
---         {e₂ : cpsterm[ var ] τ} →
---         cpsreduce e₁ e₂ →
---         cpsReduce e₁ e₂
+  re* : {τ : cpstyp} →
+        {e₁ : cpsterm[ var ] τ} →
+        {e₂ : cpsterm[ var ] τ} →
+        cpsreduce e₁ e₂ →
+        cpsreduce* e₁ e₂
