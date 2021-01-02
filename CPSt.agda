@@ -156,6 +156,7 @@ mutual
             ((x : var τ₁) → cpsSubst (λ y → (e₁ y) x) v (e₁′ x)) →
             cpsSubstVal (λ y → CPSFun (e₁ y)) v (CPSFun e₁′)
 
+
   data cpsSubst {var : cpstyp → Set} : {τ₁ τ₂ : cpstyp} →
                 (var τ₁ → cpsterm[ var ] τ₂) →
                 cpsvalue[ var ] τ₁ →
@@ -195,28 +196,68 @@ mutual
            {e₂′ : cpsterm[ var ] Nat} →
            cpsSubst e₁ v e₁′ → cpsSubst e₂ v e₂′ →
            cpsSubst (λ y → CPSPlus (e₁ y) (e₂ y)) v (CPSPlus e₁′ e₂′)
-           
-            
-     
-data cpsequal {var : cpstyp → Set} : {τ₁ : cpstyp} →
+
+    sId  : {τ : cpstyp} → {v : cpsvalue[ var ] τ} →
+           cpsSubst (λ x → CPSId) v CPSId
+
+    sTra : {τ τ₁ : cpstyp} →
+           {e : var τ → cpsterm[ var ] τ₁} →
+           {v : cpsvalue[ var ] τ} →
+           {e′ : cpsterm[ var ] τ₁} →
+           cpsSubst e v e′ →
+           cpsSubst (λ y → CPSTrail (e y)) v (CPSTrail e′)
+
+    sIdk : {τ : cpstyp} {τ₁ τ₂ : typ} {μ : trail} →
+           {x : is-id-trail τ₁ τ₂ μ} →
+           {e₁ : var τ → cpsvalue[ var ] cpsT τ₁} →
+           {e₂ : var τ → cpsterm[ var ] cpsM μ} →
+           {v : cpsvalue[ var ] τ} →
+           {e₁′ : cpsvalue[ var ] cpsT τ₁} →
+           {e₂′ : cpsterm[ var ] cpsM μ} →
+           cpsSubstVal e₁ v e₁′ → cpsSubst e₂ v e₂′ →
+           cpsSubst (λ y → CPSIdk x (e₁ y) (e₂ y)) v (CPSIdk x e₁′ e₂′)
+
+    sApd : {τ : cpstyp} {μ₁ μ₂ μ₃ : trail} →
+           {x : compatible μ₁ μ₂ μ₃} →
+           {e₁ : var τ → cpsterm[ var ] cpsM μ₁} →
+           {e₂ : var τ → cpsterm[ var ] cpsM μ₂} →
+           {v : cpsvalue[ var ] τ} →
+           {e₁′ : cpsterm[ var ] cpsM μ₁} →
+           {e₂′ : cpsterm[ var ] cpsM μ₂} →
+           cpsSubst e₁ v e₁′ → cpsSubst e₂ v e₂′ →
+           cpsSubst (λ y → CPSAppend x (e₁ y) (e₂ y)) v (CPSAppend x e₁′ e₂′)
+
+    sCon : {τ : cpstyp} {τ₁ τ₂ : typ} {μ₀ μ₁ μ₂ : trail} →
+           {x : compatible (τ₁ ⇒ τ₂ , μ₁) μ₂ μ₀} →
+           {e₁ : var τ → cpsterm[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
+           {e₂ : var τ → cpsterm[ var ] cpsM μ₂} →
+           {v : cpsvalue[ var ] τ} →
+           {e₁′ : cpsterm[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
+           {e₂′ : cpsterm[ var ] cpsM μ₂} →
+           cpsSubst e₁ v e₁′ → cpsSubst e₂ v e₂′ →
+           cpsSubst (λ y → CPSCons x (e₁ y) (e₂ y)) v (CPSCons x e₁′ e₂′)
+
+ 
+                
+data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
               cpsterm[ var ] τ₁ →
               cpsterm[ var ] τ₁ → Set where
 
-  eqBeta    : {τ τ₁ : cpstyp} →
+  rBeta    : {τ τ₁ : cpstyp} →
               {e₁ : var τ → cpsterm[ var ] τ₁} →
               {v : cpsvalue[ var ] τ} →
               {e₁′ : cpsterm[ var ] τ₁} →
               cpsSubst e₁ v e₁′ →
-              cpsequal (CPSApp (CPSVal (CPSFun e₁)) (CPSVal v)) e₁′
+              cpsreduce (CPSApp (CPSVal (CPSFun e₁)) (CPSVal v)) e₁′
 
-  eqLet     : {τ τ₁ : cpstyp} →
+  rLet     : {τ τ₁ : cpstyp} →
               {v : cpsvalue[ var ] τ} →
               {e₁ : var τ → cpsterm[ var ] τ₁} →
               {e₁′ : cpsterm[ var ] τ₁} →
               cpsSubst e₁ v e₁′ →
-              cpsequal (CPSLet (CPSVal v) e₁) e₁′
+              cpsreduce (CPSLet (CPSVal v) e₁) e₁′
 
-  eqPlus    : {n₁ : ℕ} →
+  rPlus    : {n₁ : ℕ} →
               {n₂ : ℕ} →
-              cpsequal (CPSPlus (CPSVal (CPSNum n₁)) (CPSVal (CPSNum n₂)))
+              cpsreduce (CPSPlus (CPSVal (CPSNum n₁)) (CPSVal (CPSNum n₂)))
               (CPSVal (CPSNum (n₁ + n₂)))
