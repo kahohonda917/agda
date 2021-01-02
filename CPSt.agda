@@ -244,55 +244,84 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
               cpsterm[ var ] τ₁ → Set where
 
   rBeta    : {τ τ₁ : cpstyp} →
-              {e₁ : var τ → cpsterm[ var ] τ₁} →
-              {v : cpsvalue[ var ] τ} →
-              {e₁′ : cpsterm[ var ] τ₁} →
-              cpsSubst e₁ v e₁′ →
-              cpsreduce (CPSApp (CPSVal (CPSFun e₁)) (CPSVal v)) e₁′
+             {e₁ : var τ → cpsterm[ var ] τ₁} →
+             {v : cpsvalue[ var ] τ} →
+             {e₁′ : cpsterm[ var ] τ₁} →
+             cpsSubst e₁ v e₁′ →
+             cpsreduce (CPSApp (CPSVal (CPSFun e₁)) (CPSVal v)) e₁′
 
-  rLet     : {τ τ₁ : cpstyp} →
-              {v : cpsvalue[ var ] τ} →
-              {e₁ : var τ → cpsterm[ var ] τ₁} →
-              {e₁′ : cpsterm[ var ] τ₁} →
-              cpsSubst e₁ v e₁′ →
-              cpsreduce (CPSLet (CPSVal v) e₁) e₁′
-
-  rPlus    : {n₁ : ℕ} →
-              {n₂ : ℕ} →
-              cpsreduce (CPSPlus (CPSVal (CPSNum n₁)) (CPSVal (CPSNum n₂)))
-              (CPSVal (CPSNum (n₁ + n₂)))
+  rPlus    : {n₁ n₂ : ℕ} →
+             cpsreduce (CPSPlus (CPSVal (CPSNum n₁)) (CPSVal (CPSNum n₂)))
+             (CPSVal (CPSNum (n₁ + n₂)))
 
   rFun     : {τ₁ τ₂ : cpstyp} →
-             {e₁ : var τ₂ → cpsterm[ var ] τ₁} →
-             {e₂ : var τ₂ → cpsterm[ var ] τ₁} →
+             {e₁ e₂ : var τ₂ → cpsterm[ var ] τ₁} →
              ((x : var τ₂) → cpsreduce (e₁ x) (e₂ x)) →
              cpsreduce (CPSVal (CPSFun (λ x → e₁ x)))
                        (CPSVal (CPSFun (λ x → e₂ x)))
 
   rApp₁    : {τ₁ τ₂ : cpstyp} →
-             {e₁ : cpsterm[ var ] (τ₂ ⇛ τ₁)} →
-             {e₁′ : cpsterm[ var ] (τ₂ ⇛ τ₁)} →
+             {e₁ e₁′ : cpsterm[ var ] (τ₂ ⇛ τ₁)} →
              {e₂ : cpsterm[ var ] τ₂} →
              cpsreduce e₁ e₁′ →
              cpsreduce (CPSApp e₁ e₂) (CPSApp e₁′ e₂)
 
   rApp₂    : {τ₁ τ₂ : cpstyp} →
              {e₁ : cpsterm[ var ] (τ₂ ⇛ τ₁)} →
-             {e₂ : cpsterm[ var ] τ₂} →
-             {e₂′ : cpsterm[ var ] τ₂} →
+             {e₂ e₂′ : cpsterm[ var ] τ₂} →
              cpsreduce e₂ e₂′ →
              cpsreduce (CPSApp e₁ e₂) (CPSApp e₁ e₂′)
 
-  rTrail   : {τ₁ : cpstyp} →
-             {e₁ : cpsterm[ var ] τ₁} →
+  rLet     : {τ τ₁ : cpstyp} →
+             {v : cpsvalue[ var ] τ} →
+             {e₁ : var τ → cpsterm[ var ] τ₁} →
              {e₁′ : cpsterm[ var ] τ₁} →
+             cpsSubst e₁ v e₁′ →
+             cpsreduce (CPSLet (CPSVal v) e₁) e₁′
+
+  rLet₁    : {τ₁ τ₂ : cpstyp} →
+             {e₁ e₁′ : cpsterm[ var ] τ₁} →
+             {e₂ : var τ₁ → cpsterm[ var ] τ₂} →
+             cpsreduce e₁ e₁′ →
+             cpsreduce (CPSLet e₁ e₂) (CPSLet e₁′ e₂)
+
+  rLet₂    : {τ₁ τ₂ : cpstyp} →
+             {e₁ : cpsterm[ var ] τ₁} →
+             {e₂ e₂′ : var τ₁ → cpsterm[ var ] τ₂} →
+             ((x : var τ₁) → cpsreduce (e₂ x) (e₂′ x)) →
+             cpsreduce (CPSLet e₁ e₂) (CPSLet e₁ e₂′)
+
+  rLet₃    : {τ₁ τ₂ τ₃ : cpstyp} →
+             {e₁ : cpsterm[ var ] τ₁} →
+             {e₂ : var τ₁ → cpsterm[ var ] (τ₂ ⇛ τ₃)} →
+             {e₃ : cpsterm[ var ] τ₂} →
+             cpsreduce (CPSApp (CPSLet e₁ (λ x → e₂ x)) e₃)
+                       (CPSLet e₁ (λ x → CPSApp (e₂ x) e₃))
+
+  rLetApp₁ : {τ₁ τ₂ : cpstyp} →
+             {v₁ : cpsvalue[ var ] τ₁} →
+             {e₂ : var τ₁ → cpsterm[ var ] τ₂} →
+             cpsreduce (CPSLet (CPSVal v₁) (λ x → e₂ x))
+                       (CPSApp (CPSVal (CPSFun (λ x → e₂ x))) (CPSVal v₁))
+
+  rLetApp₂ : {τ₁ τ₂ : cpstyp} →
+             {e₁ : cpsterm[ var ] τ₁} →
+             {e₂ : var τ₁ → cpsterm[ var ] τ₂} →
+             cpsreduce (CPSLet e₁ (λ x → e₂ x))
+                       (CPSApp (CPSVal (CPSFun (λ x → e₂ x))) e₁)
+
+  rId      : {e₁ e₁′ : cpsterm[ var ] ∙} →
+             cpsreduce e₁ e₁′ →
+             cpsreduce CPSId CPSId
+
+  rTrail   : {τ₁ : cpstyp} →
+             {e₁ e₁′ : cpsterm[ var ] τ₁} →
              cpsreduce e₁ e₁′ →
              cpsreduce (CPSTrail e₁) (CPSTrail e₁′)
 
   rIdk₁    : {τ₁ τ₂ : typ} {μ : trail} →
              {x : is-id-trail τ₁ τ₂ μ} →
-             {v₁ : cpsvalue[ var ] cpsT τ₁} →
-             {v₁′ : cpsvalue[ var ] cpsT τ₁} →
+             {v₁ v₁′ : cpsvalue[ var ] cpsT τ₁} →
              {e₁ : cpsterm[ var ] cpsM μ} →
              cpsreduce (CPSVal v₁) (CPSVal v₁′) →
              cpsreduce (CPSIdk x v₁ e₁) (CPSIdk x v₁′ e₁)
@@ -300,15 +329,13 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
   rIdk₂    : {τ₁ τ₂ : typ} {μ : trail} →
              {x : is-id-trail τ₁ τ₂ μ} →
              {v₁ : cpsvalue[ var ] cpsT τ₁} →
-             {e₁ : cpsterm[ var ] cpsM μ} →
-             {e₁′ : cpsterm[ var ] cpsM μ} →
+             {e₁ e₁′ : cpsterm[ var ] cpsM μ} →
              cpsreduce e₁ e₁′ →
              cpsreduce (CPSIdk x v₁ e₁) (CPSIdk x v₁ e₁′)
 
   rAppend₁ : {μ₁ μ₂ μ₃ : trail} →
              {x : compatible μ₁ μ₂ μ₃} →
-             {e₁ : cpsterm[ var ] cpsM μ₁} →
-             {e₁′ : cpsterm[ var ] cpsM μ₁} →
+             {e₁ e₁′ : cpsterm[ var ] cpsM μ₁} →
              {e₂ : cpsterm[ var ] cpsM μ₂} →
              cpsreduce e₁ e₁′ →
              cpsreduce (CPSAppend x e₁ e₂) (CPSAppend x e₁′ e₂)
@@ -316,15 +343,13 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
   rAppend₂ : {μ₁ μ₂ μ₃ : trail} →
              {x : compatible μ₁ μ₂ μ₃} →
              {e₁ : cpsterm[ var ] cpsM μ₁} →
-             {e₂ : cpsterm[ var ] cpsM μ₂} →
-             {e₂′ : cpsterm[ var ] cpsM μ₂} →
+             {e₂ e₂′ : cpsterm[ var ] cpsM μ₂} →
              cpsreduce e₂ e₂′ →
              cpsreduce (CPSAppend x e₁ e₂) (CPSAppend x e₁ e₂′)
 
   rCons₁   : {τ₁ τ₂ : typ} {μ₀ μ₁ μ₂ : trail} →
              {x : compatible (τ₁ ⇒ τ₂ , μ₁) μ₂ μ₀} →
-             {e₁ : cpsterm[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
-             {e₁′ : cpsterm[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
+             {e₁ e₁′ : cpsterm[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
              {e₂ : cpsterm[ var ] cpsM μ₂} →
              cpsreduce e₁ e₁′ →
              cpsreduce (CPSCons x e₁ e₂) (CPSCons x e₁′ e₂)
@@ -332,15 +357,9 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
   rCons₂   : {τ₁ τ₂ : typ} {μ₀ μ₁ μ₂ : trail} →
              {x : compatible (τ₁ ⇒ τ₂ , μ₁) μ₂ μ₀} →
              {e₁ : cpsterm[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
-             {e₂ : cpsterm[ var ] cpsM μ₂} →
-             {e₂′ : cpsterm[ var ] cpsM μ₂} →
+             {e₂ e₂′ : cpsterm[ var ] cpsM μ₂} →
              cpsreduce e₂ e₂′ →
              cpsreduce (CPSCons x e₁ e₂) (CPSCons x e₁ e₂′)
-
-  rId      : {e₁ : cpsterm[ var ] ∙} →
-             {e₁′ : cpsterm[ var ] ∙} →
-             cpsreduce e₁ e₁′ →
-             cpsreduce CPSId CPSId
 
 
 
