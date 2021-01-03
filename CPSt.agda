@@ -265,11 +265,11 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
              cpsreduce (CPSPlus (CPSVal (CPSNum n₁)) (CPSVal (CPSNum n₂)))
              (CPSVal (CPSNum (n₁ + n₂)))
 
-  rFun     : {τ₁ τ₂ : cpstyp} →
-             {e₁ e₂ : var τ₂ → cpsterm[ var ] τ₁} →
-             ((x : var τ₂) → cpsreduce (e₁ x) (e₂ x)) →
-             cpsreduce (CPSVal (CPSFun (λ x → e₁ x)))
-                       (CPSVal (CPSFun (λ x → e₂ x)))
+  -- rFun     : {τ₁ τ₂ : cpstyp} →
+  --            {e₁ e₂ : var τ₂ → cpsterm[ var ] τ₁} →
+  --            ((x : var τ₂) → cpsreduce (e₁ x) (e₂ x)) →
+  --            cpsreduce (CPSVal (CPSFun (λ x → e₁ x)))
+  --                      (CPSVal (CPSFun (λ x → e₂ x)))
 
   rApp₁    : {τ₁ τ₂ : cpstyp} →
              {e₁ e₁′ : cpsterm[ var ] (τ₂ ⇛ τ₁)} →
