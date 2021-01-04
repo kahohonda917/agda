@@ -1,6 +1,7 @@
 module CPSt where
 
-open import rplus
+open import DSt
+
 open import Data.Nat
 open import Data.Bool using (true; false) renaming (Bool to 𝔹)
 open import Data.Empty
@@ -158,14 +159,14 @@ mutual
             cpsSubstVal (λ y → CPSFun (e₁ y)) v (CPSFun e₁′)
 
     sId  : {τ : cpstyp} → {v : cpsvalue[ var ] τ} →
-           cpsSubstVal (λ x →  CPSId) v (CPSId)
+           cpsSubstVal (λ y →  CPSId) v (CPSId)
 
     sTra : {τ τ₁ : cpstyp} →
            {e : var τ → cpsvalue[ var ] τ₁} →
            {v : cpsvalue[ var ] τ} →
            {e′ : cpsvalue[ var ] τ₁} →
            cpsSubstVal e v e′ →
-           cpsSubstVal (λ y → (e y)) v e′
+           cpsSubstVal (λ y → CPSTrail (e y)) v (CPSTrail e′)
 
 
   data cpsSubst {var : cpstyp → Set} : {τ₁ τ₂ : cpstyp} →
@@ -208,15 +209,7 @@ mutual
            cpsSubst e₁ v e₁′ → cpsSubst e₂ v e₂′ →
            cpsSubst (λ y → CPSPlus (e₁ y) (e₂ y)) v (CPSPlus e₁′ e₂′)
 
-    -- sId  : {τ : cpstyp} → {v : cpsvalue[ var ] τ} →
-    --        cpsSubst (λ x → CPSVal CPSId) v (CPSVal CPSId)
-
-    -- sTra : {τ τ₁ : cpstyp} →
-    --        {e : var τ → cpsvalue[ var ] τ₁} →
-    --        {v : cpsvalue[ var ] τ} →
-    --        {e′ : cpsvalue[ var ] τ₁} →
-    --        cpsSubstVal e v e′ →
-    --        cpsSubst (λ y → CPSVal (CPSTrail (e y))) v (CPSVal e′)
+   
 
     sIdk : {τ : cpstyp} {τ₁ τ₂ : typ} {μ : trail} →
            {x : is-id-trail τ₁ τ₂ μ} →
@@ -265,11 +258,11 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
              cpsreduce (CPSPlus (CPSVal (CPSNum n₁)) (CPSVal (CPSNum n₂)))
              (CPSVal (CPSNum (n₁ + n₂)))
 
-  -- rFun     : {τ₁ τ₂ : cpstyp} →
-  --            {e₁ e₂ : var τ₂ → cpsterm[ var ] τ₁} →
-  --            ((x : var τ₂) → cpsreduce (e₁ x) (e₂ x)) →
-  --            cpsreduce (CPSVal (CPSFun (λ x → e₁ x)))
-  --                      (CPSVal (CPSFun (λ x → e₂ x)))
+  rFun     : {τ₁ τ₂ : cpstyp} →
+             {e₁ e₂ : var τ₂ → cpsterm[ var ] τ₁} →
+             ((x : var τ₂) → cpsreduce (e₁ x) (e₂ x)) →
+             cpsreduce (CPSVal (CPSFun (λ x → e₁ x)))
+                       (CPSVal (CPSFun (λ x → e₂ x)))
 
   rApp₁    : {τ₁ τ₂ : cpstyp} →
              {e₁ e₁′ : cpsterm[ var ] (τ₂ ⇛ τ₁)} →
@@ -391,20 +384,62 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
              cpsreduce (CPSIdk x v (CPSVal (CPSTrail k)))
                        (CPSApp (CPSApp (CPSVal k) (CPSVal v)) (CPSVal CPSId))
 
+  r*Id     : {τ : cpstyp} →
+             (e : cpsterm[ var ] τ) →
+             cpsreduce e e
+
+  r*Trans  : {τ : cpstyp} →
+             (e₁ e₂ e₃ : cpsterm[ var ] τ) →
+             cpsreduce e₁ e₂ →
+             cpsreduce e₂ e₃ →
+             cpsreduce e₁ e₃
 
 
 
-data cpsreduce* {var : cpstyp → Set} : {τ : cpstyp} →
-               cpsterm[ var ] τ →
-               cpsterm[ var ] τ → Set where
 
-  r*Id    : {τ : cpstyp} →
-            {e : cpsterm[ var ] τ} →
-            cpsreduce* e e
+-- data cpsreduce* {var : cpstyp → Set} : {τ : cpstyp} →
+--                cpsterm[ var ] τ →
+--                cpsterm[ var ] τ → Set where
 
-  r*Trans : {τ : cpstyp} →
-            {e₁ e₂ e₃ : cpsterm[ var ] τ} →
-            cpsreduce e₁ e₂ →
-            cpsreduce* e₂ e₃ →
-            cpsreduce* e₁ e₃
+--   r*Id     : {τ : cpstyp} →
+--              (e : cpsterm[ var ] τ) →
+--              cpsreduce* e e
+
+--   r*Trans  : {τ : cpstyp} →
+--              (e₁ e₂ e₃ : cpsterm[ var ] τ) →
+--              cpsreduce e₁ e₂ →
+--              cpsreduce* e₂ e₃ →
+--              cpsreduce* e₁ e₃
+
+  -- r*Trans' : {τ : cpstyp} →
+  --            (e₁ e₂ e₃ : cpsterm[ var ] τ) →
+  --            cpsreduce e₂ e₁ →
+  --            cpsreduce* e₂ e₃ →
+  --            cpsreduce* e₁ e₃
             
+
+
+-- equational reasoning
+infix  3 _∎
+infixr 2 _⟶⟨_⟩_ _≡⟨_⟩_
+infix  1 begin_
+
+begin_ : {var : cpstyp → Set} → {τ₁ : cpstyp} →
+         {e₁ e₂ : cpsterm[ var ] τ₁ } → cpsreduce e₁ e₂ → cpsreduce e₁ e₂
+begin_ red = red
+
+_⟶⟨_⟩_ : {var : cpstyp → Set} → {τ₁ : cpstyp} →
+           (e₁ {e₂ e₃} : cpsterm[ var ] τ₁) → cpsreduce e₁ e₂ → cpsreduce e₂ e₃ →
+           cpsreduce e₁ e₃
+_⟶⟨_⟩_ e₁ {e₂} {e₃} e₁-red-e₂ e₂-red*-e₃ = r*Trans e₁ e₂ e₃ e₁-red-e₂ e₂-red*-e₃
+
+
+
+_≡⟨_⟩_ : {var : cpstyp → Set} → {τ₁ : cpstyp} →
+         (e₁ {e₂ e₃} : cpsterm[ var ] τ₁) → e₁ ≡ e₂ → cpsreduce e₂ e₃ →
+         cpsreduce e₁ e₃
+_≡⟨_⟩_ e₁ {e₂} {e₃} refl e₂-red*-e₃ = e₂-red*-e₃
+
+_∎ : {var : cpstyp → Set} → {τ₁ : cpstyp} →
+     (e : cpsterm[ var ] τ₁) → cpsreduce e e
+_∎ e = r*Id e
