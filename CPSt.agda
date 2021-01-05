@@ -59,7 +59,7 @@ mutual
                 cpsterm[ var ] Nat
     CPSIdk    : {τ₁ τ₂ : typ} {μ : trail} → is-id-trail τ₁ τ₂ μ →
                 cpsvalue[ var ] cpsT τ₁ →
-                cpsterm[ var ] cpsM μ → cpsterm[ var ] cpsT τ₂
+                cpsvalue[ var ] cpsM μ → cpsterm[ var ] cpsT τ₂
     CPSAppend : {μ₁ μ₂ μ₃ : trail} → compatible μ₁ μ₂ μ₃ →
                 cpsterm[ var ] cpsM μ₁ →
                 cpsterm[ var ] cpsM μ₂ → cpsterm[ var ] cpsM μ₃
@@ -77,32 +77,32 @@ mutual
   cpsV (Num n) = CPSNum n
   cpsV (Fun e) = CPSFun (λ x → CPSVal (CPSFun (λ k' → CPSVal (CPSFun (λ t' →
                  cpsTerm (e x) (λ v t'' →
-                 CPSApp (CPSApp (CPSVal (CPSVar k')) (CPSVal v)) t'') (CPSVal (CPSVar t')))))))
+                 CPSApp (CPSApp (CPSVal (CPSVar k')) (CPSVal v)) (CPSVal t'')) ((CPSVar t')))))))
        
 
   cpsTerm : {τ₁ α β : typ}{μα μβ : trail} → {var : cpstyp → Set} →
             term[ var ∘ cpsT ] τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β →
-            (cpsvalue[ var ] (cpsT τ₁) → cpsterm[ var ] (cpsM μα) → cpsterm[ var ] (cpsT α)) →
-            cpsterm[ var ] (cpsM μβ) →
+            (cpsvalue[ var ] (cpsT τ₁) → cpsvalue[ var ] (cpsM μα) → cpsterm[ var ] (cpsT α)) →
+            cpsvalue[ var ] (cpsM μβ) →
             cpsterm[ var ] (cpsT β)
   cpsTerm  (Val v) k t = k (cpsV v) t
 
   cpsTerm  (App e₁ e₂) k t = cpsTerm e₁ (λ v₁ t₁ → cpsTerm e₂
                              (λ v₂ t₂ → CPSApp (CPSApp (CPSApp (CPSVal v₁) (CPSVal v₂))
                              (CPSVal (CPSFun (λ v → CPSVal (CPSFun (λ t'' →
-                             k (CPSVar v) (CPSVal (CPSVar t'')))))))) t₂) t₁) t
+                             k (CPSVar v) (CPSVar t''))))))) (CPSVal t₂)) t₁) t
                            
   cpsTerm  (Plus e₁ e₂) k t = cpsTerm e₁ (λ v₁ t₁ → cpsTerm e₂
                               (λ v₂ t₂ → CPSLet (CPSPlus (CPSVal v₁) (CPSVal v₂)) (λ v → k (CPSVar v) t₂)) t₁) t
                             
   cpsTerm  (Control x x₂ x₃ e) k t = CPSLet (CPSVal (CPSFun (λ v →
                                      CPSVal (CPSFun (λ k' → CPSVal (CPSFun (λ t' →
-                                     CPSLet (CPSAppend x₃ t
+                                     CPSLet (CPSAppend x₃ (CPSVal t)
                                      (CPSCons x₂ (CPSVal (CPSVar k')) (CPSVal (CPSVar t'))))
-                                     (λ t'' → k (CPSVar v) (CPSVal (CPSVar t''))))))))))
-                                     (λ x' → cpsTerm (e x') (CPSIdk x) (CPSVal CPSId))
+                                     (λ t'' → k (CPSVar v) (CPSVar t'')))))))))
+                                     (λ x' → cpsTerm (e x') (CPSIdk x) (CPSId))
   
-  cpsTerm  (Prompt x e) k t = CPSLet (cpsTerm e (CPSIdk x) (CPSVal CPSId)) λ v → k (CPSVar v) t
+  cpsTerm  (Prompt x e) k t = CPSLet (cpsTerm e (CPSIdk x) (CPSId)) λ v → k (CPSVar v) t
 
 
 --cpsframe
@@ -214,11 +214,11 @@ mutual
     sIdk : {τ : cpstyp} {τ₁ τ₂ : typ} {μ : trail} →
            {x : is-id-trail τ₁ τ₂ μ} →
            {e₁ : var τ → cpsvalue[ var ] cpsT τ₁} →
-           {e₂ : var τ → cpsterm[ var ] cpsM μ} →
+           {e₂ : var τ → cpsvalue[ var ] cpsM μ} →
            {v : cpsvalue[ var ] τ} →
            {e₁′ : cpsvalue[ var ] cpsT τ₁} →
-           {e₂′ : cpsterm[ var ] cpsM μ} →
-           cpsSubstVal e₁ v e₁′ → cpsSubst e₂ v e₂′ →
+           {e₂′ : cpsvalue[ var ] cpsM μ} →
+           cpsSubstVal e₁ v e₁′ → cpsSubstVal e₂ v e₂′ →
            cpsSubst (λ y → CPSIdk x (e₁ y) (e₂ y)) v (CPSIdk x e₁′ e₂′)
 
     sApd : {τ : cpstyp} {μ₁ μ₂ μ₃ : trail} →
@@ -308,12 +308,7 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
              cpsreduce (CPSLet e₁ (λ x → e₂ x))
                        (CPSApp (CPSVal (CPSFun (λ x → e₂ x))) e₁)
              
-  rIdk₂    : {τ₁ τ₂ : typ} {μ : trail} →
-             {x : is-id-trail τ₁ τ₂ μ} →
-             {v₁ : cpsvalue[ var ] cpsT τ₁} →
-             {e₁ e₁′ : cpsterm[ var ] cpsM μ} →
-             cpsreduce e₁ e₁′ →
-             cpsreduce (CPSIdk x v₁ e₁) (CPSIdk x v₁ e₁′)
+ 
 
   rAppend₁ : {μ₁ μ₂ μ₃ : trail} →
              {x : compatible μ₁ μ₂ μ₃} →
@@ -375,13 +370,13 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
   rIdkid   : {τ₁ : typ} →
              -- {x : is-id-trail τ₁ τ₂ ∙} →
              {v : cpsvalue[ var ] cpsT τ₁} →
-             cpsreduce (CPSIdk refl v (CPSVal CPSId)) (CPSVal v)
+             cpsreduce (CPSIdk refl v (CPSId)) (CPSVal v)
 
   rIdkt    : {τ₁ τ₂ : typ} {μ : trail} →
              {x : is-id-trail τ₁ τ₂ (τ₁ ⇒ τ₂ , ∙)} →
              {v : cpsvalue[ var ] cpsT τ₁} →
              {k : cpsvalue[ var ] (cpsT τ₁ ⇛ (∙ ⇛ cpsT τ₂))} →
-             cpsreduce (CPSIdk x v (CPSVal (CPSTrail k)))
+             cpsreduce (CPSIdk x v ((CPSTrail k)))
                        (CPSApp (CPSApp (CPSVal k) (CPSVal v)) (CPSVal CPSId))
 
   r*Id     : {τ : cpstyp} →
