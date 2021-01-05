@@ -84,12 +84,28 @@ mutual
   Subst≠ {t = CPSAppend x t t₁} = sApd Subst≠ Subst≠
   Subst≠ {t = CPSCons x t t₁} = sCon Subst≠ Subst≠
 
-Subst-id  : {var : typ → Set}{τ₁ τ₂ α β : typ}{μα μβ : trail} →
-          {t : term[ var ] τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β} →
-          {v : value[ var ] τ₂} →
-          Subst (λ _ → t) v t
+mutual
 
-Subst-id = {!!}
+  SubstV-id  : {var : typ → Set}{τ₁ τ₂ : typ} →
+               {v₁ : value[ var ] τ₁} →
+               {v : value[ var ] τ₂} →
+                SubstVal (λ _ → v₁) v v₁
+
+  SubstV-id {var} {τ₁} {τ₂} {Var x} {v} = sVar≠
+  SubstV-id {var} {.Nat} {τ₂} {Num n} {v} = sNum
+  SubstV-id {var} {.(_ ⇒ _ ⟨ _ ⟩ _ ⟨ _ ⟩ _)} {τ₂} {Fun e₁} {v} = sFun λ x → Subst-id
+
+
+  Subst-id  : {var : typ → Set}{τ₁ τ₂ α β : typ}{μα μβ : trail} →
+              {t : term[ var ] τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β} →
+              {v : value[ var ] τ₂} →
+                Subst (λ _ → t) v t
+
+  Subst-id {var} {τ₁} {τ₂} {α} {.α} {μα} {.μα} {Val x} {v} = sVal SubstV-id
+  Subst-id {var} {τ₁} {τ₂} {α} {β} {μα} {μβ} {App t t₁} {v} = sApp Subst-id Subst-id
+  Subst-id {var} {.Nat} {τ₂} {α} {β} {μα} {μβ} {Plus t t₁} {v} = sPlu Subst-id Subst-id
+  Subst-id {var} {τ₁} {τ₂} {α} {β} {μα} {μβ} {Control x x₁ x₂ e} {v} = sCon (λ k → Subst-id)
+  Subst-id {var} {τ₁} {τ₂} {α} {.α} {μα} {.μα} {Prompt x t} {v} = sPro Subst-id
 
 mutual
   eSubstV  : {var : cpstyp → Set} {τ₁ τ : typ} →
@@ -112,12 +128,13 @@ mutual
              {v : value[ var ∘ cpsT ] τ} →
              {k : cpsvalue[ var ] (cpsT τ₁) → cpsvalue[ var ] (cpsM μα) → cpsterm[ var ] (cpsT α)} →
              {t :  cpsvalue[ var ] cpsM μβ} →
+             {trail : cpsvalue[ var ] cpsM μα} →
              Subst e₁ v e₂ →
              subst-cont (λ x → k) (cpsV v) k →
              cpsSubst (λ x → cpsTerm (e₁ x) k t) (cpsV v)
              (cpsTerm e₂ k t)
 
-  eSubst (sVal x) eq = {!!}
+  eSubst {v = v}{k = k}{trail = trail} (sVal x) eq = {!!}
   eSubst (sApp x x₂) eq = {!!}
   eSubst (sPlu x x₂) x₁ = {!!}
   eSubst (sCon x) x₁ = {!!}
@@ -193,6 +210,15 @@ mutual
   ekSubst' k t (sCon x) = {!!}
   ekSubst' k t (sPro x) = {!!}
 
+  schematicV : {var : cpstyp → Set} {τ₁ α : typ}{μα : trail} →
+             (k : cpsvalue[ var ] (cpsT τ₁) →
+                  cpsvalue[ var ] (cpsM μα) → cpsterm[ var ] (cpsT α)) →
+             (t : cpsvalue[ var ] cpsM μα) → Set
+             
+  schematicV {var} {τ₁} k t =
+             (v : value[ var ∘ cpsT ] τ₁) →
+             cpsSubst (λ x → k (CPSVar x) t) (cpsV v) (k (cpsV v) t)
+  
 schematic : {var : cpstyp → Set} {τ₁ α : typ}{μα : trail} →
             (k : cpsvalue[ var ] (cpsT τ₁) →
                  cpsvalue[ var ] (cpsM μα) → cpsterm[ var ] (cpsT α)) →
@@ -201,14 +227,6 @@ schematic {var} {τ₁} k  t =
   (v : cpsvalue[ var ] (cpsT τ₁)) →
   cpsSubst (λ x → k (CPSVar x) t) v (k v t)
 
-schematicV : {var : cpstyp → Set} {τ₁ α : typ}{μα : trail} →
-             (k : cpsvalue[ var ] (cpsT τ₁) →
-                  cpsvalue[ var ] (cpsM μα) → cpsterm[ var ] (cpsT α)) →
-             (t : cpsvalue[ var ] cpsM μα) → Set
-             
-schematicV {var} {τ₁} k t =
-  (v : value[ var ∘ cpsT ] τ₁) →
-  cpsSubst (λ x → k (CPSVar x) t) (cpsV v) (k (cpsV v) t)
 
 
 correctEta : {var : cpstyp → Set} {τ₁ α β : typ} {μα μβ : trail} →
