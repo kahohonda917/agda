@@ -289,7 +289,7 @@ correctCont (App e e₁) k₁ {k₂} {t₂} sch₁  x = begin
                                        (λ v₁ → CPSVal (CPSFun (λ t'' → k₁ (CPSVar v₁) (CPSVar t'')))))))
                                     (CPSVal t₃))
                                  (λ v₁ t₁ → sApp (sApp (sApp Subst≠ (sVal sVar=)) Subst≠) Subst≠)
-                                 λ v₁ t₁ → rApp₁ (rApp₁ {!!})) ⟩
+                                 λ v₁ t₁ → rApp₁ (rApp₁ {!rBeta!})) ⟩
 
   {!!}
   ⟶⟨ {!!} ⟩
@@ -570,7 +570,7 @@ correctEta k t sch sch'  (RFrame (Plus₂ v₁) x) = correctEta (λ v₂ t₂ �
 correctEta k t sch sch' (RFrame {e₁ = e₁} {e₂ = e₂} (Pro x₁) x) = begin
   (CPSLet (cpsTerm e₁ (CPSIdk x₁) (CPSId))
        (λ v → k (CPSVar v) t))
-  ⟶⟨ rLet₁ (correctEta (CPSIdk x₁) (CPSId) {!sch!} {!!} x) ⟩
+  ⟶⟨ rLet₁ (correctEta (CPSIdk x₁) (CPSId) (λ v t₁ → sIdk sVar= SubstV≠) (λ t₁ v₂ → sIdk SubstV≠ sVar=) x) ⟩
   (CPSLet (cpsTerm e₂ (CPSIdk x₁) (CPSId))
        (λ v → k (CPSVar v) t))
   ∎
