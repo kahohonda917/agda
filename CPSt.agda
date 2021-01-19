@@ -275,7 +275,7 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
              {e₂ e₂′ : cpsterm[ var ] τ₂} →
              cpsreduce e₂ e₂′ →
              cpsreduce (CPSApp e₁ e₂) (CPSApp e₁ e₂′)
-
+             
   rLet     : {τ τ₁ : cpstyp} →
              {v : cpsvalue[ var ] τ} →
              {e₁ : var τ → cpsterm[ var ] τ₁} →
@@ -380,12 +380,18 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
                        (CPSApp (CPSApp (CPSVal k) (CPSVal v)) (CPSVal CPSId))
 
   r*Id     : {τ : cpstyp} →
-             (e : cpsterm[ var ] τ) →
+             {e : cpsterm[ var ] τ} →
              cpsreduce e e
 
   r*Trans  : {τ : cpstyp} →
              (e₁ e₂ e₃ : cpsterm[ var ] τ) →
              cpsreduce e₁ e₂ →
+             cpsreduce e₂ e₃ →
+             cpsreduce e₁ e₃
+
+  r*Trans′  : {τ : cpstyp} →
+             (e₁ e₂ e₃ : cpsterm[ var ] τ) →
+             cpsreduce e₂ e₁ →
              cpsreduce e₂ e₃ →
              cpsreduce e₁ e₃
 
@@ -428,7 +434,10 @@ _⟶⟨_⟩_ : {var : cpstyp → Set} → {τ₁ : cpstyp} →
            cpsreduce e₁ e₃
 _⟶⟨_⟩_ e₁ {e₂} {e₃} e₁-red-e₂ e₂-red*-e₃ = r*Trans e₁ e₂ e₃ e₁-red-e₂ e₂-red*-e₃
 
-
+_⟵⟨_⟩_ : {var : cpstyp → Set} {τ₁ : cpstyp} →
+          (e₁ {e₂ e₃} : cpsterm[ var ] τ₁) →
+          cpsreduce e₂ e₁ → cpsreduce e₂ e₃ → cpsreduce e₁ e₃
+_⟵⟨_⟩_ e₁ {e₂} {e₃} e₂-eq-e₁ e₂-eq-e₃ = r*Trans′ e₁ e₂ e₃ e₂-eq-e₁ e₂-eq-e₃
 
 _≡⟨_⟩_ : {var : cpstyp → Set} → {τ₁ : cpstyp} →
          (e₁ {e₂ e₃} : cpsterm[ var ] τ₁) → e₁ ≡ e₂ → cpsreduce e₂ e₃ →
@@ -437,4 +446,4 @@ _≡⟨_⟩_ e₁ {e₂} {e₃} refl e₂-red*-e₃ = e₂-red*-e₃
 
 _∎ : {var : cpstyp → Set} → {τ₁ : cpstyp} →
      (e : cpsterm[ var ] τ₁) → cpsreduce e e
-_∎ e = r*Id e
+_∎ e = r*Id
