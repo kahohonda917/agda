@@ -26,11 +26,14 @@ compatible ∙ μ₂ μ₃ = μ₂ ≡ μ₃
 compatible (τ₁ ⇒ τ₁' , μ₁) ∙ μ₃ = (τ₁ ⇒ τ₁' , μ₁) ≡ μ₃
 compatible (τ₁ ⇒ τ₁' , μ₁) (τ₂ ⇒ τ₂' , μ₂) ∙ = ⊥
 compatible (τ₁ ⇒ τ₁' , μ₁) (τ₂ ⇒ τ₂' , μ₂) (τ₃ ⇒ τ₃' , μ₃) =
-           (τ₁ ≡ τ₃) × (τ₁' ≡ τ₃') × (compatible (τ₂ ⇒ τ₂' , μ₂) μ₃ μ₁)
+            (τ₁ ≡ τ₃) × (τ₁' ≡ τ₃') ×
+            (compatible (τ₂ ⇒ τ₂' , μ₂) μ₃ μ₁)
 
 is-id-trail : typ → typ → trail → Set
 is-id-trail τ τ' ∙ = τ ≡ τ'
 is-id-trail τ τ' (τ₁ ⇒ τ₁' , μ) = (τ ≡ τ₁) × (τ' ≡ τ₁') × (μ ≡ ∙)
+
+
 
 -- source term
 mutual

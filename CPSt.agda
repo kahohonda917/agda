@@ -57,9 +57,11 @@ mutual
     CPSPlus   : cpsterm[ var ] Nat →
                 cpsterm[ var ] Nat →
                 cpsterm[ var ] Nat
+                
     CPSIdk    : {τ₁ τ₂ : typ} {μ : trail} → is-id-trail τ₁ τ₂ μ →
                 cpsvalue[ var ] cpsT τ₁ →
                 cpsvalue[ var ] cpsM μ → cpsterm[ var ] cpsT τ₂
+                
     CPSAppend : {μ₁ μ₂ μ₃ : trail} → compatible μ₁ μ₂ μ₃ →
                 cpsterm[ var ] cpsM μ₁ →
                 cpsterm[ var ] cpsM μ₂ → cpsterm[ var ] cpsM μ₃
@@ -97,11 +99,11 @@ mutual
                             
   cpsTerm  (Control x x₂ x₃ e) k t = CPSLet (CPSVal (CPSFun (λ v →
                                      CPSVal (CPSFun (λ k' → CPSVal (CPSFun (λ t' →
-                                     CPSLet (CPSAppend x₃ (CPSVal t)
-                                     (CPSCons x₂ (CPSVal (CPSVar k')) (CPSVal (CPSVar t'))))
+                                     CPSLet (CPSAppend x₃ (CPSVal (CPSTrail t))
+                                     (CPSCons x₂ (CPSVal (CPSTrail (CPSVar k'))) (CPSVal (CPSTrail (CPSVar t')))))
                                      (λ t'' → k (CPSVar v) (CPSVar t'')))))))))
                                      (λ x' → cpsTerm (e x') (CPSIdk x) (CPSId))
-  
+   --cpsvalue[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))
   cpsTerm  (Prompt x e) k t = CPSLet (cpsTerm e (CPSIdk x) (CPSId)) λ v → k (CPSVar v) t
 
 
@@ -341,7 +343,6 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
 
 --idk,cons,appendの簡約規則
   rApdid   : {μ₂ : trail} →
-             -- {x : compatible ∙ μ₂ μ₃} →
              {v : cpsvalue[ var ] cpsM μ₂} →
              cpsreduce (CPSAppend refl (CPSVal CPSId) (CPSVal v)) (CPSVal v)
 
@@ -368,7 +369,6 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
                        (CPSCons x₂ (CPSVal k′) (CPSVal (CPSVar t')))))))))
 
   rIdkid   : {τ₁ : typ} →
-             -- {x : is-id-trail τ₁ τ₂ ∙} →
              {v : cpsvalue[ var ] cpsT τ₁} →
              cpsreduce (CPSIdk refl v (CPSId)) (CPSVal v)
 
@@ -422,10 +422,10 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
 
 -- equational reasoning
 infix  3 _∎
-infixr 2 _⟶⟨_⟩_ _≡⟨_⟩_
+infixr 2 _⟶⟨_⟩_ _⟵⟨_⟩_ _≡⟨_⟩_
 infix  1 begin_
 
-begin_ : {var : cpstyp → Set} → {τ₁ : cpstyp} →
+begin_ : {var : cpstyp → Set}{τ₁ : cpstyp} →
          {e₁ e₂ : cpsterm[ var ] τ₁ } → cpsreduce e₁ e₂ → cpsreduce e₁ e₂
 begin_ red = red
 
@@ -444,6 +444,6 @@ _≡⟨_⟩_ : {var : cpstyp → Set} → {τ₁ : cpstyp} →
          cpsreduce e₁ e₃
 _≡⟨_⟩_ e₁ {e₂} {e₃} refl e₂-red*-e₃ = e₂-red*-e₃
 
-_∎ : {var : cpstyp → Set} → {τ₁ : cpstyp} →
+_∎ : {var : cpstyp → Set}{τ₁ : cpstyp} →
      (e : cpsterm[ var ] τ₁) → cpsreduce e e
 _∎ e = r*Id
