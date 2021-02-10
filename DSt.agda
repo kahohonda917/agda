@@ -364,22 +364,57 @@ mutual
               {v₁ : value[ var ] β} →
               Reduce {τ₂ = τ₂}{μα = μα}(Prompt refl (Val v₁)) (Val v₁)
 
+    -- RControl : {τ α α' β β' γ γ' t₁ t₂ τ₁ τ₂ τ₃ τ₄ τ₅ : typ}
+    --            {μ₀ μ₁ μᵢ μα μα' μβ μβ' μ₂ μ₃ μ₄ μ₅ : trail} →
+    --           (p₁ : pcontext[ var , τ ⟨ μα ⟩ α ⟨ μβ ⟩ β ]
+    --                          τ₁ ⟨ μ₃ ⟩ τ₂ ⟨ ∙ ⟩ β ) →
+    --           (p₂ : pcontext[ var , τ ⟨ μα' ⟩ α' ⟨ μα' ⟩ α' ]
+    --                          t₁ ⟨ μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α ) →
+    --           {x₀ : is-id-trail τ₁ τ₂ μ₃} →
+    --           (x₁ : is-id-trail γ γ' μᵢ) →
+    --           (x₂ : compatible (t₁ ⇒ t₂ , μ₁) μ₂ μ₀) →
+    --           (x₃ : compatible μβ μ₀ μα) →
+    --           same-pcontext p₁ p₂ →
+    --           (e : var (τ ⇒ t₁ ⟨ μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α) → term[ var ] γ ⟨ μᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
+    --           Reduce {τ₂ = τ₂}{μα = μα} (Prompt x₀
+    --                  (pcontext-plug p₁ (Control x₁ x₂ x₃ e)))
+    --                  (Prompt x₁ (App (Val (Fun e))
+    --                  (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x)))))))
+    -- 元々の最も制約が少ないやつ
+    -- μ₂を全部μ₀にした
+    -- p₂の外側 t₁ ⟨ μ₁ ⟩ t₂ を τ₁ ⟨ μ₃ ⟩ τ₂,合わせてx₂とeも変えた
+
+    
     RControl : {τ α α' β β' γ γ' t₁ t₂ τ₁ τ₂ τ₃ τ₄ τ₅ : typ}
                {μ₀ μ₁ μᵢ μα μα' μβ μβ' μ₂ μ₃ μ₄ μ₅ : trail} →
-              (p₁ : pcontext[ var , τ ⟨ μα ⟩ α ⟨ μβ ⟩ β ]
-                             τ₁ ⟨ μ₃ ⟩ τ₂ ⟨ ∙ ⟩ β ) →
-              (p₂ : pcontext[ var , τ ⟨ μα' ⟩ α' ⟨ μα' ⟩ α' ]
-                             t₁ ⟨ μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α ) →
-              {x₀ : is-id-trail τ₁ τ₂ μ₃} →
-              (x₁ : is-id-trail γ γ' μᵢ) →
-              (x₂ : compatible (t₁ ⇒ t₂ , μ₁) μ₂ μ₀) →
-              (x₃ : compatible μβ μ₀ μα) →
-              same-pcontext p₁ p₂ →
-              (e : var (τ ⇒ t₁ ⟨ μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α) → term[ var ] γ ⟨ μᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
-              Reduce {τ₂ = τ₂}{μα = μα} (Prompt x₀
-                     (pcontext-plug p₁ (Control x₁ x₂ x₃ e)))
-                     (Prompt x₁ (App (Val (Fun e))
-                     (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x)))))))
+               (p₁ : pcontext[ var , τ ⟨ μα ⟩ α ⟨ μβ ⟩ β ]
+                              τ₁ ⟨ μ₃ ⟩ τ₂ ⟨ ∙ ⟩ β ) →
+               (p₂ : pcontext[ var , τ ⟨ μα' ⟩ α' ⟨ μα' ⟩ α' ]
+                              τ₁ ⟨ μ₃ ⟩ τ₂ ⟨ μ₀ ⟩ α ) →
+               {x₀ : is-id-trail τ₁ τ₂ μ₃} →
+               (x₁ : is-id-trail γ γ' μᵢ) →
+               (x₂ : compatible (τ₁ ⇒ τ₂ , μ₃) μ₀ μ₀) →
+               (x₃ : compatible μβ μ₀ μα) →
+               same-pcontext p₁ p₂ →
+               (e : var (τ ⇒ τ₁ ⟨ μ₃ ⟩ τ₂ ⟨ μ₀ ⟩ α) → term[ var ] γ ⟨ μᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
+               Reduce {τ₂ = τ₂}{μα = μα} (Prompt x₀
+                      (pcontext-plug p₁ (Control x₁ x₂ x₃ e)))
+                      (Prompt x₁ (App (Val (Fun e))
+                      (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x)))))))
+                     
+-- Control : {τ α β γ γ' t₁ t₂ : typ}{μ₀ μ₁ μ₂ μᵢ μα μβ : trail} →
+--              (is-id-trail γ γ' μᵢ) →
+--              (compatible (t₁ ⇒ t₂ , μ₁) μ₂ μ₀) →
+--              (compatible μβ μ₀ μα) →
+--              (e : var (τ ⇒ t₁ ⟨ μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α) →
+--              term[ var ] γ ⟨ μᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
+--              term[ var ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β
+
+
+--     Prompt : {τ α β β' : typ}{μᵢ μα : trail} →
+--              (is-id-trail β β' μᵢ) →
+--              (e : term[ var ] β ⟨ μᵢ ⟩ β' ⟨ ∙ ⟩ τ) →
+--              term[ var ] τ ⟨ μα ⟩ α ⟨ μα ⟩ α
 
 
   data Reduce* {var : typ → Set} :
