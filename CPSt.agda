@@ -381,7 +381,7 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
              {v : cpsvalue[ var ] cpsT τ₁} →
              cpsreduce (CPSIdk refl v (CPSId)) (CPSVal v)
 
-  rIdkt    : {τ₁ τ₂ : typ} {μ : trail} →
+  rIdkt    : {τ₁ τ₂ : typ} →
              {x : is-id-trail τ₁ τ₂ (τ₁ ⇒ τ₂ , ∙)} →
              {v : cpsvalue[ var ] cpsT τ₁} →
              {k : cpsvalue[ var ] (cpsT τ₁ ⇛ (∙ ⇛ cpsT τ₂))} →
