@@ -321,12 +321,12 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
              
  
 
-  -- rAppend₁ : {μ₁ μ₂ μ₃ : trail} →
-  --            {x : compatible μ₁ μ₂ μ₃} →
-  --            {e₁ e₁′ : cpsvalue[ var ] cpsM μ₁} →
-  --            {e₂ : cpsvalue[ var ] cpsM μ₂} →
-  --            cpsreduce e₁ e₁′ →
-  --            cpsreduce (CPSAppend x e₁ e₂) (CPSAppend x e₁′ e₂)
+  rAppend₁ : {μ₁ μ₂ μ₃ : trail} →
+             {x : compatible μ₁ μ₂ μ₃} →
+             {e₁ e₁′ : cpsvalue[ var ] cpsM μ₁} →
+             {e₂ : cpsvalue[ var ] cpsM μ₂} →
+             cpsreduce (CPSVal e₁) (CPSVal e₁′) →
+             cpsreduce (CPSVal (CPSAppend x e₁ e₂)) (CPSVal (CPSAppend x e₁′ e₂))
 
   -- rAppend₂ : {μ₁ μ₂ μ₃ : trail} →
   --            {x : compatible μ₁ μ₂ μ₃} →
@@ -367,7 +367,7 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
              {v₁ : cpsvalue[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
              cpsreduce (CPSVal (CPSCons refl v₁ CPSId)) (CPSVal v₁)
 
-  rConst   : {τ : cpstyp}{τ₁ τ₁' τ₂ τ₂' : typ}{μ₀ μ₁ μ₂ μ₁' μ₂' : trail} →
+  rConst   : {τ₁ τ₁' τ₂ τ₂' : typ}{μ₁ μ₁' μ₂' : trail} →
              {x : compatible (τ₁ ⇒ τ₂ , μ₁) (τ₁' ⇒ τ₂' , μ₁') (τ₁ ⇒ τ₂ , μ₂') } →
              {x₂ : compatible (τ₁' ⇒ τ₂' , μ₁') μ₂' μ₁}
              {k : cpsvalue[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
