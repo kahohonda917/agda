@@ -26,8 +26,14 @@ compatible ∙ μ₂ μ₃ = μ₂ ≡ μ₃
 compatible (τ₁ ⇒ τ₁' , μ₁) ∙ μ₃ = (τ₁ ⇒ τ₁' , μ₁) ≡ μ₃
 compatible (τ₁ ⇒ τ₁' , μ₁) (τ₂ ⇒ τ₂' , μ₂) ∙ = ⊥
 compatible (τ₁ ⇒ τ₁' , μ₁) (τ₂ ⇒ τ₂' , μ₂) (τ₃ ⇒ τ₃' , μ₃) =
-            (τ₁ ≡ τ₃) × (τ₁' ≡ τ₃') ×
-            (compatible (τ₂ ⇒ τ₂' , μ₂) μ₃ μ₁)
+           (τ₁ ≡ τ₃) × (τ₁' ≡ τ₃') ×
+           (compatible (τ₂ ⇒ τ₂' , μ₂) μ₃ μ₁)
+
+compatible-equal : {μ₁ μ₂ μ₃ : trail} → (c₁ c₂ : compatible μ₁ μ₂ μ₃) → c₁ ≡ c₂
+compatible-equal {∙} refl refl = refl
+compatible-equal {x ⇒ x₁ , μ₁} {∙} refl refl = refl
+compatible-equal {x ⇒ x₁ , μ₁} {x₂ ⇒ x₃ , μ₂} {x₄ ⇒ x₅ , μ₃} (refl , refl , c₁) (refl , refl , c₂)
+  rewrite compatible-equal c₁ c₂  = refl
 
 is-id-trail : typ → typ → trail → Set
 is-id-trail τ τ' ∙ = τ ≡ τ'
