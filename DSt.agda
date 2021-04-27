@@ -46,6 +46,10 @@ _extends_ : (μα μβ : trail) → Set
 _extends-itself : (μα : trail) → μα extends μα
 μα extends-itself = (∙  , refl)
 
+_extends-bullet : (μα : trail) → μα extends ∙
+∙ extends-bullet = ∙ extends-itself
+(x ⇒ x₁ , μα) extends-bullet = (x ⇒ x₁ , μα) , refl
+
 mutual
   wf-type : typ → Set
   wf-type Nat = ⊤
@@ -152,6 +156,22 @@ mutual
 
 --transitive
 
+cons : {τ₁ τ₂ : typ}{μ μα μβ : trail} → compatible (τ₁ ⇒ τ₂ , μ) μα μβ
+       → trail → trail → trail
+
+cons {μα = ∙} refl x₁ x₂ = x₁
+cons {μα = x₃ ⇒ x₄ , μα} {x₅ ⇒ x₆ , μβ} (refl , refl , snd) k k' = {!!}
+-- cons {μα = ∙} refl k tt = k
+-- cons {μα = x₃ ⇒ x₄ , μα} {x₁ ⇒ x₅ , μβ} (refl , refl , snd) k k' =
+--   λ v t' → k v (cons-trail snd k' t')
+
+-- append-trail : {μα μβ μγ : trail} → compatible μα μβ μγ → ⟦ μα ⟧μ → ⟦ μβ ⟧μ → ⟦ μγ ⟧μ
+-- append-trail {∙} refl tt t = t
+-- append-trail {x₃ ⇒ x₄ , μα} x k t = cons-trail x k t
+
+-- tr-tra : {μα μβ μγ μδ : trail} → μδ ≡ μγ → μγ ≡ μβ → μβ ≡ μα → μδ ≡ μα
+-- tr-tra refl refl refl = refl
+
 tr-tra : {μα μβ μγ : trail} → μα ≡ μβ → μβ ≡ μγ → μα ≡ μγ
 tr-tra refl refl  = refl
 
@@ -167,9 +187,21 @@ com-tra {τ ⇒ τ' , μ} {τα ⇒ τα' , (x₂ ⇒ x₃ , μα)} {τβ ⇒ τ
 
 
 ex-tra : {μα μβ μγ : trail} →
-         μα extends μβ → μβ extends μγ → μα extends μγ
+         μγ extends μβ → μβ extends μα → μγ extends μα
 
-ex-tra = ?
+ex-tra (∙ , refl) (μ₂ , c₂) = μ₂ , c₂
+ex-tra ((x ⇒ x₁ , μ₁) , c₁) (∙ , refl) = (x ⇒ x₁ , μ₁) , c₁
+ex-tra {∙} {μγ = μγ} ((x ⇒ x₁ , μ₁) , c₁) ((x₂ ⇒ x₃ , μ₂) , c₂) = μγ extends-bullet
+ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , ∙} {x₂ ⇒ x₃ , ∙} ((.x₂ ⇒ .x₃ , .(x₆ ⇒ x₇ , ∙)) , refl , refl , refl) ((.x₆ ⇒ .x₇ , .(x₄ ⇒ x₅ , μα)) , refl , refl , refl) = ((x₂ ⇒ x₃ , (x₄ ⇒ x₅ , μα))) , refl , refl , refl
+ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , (x ⇒ x₁ , μβ)} {x₂ ⇒ x₃ , ∙} ((.x₂ ⇒ .x₃ , .(x₆ ⇒ x₇ , (x ⇒ x₁ , μβ))) , refl , refl , refl) ((.x₆ ⇒ .x₇ , μ₂) , refl , refl , c₂) = ((x₂ ⇒ x₃ , (x₄ ⇒ x₅ , μα))) , (refl , refl , refl)
+
+ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , ∙} {x₂ ⇒ x₃ , (x ⇒ x₁ , ∙)} ((.x₂ ⇒ .x₃ , μ₁) , refl , refl , c₁) ((.x₆ ⇒ .x₇ , .(x₄ ⇒ x₅ , μα)) , refl , refl , refl) = (x₂ ⇒ x₃ , (x₄ ⇒ x₅ , {!!})) , refl , (refl , refl , (refl , {!!}))
+
+ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , ∙} {x₂ ⇒ x₃ , (x ⇒ x₁ , (x₈ ⇒ x₉ , μγ))} ((.x₂ ⇒ .x₃ , μ₁) , refl , refl , c₁) ((.x₆ ⇒ .x₇ , .(x₄ ⇒ x₅ , μα)) , refl , refl , refl) = {!!}
+-- (x₂ ⇒ x₃ , (x₄ ⇒ x₅ , {!!})) , (refl , (refl , (refl , (refl , {!!}))))
+ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , (x₈ ⇒ x₉ , μβ)} {x₂ ⇒ x₃ , (x ⇒ x₁ , μγ)} ((.x₂ ⇒ .x₃ , μ₁) , refl , refl , c₁) ((.x₆ ⇒ .x₇ , μ₂) , refl , refl , c₂) = {!!}
+-- ex-tra (μ₁ , c₁) (∙ , refl) = (μ₁ , c₁)
+-- ex-tra (μ₁ , c₁) ((x ⇒ x₁ , μ₂) , c₂) = {!!}
 
 
 
