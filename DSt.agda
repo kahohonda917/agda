@@ -40,7 +40,7 @@ is-id-trail τ τ' ∙ = τ ≡ τ'
 is-id-trail τ τ' (τ₁ ⇒ τ₁' , μ) = (τ ≡ τ₁) × (τ' ≡ τ₁') × (μ ≡ ∙)
 
 -- well-formed types and trails
-_extends_ : (μα μβ : trail) → Set
+{- _extends_ : (μα μβ : trail) → Set
 μα extends μβ = Σ[ μ ∈ trail ] compatible μ μβ μα
 
 _extends-itself : (μα : trail) → μα extends μα
@@ -61,7 +61,7 @@ mutual
 
   wf-trail : trail → Set
   wf-trail ∙ = ⊤
-  wf-trail (τ ⇒ τ' , μ ) = wf-type τ × wf-trail μ × wf-type τ'
+  wf-trail (τ ⇒ τ' , μ ) = wf-type τ × wf-trail μ × wf-type τ' -}
 
 
 
@@ -71,7 +71,7 @@ mutual
     Var : {τ₁ : typ} → var τ₁ → value[ var ] τ₁
     Num : (n : ℕ) → value[ var ] Nat
     Fun : {τ₁ τ₂ α β : typ}{μα μβ : trail} →
-          wf-type τ₂ → (e₁ : var τ₂ → term[ var ] τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β)
+          (e₁ : var τ₂ → term[ var ] τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β)
           → value[ var ] (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β)
 
   data term[_]_⟨_⟩_⟨_⟩_ (var : typ → Set) : typ → trail → typ → trail → typ → Set where
@@ -90,7 +90,7 @@ mutual
              (is-id-trail γ γ' μᵢ) →
              (compatible (t₁ ⇒ t₂ , μ₁) μ₂ μ₀) →
              (compatible μβ μ₀ μα) →
-             wf-type (τ ⇒ t₁ ⟨ μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α) → (e : var (τ ⇒ t₁ ⟨ μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α) →
+             (e : var (τ ⇒ t₁ ⟨ μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α) →
              term[ var ] γ ⟨ μᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
              term[ var ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β
 
@@ -134,7 +134,7 @@ mutual
   ⟦_⟧v : {τ : typ} →  value[ ⟦_⟧τ ] τ →  ⟦ τ ⟧τ
   ⟦ Var x ⟧v = x
   ⟦ Num n ⟧v = n
-  ⟦ Fun w e ⟧v = λ v  → ⟦ e v ⟧
+  ⟦ Fun e ⟧v = λ v  → ⟦ e v ⟧
 
 
 
@@ -146,7 +146,7 @@ mutual
   ⟦ Plus e₁ e₂ ⟧ k t = ⟦ e₁ ⟧ (λ x → ⟦ e₂ ⟧ (λ y → k ( x + y ) )) t
 
 
-  ⟦ Control x x₂ x₃ w e ⟧ k t = ⟦ e (λ v k' t' → k v (append-trail x₃ t (cons-trail x₂ k' t'))) ⟧ (idk x) tt
+  ⟦ Control x x₂ x₃ e ⟧ k t = ⟦ e (λ v k' t' → k v (append-trail x₃ t (cons-trail x₂ k' t'))) ⟧ (idk x) tt
 
 
   ⟦ Prompt x e ⟧ k t = k (⟦ e ⟧ (idk x) tt) t
@@ -156,11 +156,11 @@ mutual
 
 --transitive
 
-cons : {τ₁ τ₂ : typ}{μ μα μβ : trail} → compatible (τ₁ ⇒ τ₂ , μ) μα μβ
-       → trail → trail → trail
+-- cons : {τ₁ τ₂ : typ}{μ μα μβ : trail} → compatible (τ₁ ⇒ τ₂ , μ) μα μβ
+--        → trail → trail → trail
 
-cons {μα = ∙} refl x₁ x₂ = x₁
-cons {μα = x₃ ⇒ x₄ , μα} {x₅ ⇒ x₆ , μβ} (refl , refl , snd) k k' = {!!}
+-- cons {μα = ∙} refl x₁ x₂ = x₁
+-- cons {μα = x₃ ⇒ x₄ , μα} {x₅ ⇒ x₆ , μβ} (refl , refl , snd) k k' = {!!}
 -- cons {μα = ∙} refl k tt = k
 -- cons {μα = x₃ ⇒ x₄ , μα} {x₁ ⇒ x₅ , μβ} (refl , refl , snd) k k' =
 --   λ v t' → k v (cons-trail snd k' t')
@@ -172,21 +172,21 @@ cons {μα = x₃ ⇒ x₄ , μα} {x₅ ⇒ x₆ , μβ} (refl , refl , snd) k 
 -- tr-tra : {μα μβ μγ μδ : trail} → μδ ≡ μγ → μγ ≡ μβ → μβ ≡ μα → μδ ≡ μα
 -- tr-tra refl refl refl = refl
 
-tr-tra : {μα μβ μγ : trail} → μα ≡ μβ → μβ ≡ μγ → μα ≡ μγ
-tr-tra refl refl  = refl
+-- tr-tra : {μα μβ μγ : trail} → μα ≡ μβ → μβ ≡ μγ → μα ≡ μγ
+-- tr-tra refl refl  = refl
 
-com-tra : {μ μα μβ μγ  : trail} →
-           compatible μ μγ μβ → compatible μ μβ μα  → compatible μ μγ μα
+-- com-tra : {μ μα μβ μγ  : trail} →
+--            compatible μ μγ μβ → compatible μ μβ μα  → compatible μ μγ μα
 
-com-tra {∙} x x₁ =  tr-tra  x x₁
-com-tra {τ ⇒ τ' , μ} {τα ⇒ τα' , μα} {τβ ⇒ τβ' , μβ} {μγ = ∙} x x₁ = {!!}
-com-tra {τ ⇒ τ' , μ} {τα ⇒ τα' , ∙} {τβ ⇒ τβ' , μβ} {τγ ⇒ τγ' , μγ} x x₁ = {!!}
-com-tra {τ ⇒ τ' , μ} {τα ⇒ τα' , (x₂ ⇒ x₃ , μα)} {τβ ⇒ τβ' , μβ} {τγ ⇒ τγ' , μγ} x x₁ = {!!}
-
-
+-- com-tra {∙} x x₁ =  tr-tra  x x₁
+-- com-tra {τ ⇒ τ' , μ} {τα ⇒ τα' , μα} {τβ ⇒ τβ' , μβ} {μγ = ∙} x x₁ = {!!}
+-- com-tra {τ ⇒ τ' , μ} {τα ⇒ τα' , ∙} {τβ ⇒ τβ' , μβ} {τγ ⇒ τγ' , μγ} x x₁ = {!!}
+-- com-tra {τ ⇒ τ' , μ} {τα ⇒ τα' , (x₂ ⇒ x₃ , μα)} {τβ ⇒ τβ' , μβ} {τγ ⇒ τγ' , μγ} x x₁ = {!!}
 
 
-ex-tra : {μα μβ μγ : trail} →
+
+
+{- ex-tra : {μα μβ μγ : trail} →
          μγ extends μβ → μβ extends μα → μγ extends μα
 
 ex-tra (∙ , refl) (μ₂ , c₂) = μ₂ , c₂
@@ -224,9 +224,9 @@ mutual
   ... | (wfτ₂ , wfτ , wfα , wfμα , μα-extends-μβ) = (wfτ , wfα , wfμα , {!!})
   wf-term (Plus e₁ e₂) wfα wfμβ = {!!}
   wf-term (Control id c₁ c₂ wf e) wfα wfμβ = {!!}
-  wf-term (Prompt id e) wfα wfμα = {!!}
+  wf-term (Prompt id e) wfα wfμα = {!!} -}
 
-{-
+
 mutual
   data SubstVal {var : typ → Set} : {τ₁ τ₂ : typ} →
                 (var τ₁ → value[ var ] τ₂) →
@@ -309,166 +309,166 @@ mutual
                   (Prompt x e₁′)
 
   --frame
-  data frame[_,_⟨_⟩_⟨_⟩_]_⟨_⟩_⟨_⟩_ (var : typ → Set)
-       : typ → trail → typ → trail → typ → typ → trail → typ → trail → typ → Set where
-    App₁ : {τ₁ τ₂ α β γ δ : typ}{μα μβ μγ μδ : trail} →
-           (e₂ : term[ var ] τ₂ ⟨ μβ ⟩ β ⟨ μγ ⟩ γ) →
-           frame[ var , (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β) ⟨ μγ ⟩ γ ⟨ μδ ⟩ δ ]
-                  τ₁ ⟨ μα ⟩ α ⟨ μδ ⟩ δ
+data frame[_,_⟨_⟩_⟨_⟩_]_⟨_⟩_⟨_⟩_ (var : typ → Set)
+     : typ → trail → typ → trail → typ → typ → trail → typ → trail → typ → Set where
+  App₁ : {τ₁ τ₂ α β γ δ : typ}{μα μβ μγ μδ : trail} →
+         (e₂ : term[ var ] τ₂ ⟨ μβ ⟩ β ⟨ μγ ⟩ γ) →
+         frame[ var , (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β) ⟨ μγ ⟩ γ ⟨ μδ ⟩ δ ]
+                τ₁ ⟨ μα ⟩ α ⟨ μδ ⟩ δ
 
-    App₂ : {τ₁ τ₂ α β γ : typ}{μα μβ μγ : trail} →
-           (v₁ : value[ var ] (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β)) →
-           frame[ var , τ₂ ⟨ μβ ⟩ β ⟨ μγ ⟩ γ ]
-                  τ₁ ⟨ μα ⟩ α ⟨ μγ ⟩ γ
+  App₂ : {τ₁ τ₂ α β γ : typ}{μα μβ μγ : trail} →
+         (v₁ : value[ var ] (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β)) →
+         frame[ var , τ₂ ⟨ μβ ⟩ β ⟨ μγ ⟩ γ ]
+                τ₁ ⟨ μα ⟩ α ⟨ μγ ⟩ γ
 
-    Plus₁ : {α β γ : typ} {μα μβ μγ : trail} →
-            (e₂ : term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β) →
-            frame[ var , Nat ⟨ μβ ⟩ β ⟨ μγ ⟩ γ ] Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ
+  Plus₁ : {α β γ : typ} {μα μβ μγ : trail} →
+          (e₂ : term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β) →
+          frame[ var , Nat ⟨ μβ ⟩ β ⟨ μγ ⟩ γ ] Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ
 
-    Plus₂ : {α γ : typ} {μα μγ : trail} →
-            (v₁ : value[ var ] Nat) →
-            frame[ var , Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ ] Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ
+  Plus₂ : {α γ : typ} {μα μγ : trail} →
+          (v₁ : value[ var ] Nat) →
+          frame[ var , Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ ] Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ
             
 
-    Pro  : {τ α β β' : typ}{μᵢ μα : trail} →
-           (is-id-trail β β' μᵢ) →
-           frame[ var , β ⟨ μᵢ ⟩ β' ⟨ ∙ ⟩ τ ] τ ⟨ μα ⟩ α ⟨ μα ⟩ α
+  Pro  : {τ α β β' : typ}{μᵢ μα : trail} →
+         (is-id-trail β β' μᵢ) →
+         frame[ var , β ⟨ μᵢ ⟩ β' ⟨ ∙ ⟩ τ ] τ ⟨ μα ⟩ α ⟨ μα ⟩ α
 
-  frame-plug : {var : typ → Set}
-               {τ₁ τ₂ τ₃ τ₄ τ₅ τ₆ : typ}{μα μβ μγ μδ : trail} →
-               frame[ var , τ₂ ⟨ μα ⟩ τ₄ ⟨ μβ ⟩ τ₅ ] τ₁ ⟨ μγ ⟩ τ₃ ⟨ μδ ⟩ τ₆ →
-               term[ var ] τ₂ ⟨ μα ⟩ τ₄ ⟨ μβ ⟩ τ₅ →
-               term[ var ] τ₁ ⟨ μγ ⟩ τ₃ ⟨ μδ ⟩ τ₆
-  frame-plug (App₁ e₂) e₁ = App e₁ e₂
-  frame-plug {μβ = μβ}(App₂ v₁) e₂ = App (Val v₁) e₂
-  frame-plug (Plus₁ e₂) e₁ = Plus e₁ e₂
-  frame-plug (Plus₂ v₁) e₂ = Plus (Val v₁) e₂
+frame-plug : {var : typ → Set}
+             {τ₁ τ₂ τ₃ τ₄ τ₅ τ₆ : typ}{μα μβ μγ μδ : trail} →
+             frame[ var , τ₂ ⟨ μα ⟩ τ₄ ⟨ μβ ⟩ τ₅ ] τ₁ ⟨ μγ ⟩ τ₃ ⟨ μδ ⟩ τ₆ →
+             term[ var ] τ₂ ⟨ μα ⟩ τ₄ ⟨ μβ ⟩ τ₅ →
+             term[ var ] τ₁ ⟨ μγ ⟩ τ₃ ⟨ μδ ⟩ τ₆
+frame-plug (App₁ e₂) e₁ = App e₁ e₂
+frame-plug {μβ = μβ}(App₂ v₁) e₂ = App (Val v₁) e₂
+frame-plug (Plus₁ e₂) e₁ = Plus e₁ e₂
+frame-plug (Plus₂ v₁) e₂ = Plus (Val v₁) e₂
 
-  frame-plug {τ₁ = τ₁}{τ₂ = τ₂}{τ₃ = τ₃}{τ₄ = τ₄}{μα = μα}{μγ = μγ} (Pro x) e₁ =
-             Prompt x e₁
+frame-plug {τ₁ = τ₁}{τ₂ = τ₂}{τ₃ = τ₃}{τ₄ = τ₄}{μα = μα}{μγ = μγ} (Pro x) e₁ =
+           Prompt x e₁
 
   --frame
-  data pframe[_,_⟨_⟩_⟨_⟩_]_⟨_⟩_⟨_⟩_ (var : typ → Set)
-       : typ → trail → typ → trail → typ → typ → trail → typ → trail → typ → Set where
-    App₁ : {τ₁ τ₂ α β γ δ : typ}{μα μβ μγ μδ : trail} →
-           (e₂ : term[ var ] τ₂ ⟨ μβ ⟩ β ⟨ μγ ⟩ γ) →
-           pframe[ var , (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β) ⟨ μγ ⟩ γ ⟨ μδ ⟩ δ ]
-                   τ₁ ⟨ μα ⟩ α ⟨ μδ ⟩ δ
+data pframe[_,_⟨_⟩_⟨_⟩_]_⟨_⟩_⟨_⟩_ (var : typ → Set)
+     : typ → trail → typ → trail → typ → typ → trail → typ → trail → typ → Set where
+  App₁ : {τ₁ τ₂ α β γ δ : typ}{μα μβ μγ μδ : trail} →
+         (e₂ : term[ var ] τ₂ ⟨ μβ ⟩ β ⟨ μγ ⟩ γ) →
+         pframe[ var , (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β) ⟨ μγ ⟩ γ ⟨ μδ ⟩ δ ]
+                 τ₁ ⟨ μα ⟩ α ⟨ μδ ⟩ δ
 
-    App₂ : {τ₁ τ₂ α β γ : typ}{μα μβ μγ : trail} →
-           (v₁ : value[ var ] (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β)) →
-           pframe[ var , τ₂ ⟨ μβ ⟩ β ⟨ μγ ⟩ γ ]
-                   τ₁ ⟨ μα ⟩ α ⟨ μγ ⟩ γ
+  App₂ : {τ₁ τ₂ α β γ : typ}{μα μβ μγ : trail} →
+         (v₁ : value[ var ] (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β)) →
+         pframe[ var , τ₂ ⟨ μβ ⟩ β ⟨ μγ ⟩ γ ]
+                 τ₁ ⟨ μα ⟩ α ⟨ μγ ⟩ γ
 
-    Plus₁ : {α β γ : typ} {μα μβ μγ : trail} →
-            (e₂ : term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β) →
-            pframe[ var , Nat ⟨ μβ ⟩ β ⟨ μγ ⟩ γ ] Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ
+  Plus₁ : {α β γ : typ} {μα μβ μγ : trail} →
+          (e₂ : term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β) →
+          pframe[ var , Nat ⟨ μβ ⟩ β ⟨ μγ ⟩ γ ] Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ
 
-    Plus₂ : {α γ : typ} {μα μγ : trail} →
-            (v₁ : value[ var ] Nat) →
-            pframe[ var , Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ ] Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ
+  Plus₂ : {α γ : typ} {μα μγ : trail} →
+          (v₁ : value[ var ] Nat) →
+          pframe[ var , Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ ] Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ
 
-  pframe-plug : {var : typ → Set}
-                {τ₁ τ₂ τ₃ τ₄ τ₅ τ₆ : typ}{μα μβ μγ μδ : trail} →
-                pframe[ var , τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ] τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆ →
-                term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ →
-                term[ var ] τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆
+pframe-plug : {var : typ → Set}
+              {τ₁ τ₂ τ₃ τ₄ τ₅ τ₆ : typ}{μα μβ μγ μδ : trail} →
+              pframe[ var , τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ] τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆ →
+              term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ →
+              term[ var ] τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆
 
-  pframe-plug (App₁ e₂) e₁ = App e₁ e₂
-  pframe-plug (App₂ v₁) e₂ = App (Val v₁) e₂
-  pframe-plug (Plus₁ e₂) e₁ = Plus e₁ e₂
-  pframe-plug (Plus₂ v₁) e₂ = Plus (Val v₁) e₂
+pframe-plug (App₁ e₂) e₁ = App e₁ e₂
+pframe-plug (App₂ v₁) e₂ = App (Val v₁) e₂
+pframe-plug (Plus₁ e₂) e₁ = Plus e₁ e₂
+pframe-plug (Plus₂ v₁) e₂ = Plus (Val v₁) e₂
 
-  data same-pframe {var : typ → Set}:
-                   {τ₁ τ₁' τ₂ τ₂' τ₃ τ₃' τ₄ τ₄' τ₅ τ₅' τ₆ τ₆' : typ}
-                   {μα μα' μβ μβ' μγ μγ' μδ μδ' : trail} →
-         pframe[ var , τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ] τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆ →
-         pframe[ var , τ₁' ⟨ μα' ⟩ τ₂' ⟨ μβ' ⟩ τ₃' ] τ₄' ⟨ μγ' ⟩ τ₅' ⟨ μδ' ⟩ τ₆' →
-         Set where
-   App₁ : {τ β γ τ₃ τ₃' τ₄ τ₄' τ₅ τ₅' : typ}{μ₁ μ₂ μβ μβ' μγ μγ' : trail} →
-          (e₂ : term[ var ] τ ⟨ μ₁ ⟩ β ⟨ μ₂ ⟩ γ) →
-          same-pframe {τ₃ = τ₃}{τ₃'}{τ₄}{τ₄'}{τ₅}{τ₅'}{μβ = μβ}{μβ'}{μγ}{μγ'}
-                      (App₁ e₂) (App₁ e₂)
-   App₂ : {τ₁ τ₂ α β τ₃ τ₃' : typ}{μ₁ μ₂ μβ μβ' : trail} →
-          (v₁ : value[ var ] (τ₂ ⇒ τ₁ ⟨ μ₁ ⟩ α ⟨ μ₂ ⟩ β) ) →
-          same-pframe {τ₃ = τ₃}{τ₃'}{μβ = μβ}{μβ'}
-                      (App₂ v₁) (App₂ v₁)
+data same-pframe {var : typ → Set}:
+                 {τ₁ τ₁' τ₂ τ₂' τ₃ τ₃' τ₄ τ₄' τ₅ τ₅' τ₆ τ₆' : typ}
+                 {μα μα' μβ μβ' μγ μγ' μδ μδ' : trail} →
+       pframe[ var , τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ] τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆ →
+       pframe[ var , τ₁' ⟨ μα' ⟩ τ₂' ⟨ μβ' ⟩ τ₃' ] τ₄' ⟨ μγ' ⟩ τ₅' ⟨ μδ' ⟩ τ₆' →
+       Set where
+ App₁ : {τ β γ τ₃ τ₃' τ₄ τ₄' τ₅ τ₅' : typ}{μ₁ μ₂ μβ μβ' μγ μγ' : trail} →
+        (e₂ : term[ var ] τ ⟨ μ₁ ⟩ β ⟨ μ₂ ⟩ γ) →
+        same-pframe {τ₃ = τ₃}{τ₃'}{τ₄}{τ₄'}{τ₅}{τ₅'}{μβ = μβ}{μβ'}{μγ}{μγ'}
+                    (App₁ e₂) (App₁ e₂)
+ App₂ : {τ₁ τ₂ α β τ₃ τ₃' : typ}{μ₁ μ₂ μβ μβ' : trail} →
+        (v₁ : value[ var ] (τ₂ ⇒ τ₁ ⟨ μ₁ ⟩ α ⟨ μ₂ ⟩ β) ) →
+        same-pframe {τ₃ = τ₃}{τ₃'}{μβ = μβ}{μβ'}
+                    (App₂ v₁) (App₂ v₁)
 
-   Plus₁ : {α β γ τ₃ τ₃' : typ} {μα μβ μγ μβ' : trail} →
-           (e₂ : term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β) →
-           same-pframe {τ₃ = τ₃}{τ₃'}{μβ = μβ}{μβ'} (Plus₁ e₂) (Plus₁ e₂)
+ Plus₁ : {α β γ τ₃ τ₃' : typ} {μα μβ μγ μβ' : trail} →
+         (e₂ : term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β) →
+         same-pframe {τ₃ = τ₃}{τ₃'}{μβ = μβ}{μβ'} (Plus₁ e₂) (Plus₁ e₂)
 
-   Plus₂ : {τ₂ τ₂' τ₃ τ₃' : typ} {μα μα' μβ μβ' : trail} →
-           (v₁ : value[ var ] Nat) →
-           same-pframe {τ₂ = τ₂}{τ₂'}{τ₃}{τ₃'}{μα = μα}{μα'}{μβ}{μβ'} (Plus₂ v₁) (Plus₂ v₁)
+ Plus₂ : {τ₂ τ₂' τ₃ τ₃' : typ} {μα μα' μβ μβ' : trail} →
+         (v₁ : value[ var ] Nat) →
+         same-pframe {τ₂ = τ₂}{τ₂'}{τ₃}{τ₃'}{μα = μα}{μα'}{μβ}{μβ'} (Plus₂ v₁) (Plus₂ v₁)
 
 
   -- pure context
-  data pcontext[_,_⟨_⟩_⟨_⟩_]_⟨_⟩_⟨_⟩_ (var : typ → Set)
-       : typ → trail → typ → trail → typ → typ → trail → typ → trail → typ → Set where
-   Hole : {τ₁ τ₂ τ₃ : typ}{μα μβ : trail} →
-          pcontext[ var , τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃
-   Frame : {τ₁ τ₂ τ₃ τ₄ τ₅ τ₆ τ₇ τ₈ τ₉ : typ}{μ₁ μ₂ μ₃ μ₄ μ₅ μ₆ : trail} →
-           (f : pframe[ var , τ₄ ⟨ μ₃ ⟩ τ₅ ⟨ μ₄ ⟩ τ₆ ] τ₇ ⟨ μ₅ ⟩ τ₈ ⟨ μ₆ ⟩ τ₉ ) →
-           (c : pcontext[ var , τ₁ ⟨ μ₁ ⟩ τ₂ ⟨ μ₂ ⟩ τ₃ ] τ₄ ⟨ μ₃ ⟩ τ₅ ⟨ μ₄ ⟩ τ₆ ) →
-           pcontext[ var , τ₁ ⟨ μ₁ ⟩ τ₂ ⟨ μ₂ ⟩ τ₃ ] τ₇ ⟨ μ₅ ⟩ τ₈ ⟨ μ₆ ⟩ τ₉
+data pcontext[_,_⟨_⟩_⟨_⟩_]_⟨_⟩_⟨_⟩_ (var : typ → Set)
+     : typ → trail → typ → trail → typ → typ → trail → typ → trail → typ → Set where
+  Hole : {τ₁ τ₂ τ₃ : typ}{μα μβ : trail} →
+         pcontext[ var , τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃
+  Frame : {τ₁ τ₂ τ₃ τ₄ τ₅ τ₆ τ₇ τ₈ τ₉ : typ}{μ₁ μ₂ μ₃ μ₄ μ₅ μ₆ : trail} →
+          (f : pframe[ var , τ₄ ⟨ μ₃ ⟩ τ₅ ⟨ μ₄ ⟩ τ₆ ] τ₇ ⟨ μ₅ ⟩ τ₈ ⟨ μ₆ ⟩ τ₉ ) →
+          (c : pcontext[ var , τ₁ ⟨ μ₁ ⟩ τ₂ ⟨ μ₂ ⟩ τ₃ ] τ₄ ⟨ μ₃ ⟩ τ₅ ⟨ μ₄ ⟩ τ₆ ) →
+          pcontext[ var , τ₁ ⟨ μ₁ ⟩ τ₂ ⟨ μ₂ ⟩ τ₃ ] τ₇ ⟨ μ₅ ⟩ τ₈ ⟨ μ₆ ⟩ τ₉
 
-  pcontext-plug : {var : typ → Set}
-                  {τ₁ τ₂ τ₃ τ₄ τ₅ τ₆ : typ}{μα μβ μγ μδ : trail} →
-                  pcontext[ var , τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ] τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆ →
-                  term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ →
-                  term[ var ] τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆
-  pcontext-plug Hole e₁ = e₁
-  pcontext-plug (Frame f p) e₁ = pframe-plug f (pcontext-plug p e₁)
+pcontext-plug : {var : typ → Set}
+                {τ₁ τ₂ τ₃ τ₄ τ₅ τ₆ : typ}{μα μβ μγ μδ : trail} →
+                pcontext[ var , τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ] τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆ →
+                term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ →
+                term[ var ] τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆
+pcontext-plug Hole e₁ = e₁
+pcontext-plug (Frame f p) e₁ = pframe-plug f (pcontext-plug p e₁)
 
-  data same-pcontext {var : typ → Set} :
-                     {τ₁ τ₁' τ₂ τ₂' τ₃ τ₃' τ₄ τ₄' τ₅ τ₅' τ₆ τ₆' : typ}
-                     {μα μα' μβ μβ' μγ μγ' μδ μδ' : trail} →
-                     pcontext[ var , τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ] τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆ →
-                     pcontext[ var , τ₁' ⟨ μα' ⟩ τ₂' ⟨ μβ' ⟩ τ₃' ] τ₄' ⟨ μγ' ⟩ τ₅' ⟨ μδ' ⟩ τ₆' →
-                     Set where
-       Hole  : {τ₁ τ₁' τ₂ τ₂' τ₃ τ₃' : typ}{μα μα' μβ μβ' : trail} →
-               same-pcontext {τ₁ = τ₁}{τ₁'}{τ₂}{τ₂'}{τ₃}{τ₃'}{μα = μα}{μα'}{μβ}{μβ'}
-                             Hole Hole
-       Frame : {τ₁ τ₁' τ₂ τ₂' τ₃ τ₃' τ₄ τ₄' τ₅ τ₅' τ₆ τ₆' τ₇ τ₇' τ₈' τ₈ τ₉ τ₉' : typ}
-               {μ₁ μ₁' μ₂ μ₂' μ₃ μ₃' μ₄ μ₄' μ₅ μ₅' μ₆ μ₆' : trail} →
-               {f₁ : pframe[ var , τ₄ ⟨ μ₃ ⟩ τ₅ ⟨ μ₄ ⟩ τ₆ ] τ₇ ⟨ μ₅ ⟩ τ₈ ⟨ μ₆ ⟩ τ₉ } →
-               {f₂ : pframe[ var , τ₄' ⟨ μ₃' ⟩ τ₅' ⟨ μ₄' ⟩ τ₆' ] τ₇' ⟨ μ₅' ⟩ τ₈' ⟨ μ₆' ⟩ τ₉' } →
-               same-pframe f₁ f₂ →
-               {c₁ : pcontext[ var , τ₁ ⟨ μ₁ ⟩ τ₂ ⟨ μ₂ ⟩ τ₃ ] τ₄ ⟨ μ₃ ⟩ τ₅ ⟨ μ₄ ⟩ τ₆ } →
-               {c₂ : pcontext[ var , τ₁' ⟨ μ₁' ⟩ τ₂' ⟨ μ₂' ⟩ τ₃' ] τ₄' ⟨ μ₃' ⟩ τ₅' ⟨ μ₄' ⟩ τ₆' } →
-               same-pcontext c₁ c₂ →
-               same-pcontext (Frame f₁ c₁) (Frame f₂ c₂)
+data same-pcontext {var : typ → Set} :
+                   {τ₁ τ₁' τ₂ τ₂' τ₃ τ₃' τ₄ τ₄' τ₅ τ₅' τ₆ τ₆' : typ}
+                   {μα μα' μβ μβ' μγ μγ' μδ μδ' : trail} →
+                   pcontext[ var , τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ] τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆ →
+                   pcontext[ var , τ₁' ⟨ μα' ⟩ τ₂' ⟨ μβ' ⟩ τ₃' ] τ₄' ⟨ μγ' ⟩ τ₅' ⟨ μδ' ⟩ τ₆' →
+                   Set where
+     Hole  : {τ₁ τ₁' τ₂ τ₂' τ₃ τ₃' : typ}{μα μα' μβ μβ' : trail} →
+             same-pcontext {τ₁ = τ₁}{τ₁'}{τ₂}{τ₂'}{τ₃}{τ₃'}{μα = μα}{μα'}{μβ}{μβ'}
+                           Hole Hole
+     Frame : {τ₁ τ₁' τ₂ τ₂' τ₃ τ₃' τ₄ τ₄' τ₅ τ₅' τ₆ τ₆' τ₇ τ₇' τ₈' τ₈ τ₉ τ₉' : typ}
+             {μ₁ μ₁' μ₂ μ₂' μ₃ μ₃' μ₄ μ₄' μ₅ μ₅' μ₆ μ₆' : trail} →
+             {f₁ : pframe[ var , τ₄ ⟨ μ₃ ⟩ τ₅ ⟨ μ₄ ⟩ τ₆ ] τ₇ ⟨ μ₅ ⟩ τ₈ ⟨ μ₆ ⟩ τ₉ } →
+             {f₂ : pframe[ var , τ₄' ⟨ μ₃' ⟩ τ₅' ⟨ μ₄' ⟩ τ₆' ] τ₇' ⟨ μ₅' ⟩ τ₈' ⟨ μ₆' ⟩ τ₉' } →
+             same-pframe f₁ f₂ →
+             {c₁ : pcontext[ var , τ₁ ⟨ μ₁ ⟩ τ₂ ⟨ μ₂ ⟩ τ₃ ] τ₄ ⟨ μ₃ ⟩ τ₅ ⟨ μ₄ ⟩ τ₆ } →
+             {c₂ : pcontext[ var , τ₁' ⟨ μ₁' ⟩ τ₂' ⟨ μ₂' ⟩ τ₃' ] τ₄' ⟨ μ₃' ⟩ τ₅' ⟨ μ₄' ⟩ τ₆' } →
+             same-pcontext c₁ c₂ →
+             same-pcontext (Frame f₁ c₁) (Frame f₂ c₂)
 
 
   -- reduction rules
-  data Reduce {var : typ → Set} :
-              {τ₁ τ₂ τ₃ : typ}{μα μβ : trail} →
-              term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ →
-              term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ → Set where
-    RBeta   : {τ τ₁ τ₂ τ₃ : typ}{μα μβ : trail} →
-              {e₁ : var τ → term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃} →
-              {v₂ : value[ var ] τ} →
-              {e₁′ : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃} →
-              Subst e₁ v₂ e₁′ →
-              Reduce (App (Val (Fun e₁)) (Val v₂)) e₁′
+data Reduce {var : typ → Set} :
+            {τ₁ τ₂ τ₃ : typ}{μα μβ : trail} →
+            term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ →
+            term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ → Set where
+  RBeta   : {τ τ₁ τ₂ τ₃ : typ}{μα μβ : trail} →
+            {e₁ : var τ → term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃} →
+            {v₂ : value[ var ] τ} →
+            {e₁′ : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃} →
+            Subst e₁ v₂ e₁′ →
+            Reduce (App (Val (Fun e₁)) (Val v₂)) e₁′
 
-    RPlus   : {τ₂ : typ}{μα : trail} →
-              {n₁ : ℕ} →
-              {n₂ : ℕ} →
-              Reduce {τ₂ = τ₂}{μα = μα} (Plus (Val (Num n₁)) (Val (Num n₂))) (Val (Num (n₁ + n₂)))
+  RPlus   : {τ₂ : typ}{μα : trail} →
+            {n₁ : ℕ} →
+            {n₂ : ℕ} →
+            Reduce {τ₂ = τ₂}{μα = μα} (Plus (Val (Num n₁)) (Val (Num n₂))) (Val (Num (n₁ + n₂)))
 
-    RFrame  : {τ₁ τ₂ τ₃ τ₄ τ₅ τ₆ : typ}{μα μβ μγ μδ : trail} →
-              {e₁ : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃} →
-              {e₂ : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃} →
-              (f : frame[ var , τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ]
-                        τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆) →
-              Reduce e₁ e₂ →
-              Reduce (frame-plug f e₁) (frame-plug f e₂)
+  RFrame  : {τ₁ τ₂ τ₃ τ₄ τ₅ τ₆ : typ}{μα μβ μγ μδ : trail} →
+            {e₁ : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃} →
+            {e₂ : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃} →
+            (f : frame[ var , τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ]
+                      τ₄ ⟨ μγ ⟩ τ₅ ⟨ μδ ⟩ τ₆) →
+            Reduce e₁ e₂ →
+            Reduce (frame-plug f e₁) (frame-plug f e₂)
 
-    RPrompt : {τ₂ β : typ}{μα : trail} →
-              {v₁ : value[ var ] β} →
-              Reduce {τ₂ = τ₂}{μα = μα}(Prompt refl (Val v₁)) (Val v₁)
+  RPrompt : {τ₂ β : typ}{μα : trail} →
+            {v₁ : value[ var ] β} →
+            Reduce {τ₂ = τ₂}{μα = μα}(Prompt refl (Val v₁)) (Val v₁)
 
     -- RControl : {τ α α' β β' γ γ' t₁ t₂ τ₁ τ₂ τ₃ τ₄ τ₅ : typ}
     --            {μ₀ μ₁ μᵢ μα μα' μβ μβ' μ₂ μ₃ μ₄ μ₅ : trail} →
@@ -491,22 +491,22 @@ mutual
     -- p₂の外側 t₁ ⟨ μ₁ ⟩ t₂ を τ₁ ⟨ μ₃ ⟩ τ₂,合わせてx₂とeも変えた
 
     
-    RControl : {τ α α' β β' γ γ' t₁ t₂ τ₁ τ₂ τ₃ τ₄ τ₅ : typ}
-               {μ₀ μ₁ μᵢ μα μα' μβ μβ' μ₂ μ₃ μ₄ μ₅ : trail} →
-               (p₁ : pcontext[ var , τ ⟨ μα ⟩ α ⟨ μβ ⟩ β ]
-                              τ₁ ⟨ μ₃ ⟩ τ₂ ⟨ ∙ ⟩ β ) →
-               (p₂ : pcontext[ var , τ ⟨ μα' ⟩ α' ⟨ μα' ⟩ α' ]
-                              τ₁ ⟨ μ₃ ⟩ τ₂ ⟨ μ₀ ⟩ α ) →
-               {x₀ : is-id-trail τ₁ τ₂ μ₃} →
-               (x₁ : is-id-trail γ γ' μᵢ) →
-               (x₂ : compatible (τ₁ ⇒ τ₂ , μ₃) μ₀ μ₀) →
-               (x₃ : compatible μβ μ₀ μα) →
-               same-pcontext p₁ p₂ →
-               (e : var (τ ⇒ τ₁ ⟨ μ₃ ⟩ τ₂ ⟨ μ₀ ⟩ α) → term[ var ] γ ⟨ μᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
-               Reduce {τ₂ = τ₂}{μα = μα} (Prompt x₀
-                      (pcontext-plug p₁ (Control x₁ x₂ x₃ e)))
-                      (Prompt x₁ (App (Val (Fun e))
-                      (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x)))))))
+  RControl : {τ α α' β β' γ γ' t₁ t₂ τ₁ τ₂ τ₃ τ₄ τ₅ : typ}
+             {μ₀ μ₁ μᵢ μα μα' μβ μβ' μ₂ μ₃ μ₄ μ₅ : trail} →
+             (p₁ : pcontext[ var , τ ⟨ μα ⟩ α ⟨ μβ ⟩ β ]
+                            τ₁ ⟨ μ₃ ⟩ τ₂ ⟨ ∙ ⟩ β ) →
+             (p₂ : pcontext[ var , τ ⟨ μα' ⟩ α' ⟨ μα' ⟩ α' ]
+                            τ₁ ⟨ μ₃ ⟩ τ₂ ⟨ μ₀ ⟩ α ) →
+             {x₀ : is-id-trail τ₁ τ₂ μ₃} →
+             (x₁ : is-id-trail γ γ' μᵢ) →
+             (x₂ : compatible (τ₁ ⇒ τ₂ , μ₃) μ₀ μ₀) →
+             (x₃ : compatible μβ μ₀ μα) →
+             same-pcontext p₁ p₂ →
+             (e : var (τ ⇒ τ₁ ⟨ μ₃ ⟩ τ₂ ⟨ μ₀ ⟩ α) → term[ var ] γ ⟨ μᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
+             Reduce {τ₂ = τ₂}{μα = μα} (Prompt x₀
+                    (pcontext-plug p₁ (Control x₁ x₂ x₃ e)))
+                    (Prompt x₁ (App (Val (Fun e))
+                    (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x)))))))
                      
 -- Control : {τ α β γ γ' t₁ t₂ : typ}{μ₀ μ₁ μ₂ μᵢ μα μβ : trail} →
 --              (is-id-trail γ γ' μᵢ) →
@@ -523,19 +523,19 @@ mutual
 --              term[ var ] τ ⟨ μα ⟩ α ⟨ μα ⟩ α
 
 
-  data Reduce* {var : typ → Set} :
-               {τ₁ τ₂ τ₃ : typ}{μα μβ : trail} →
-               term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ →
-               term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ → Set where
+data Reduce* {var : typ → Set} :
+             {τ₁ τ₂ τ₃ : typ}{μα μβ : trail} →
+             term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ →
+             term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ → Set where
 
-    R*Id    : {τ₁ τ₂ τ₃ : typ}{μα μβ : trail} →
-              (e : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ) →
-              Reduce* e e
-    R*Trans : {τ₁ τ₂ τ₃ : typ}{μα μβ : trail} →
-              (e₁ : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃) →
-              (e₂ : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃) →
-              (e₃ : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃) →
-              Reduce e₁ e₂ →
-              Reduce* e₂ e₃ →
-              Reduce* e₁ e₃
--}
+  R*Id    : {τ₁ τ₂ τ₃ : typ}{μα μβ : trail} →
+            (e : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃ ) →
+            Reduce* e e
+  R*Trans : {τ₁ τ₂ τ₃ : typ}{μα μβ : trail} →
+            (e₁ : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃) →
+            (e₂ : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃) →
+            (e₃ : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃) →
+            Reduce e₁ e₂ →
+            Reduce* e₂ e₃ →
+            Reduce* e₁ e₃
+

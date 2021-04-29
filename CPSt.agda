@@ -49,8 +49,12 @@ mutual
     CPSAppend : {μ₁ μ₂ μ₃ : trail} → compatible μ₁ μ₂ μ₃ →
                 cpsvalue[ var ] cpsM μ₁ →
                 cpsvalue[ var ] cpsM μ₂ → cpsvalue[ var ] cpsM μ₃
-    CPSCons   : {τ₁ τ₂ : typ}{μ₀ μ₁ μ₂ : trail} → compatible (τ₁ ⇒ τ₂ , μ₁) μ₂ μ₀  →
-                cpsvalue[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂)) →
+    -- CPSCons   : {τ₁ τ₂ : typ}{μ₀ μ₁ μ₂ : trail} → compatible (τ₁ ⇒ τ₂ , μ₁) μ₂ μ₀  →
+    --             cpsvalue[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂)) →
+    --             cpsvalue[ var ] cpsM μ₂ → cpsvalue[ var ] cpsM μ₀
+
+    CPSCons   : {μ₀ μ₁ μ₂ : trail} → compatible μ₁ μ₂ μ₀  →
+                cpsvalue[ var ] cpsM μ₁ →
                 cpsvalue[ var ] cpsM μ₂ → cpsvalue[ var ] cpsM μ₀
 
   data cpsterm[_]_ (var : cpstyp → Set) : cpstyp → Set where
@@ -187,12 +191,22 @@ mutual
            cpsSubstVal e₁ v e₁′ → cpsSubstVal e₂ v e₂′ →
            cpsSubstVal (λ y → CPSAppend x (e₁ y) (e₂ y)) v (CPSAppend x e₁′ e₂′)
 
-    sCon : {τ : cpstyp} {τ₁ τ₂ : typ} {μ₀ μ₁ μ₂ : trail} →
-           {x : compatible (τ₁ ⇒ τ₂ , μ₁) μ₂ μ₀} →
-           {e₁ : var τ → cpsvalue[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
+    -- sCon : {τ : cpstyp} {τ₁ τ₂ : typ} {μ₀ μ₁ μ₂ : trail} →
+    --        {x : compatible (τ₁ ⇒ τ₂ , μ₁) μ₂ μ₀} →
+    --        {e₁ : var τ → cpsvalue[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
+    --        {e₂ : var τ → cpsvalue[ var ] cpsM μ₂} →
+    --        {v : cpsvalue[ var ] τ} →
+    --        {e₁′ : cpsvalue[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
+    --        {e₂′ : cpsvalue[ var ] cpsM μ₂} →
+    --        cpsSubstVal e₁ v e₁′ → cpsSubstVal e₂ v e₂′ →
+    --        cpsSubstVal (λ y → CPSCons x (e₁ y) (e₂ y)) v (CPSCons x e₁′ e₂′)
+    
+    sCon : {τ : cpstyp} {μ₀ μ₁ μ₂ : trail} →
+           {x : compatible μ₁ μ₂ μ₀} →
+           {e₁ : var τ → cpsvalue[ var ] cpsM μ₁} →
            {e₂ : var τ → cpsvalue[ var ] cpsM μ₂} →
            {v : cpsvalue[ var ] τ} →
-           {e₁′ : cpsvalue[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
+           {e₁′ : cpsvalue[ var ] cpsM μ₁} →
            {e₂′ : cpsvalue[ var ] cpsM μ₂} →
            cpsSubstVal e₁ v e₁′ → cpsSubstVal e₂ v e₂′ →
            cpsSubstVal (λ y → CPSCons x (e₁ y) (e₂ y)) v (CPSCons x e₁′ e₂′)
