@@ -39,29 +39,18 @@ is-id-trail : typ → typ → trail → Set
 is-id-trail τ τ' ∙ = τ ≡ τ'
 is-id-trail τ τ' (τ₁ ⇒ τ₁' , μ) = (τ ≡ τ₁) × (τ' ≡ τ₁') × (μ ≡ ∙)
 
--- well-formed types and trails
-{- _extends_ : (μα μβ : trail) → Set
-μα extends μβ = Σ[ μ ∈ trail ] compatible μ μβ μα
-
-_extends-itself : (μα : trail) → μα extends μα
-μα extends-itself = (∙  , refl)
-
-_extends-bullet : (μα : trail) → μα extends ∙
-∙ extends-bullet = ∙ extends-itself
-(x ⇒ x₁ , μα) extends-bullet = (x ⇒ x₁ , μα) , refl
-
 mutual
-  wf-type : typ → Set
-  wf-type Nat = ⊤
-  wf-type Tbool = ⊤
-  wf-type (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β ) =
-    wf-type β → wf-trail μβ →
-    wf-type τ₂ × wf-type τ₁ × wf-type α × wf-trail μα ×
-    μα extends μβ
+  c-type : typ → Set
+  c-type Nat = ⊤
+  c-type Tbool = ⊤
+  c-type (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β ) =
+    c-type β → c-trail μβ →
+    c-type τ₂ × c-type τ₁ × c-type α × c-trail μα ×
+    ((μ : trail) → compatible μ μβ μβ → compatible μ μα μα)
 
-  wf-trail : trail → Set
-  wf-trail ∙ = ⊤
-  wf-trail (τ ⇒ τ' , μ ) = wf-type τ × wf-trail μ × wf-type τ' -}
+  c-trail : trail → Set
+  c-trail ∙ = ⊤
+  c-trail (τ ⇒ τ' , μ ) = c-type τ × c-trail μ × c-type τ'
 
 
 
@@ -71,7 +60,7 @@ mutual
     Var : {τ₁ : typ} → var τ₁ → value[ var ] τ₁
     Num : (n : ℕ) → value[ var ] Nat
     Fun : {τ₁ τ₂ α β : typ}{μα μβ : trail} →
-          (e₁ : var τ₂ → term[ var ] τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β)
+          (c-type τ₂) → (e₁ : var τ₂ → term[ var ] τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β)
           → value[ var ] (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β)
 
   data term[_]_⟨_⟩_⟨_⟩_ (var : typ → Set) : typ → trail → typ → trail → typ → Set where
@@ -90,6 +79,7 @@ mutual
              (is-id-trail γ γ' μᵢ) →
              (compatible (t₁ ⇒ t₂ , μ₁) μ₂ μ₀) →
              (compatible μβ μ₀ μα) →
+             (c : c-type (τ ⇒ t₁ ⟨ μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α)) →
              (e : var (τ ⇒ t₁ ⟨ μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α) →
              term[ var ] γ ⟨ μᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
              term[ var ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β
@@ -134,7 +124,7 @@ mutual
   ⟦_⟧v : {τ : typ} →  value[ ⟦_⟧τ ] τ →  ⟦ τ ⟧τ
   ⟦ Var x ⟧v = x
   ⟦ Num n ⟧v = n
-  ⟦ Fun e ⟧v = λ v  → ⟦ e v ⟧
+  ⟦ Fun c e ⟧v = λ v  → ⟦ e v ⟧
 
 
 
@@ -146,10 +136,36 @@ mutual
   ⟦ Plus e₁ e₂ ⟧ k t = ⟦ e₁ ⟧ (λ x → ⟦ e₂ ⟧ (λ y → k ( x + y ) )) t
 
 
-  ⟦ Control x x₂ x₃ e ⟧ k t = ⟦ e (λ v k' t' → k v (append-trail x₃ t (cons-trail x₂ k' t'))) ⟧ (idk x) tt
+  ⟦ Control x x₂ x₃ c e ⟧ k t = ⟦ e (λ v k' t' → k v (append-trail x₃ t (cons-trail x₂ k' t'))) ⟧ (idk x) tt
 
 
   ⟦ Prompt x e ⟧ k t = k (⟦ e ⟧ (idk x) tt) t
+
+
+mutual
+  c-value : {τ : typ} → value[ c-type ] τ → c-type τ
+  c-value (Var x) = x
+  c-value (Num n) = tt
+  c-value (Fun cτ₂ e) cβ cμβ = (cτ₂ , c-term (e cτ₂) cβ cμβ)
+
+  c-term : {τ α β : typ} {μα μβ : trail} →
+            term[ c-type ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β →
+            c-type β → c-trail μβ →
+            c-type τ × c-type α × c-trail μα ×
+            ((μ : trail) → compatible μ μβ μβ → compatible μ μα μα)
+  c-term {μα = μα} (Val v) cα cμα with c-value v
+  ...| cτ = (cτ , cα , cμα , λ μ x → x)
+  c-term {β = δ} {μβ = μδ} (App e₁ e₂) cδ cμδ with c-term e₁ cδ cμδ
+  ...| (c₁ , cγ , cμγ , f₁) with c-term e₂ cγ cμγ
+  ...| (c₂ , cβ , cμβ , f₂) with c₁ cβ cμβ
+  ...| (cτ₂ , cτ , cα , cμα , f₃) = (cτ , cα , cμα , λ μ x → f₃ μ (f₂ μ (f₁ μ x)))
+  c-term  (Plus e₁ e₂) cβ cμβ with c-term e₁ cβ cμβ
+  ...| (c₁ , cβ₁ , cμβ₁ , f₁) with c-term e₂ cβ₁ cμβ₁
+  ...| (c₂ , cα , cμα , f₂) = (c₁ , cα , cμα , λ μ x → f₂ μ (f₁ μ x))
+  c-term (Control id c₁ c₂ c e) cβ cμβ = {!!}
+  -- with c-term (e c) cβ tt
+  -- ...| (cγ , cγ' , cμμᵢ , f₁) = {!!}
+  c-term (Prompt id e) cα cμα = ({!!} , cα , cμα , λ μ x → x)
 
 
 -- well-formed values and expressions
@@ -227,7 +243,7 @@ mutual
   wf-term (Prompt id e) wfα wfμα = {!!} -}
 
 
-mutual
+{- mutual
   data SubstVal {var : typ → Set} : {τ₁ τ₂ : typ} →
                 (var τ₁ → value[ var ] τ₂) →
                 value[ var ] τ₁ →
@@ -537,5 +553,5 @@ data Reduce* {var : typ → Set} :
             (e₃ : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃) →
             Reduce e₁ e₂ →
             Reduce* e₂ e₃ →
-            Reduce* e₁ e₃
+            Reduce* e₁ e₃-}
 
