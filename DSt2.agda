@@ -151,7 +151,6 @@ mutual
     (idk id) tt
   ⟦ Prompt id e ⟧ k t = k (⟦ e ⟧ (idk id) tt) t
 
-
 mutual
   data SubstVal {var : typ → Set} : {τ₁ τ₂ : typ} →
                 (var τ₁ → value[ var ] τ₂) →
@@ -504,3 +503,4 @@ data Reduce* {var : typ → Set} :
             Reduce e₁ e₂ →
             Reduce* e₂ e₃ →
             Reduce* e₁ e₃
+
