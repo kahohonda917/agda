@@ -39,18 +39,18 @@ is-id-trail : typ → typ → trail → Set
 is-id-trail τ τ' ∙ = τ ≡ τ'
 is-id-trail τ τ' (τ₁ ⇒ τ₁' , μ) = (τ ≡ τ₁) × (τ' ≡ τ₁') × (μ ≡ ∙)
 
-mutual
-  c-type : typ → Set
-  c-type Nat = ⊤
-  c-type Tbool = ⊤
-  c-type (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β ) =
-    c-type β → c-trail μβ →
-    c-type τ₂ × c-type τ₁ × c-type α × c-trail μα ×
-    ((μ : trail) → compatible μ μβ μβ → compatible μ μα μα)
+-- mutual
+--   c-type : typ → Set
+--   c-type Nat = ⊤
+--   c-type Tbool = ⊤
+--   c-type (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β ) =
+--     --c-type β → c-trail μβ →
+--     --c-type τ₂ × c-type τ₁ × c-type α × c-trail μα ×
+--     c-type τ₁ × ((μ : trail) → compatible μ μβ μβ → compatible μ μα μα)
 
-  c-trail : trail → Set
-  c-trail ∙ = ⊤
-  c-trail (τ ⇒ τ' , μ ) = c-type τ × c-trail μ × c-type τ'
+--   c-trail : trail → Set
+--   c-trail ∙ = ⊤
+--   c-trail (τ ⇒ τ' , μ ) = c-type τ × c-trail μ × c-type τ'
 
 
 
@@ -60,7 +60,7 @@ mutual
     Var : {τ₁ : typ} → var τ₁ → value[ var ] τ₁
     Num : (n : ℕ) → value[ var ] Nat
     Fun : {τ₁ τ₂ α β : typ}{μα μβ : trail} →
-          (c-type τ₂) → (e₁ : var τ₂ → term[ var ] τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β)
+          (e₁ : var τ₂ → term[ var ] τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β)
           → value[ var ] (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β)
 
   data term[_]_⟨_⟩_⟨_⟩_ (var : typ → Set) : typ → trail → typ → trail → typ → Set where
@@ -79,7 +79,7 @@ mutual
              (is-id-trail γ γ' μᵢ) →
              (compatible (t₁ ⇒ t₂ , μ₁) μ₂ μ₀) →
              (compatible μβ μ₀ μα) →
-             (c : c-type (τ ⇒ t₁ ⟨ μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α)) →
+             --(c : (τ ⇒ t₁ ⟨ μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α)) →
              (e : var (τ ⇒ t₁ ⟨ μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α) →
              term[ var ] γ ⟨ μᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
              term[ var ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β
@@ -124,7 +124,7 @@ mutual
   ⟦_⟧v : {τ : typ} →  value[ ⟦_⟧τ ] τ →  ⟦ τ ⟧τ
   ⟦ Var x ⟧v = x
   ⟦ Num n ⟧v = n
-  ⟦ Fun c e ⟧v = λ v  → ⟦ e v ⟧
+  ⟦ Fun e ⟧v = λ v  → ⟦ e v ⟧
 
 
 
@@ -136,36 +136,36 @@ mutual
   ⟦ Plus e₁ e₂ ⟧ k t = ⟦ e₁ ⟧ (λ x → ⟦ e₂ ⟧ (λ y → k ( x + y ) )) t
 
 
-  ⟦ Control x x₂ x₃ c e ⟧ k t = ⟦ e (λ v k' t' → k v (append-trail x₃ t (cons-trail x₂ k' t'))) ⟧ (idk x) tt
+  ⟦ Control x x₂ x₃ e ⟧ k t = ⟦ e (λ v k' t' → k v (append-trail x₃ t (cons-trail x₂ k' t'))) ⟧ (idk x) tt
 
 
   ⟦ Prompt x e ⟧ k t = k (⟦ e ⟧ (idk x) tt) t
 
 
-mutual
-  c-value : {τ : typ} → value[ c-type ] τ → c-type τ
-  c-value (Var x) = x
-  c-value (Num n) = tt
-  c-value (Fun cτ₂ e) cβ cμβ = (cτ₂ , c-term (e cτ₂) cβ cμβ)
+-- mutual
+--   c-value : {τ : typ} → value[ c-type ] τ → c-type τ
+--   c-value (Var x) = x
+--   c-value (Num n) = tt
+--   c-value (Fun cτ₂ e)  = {!!}
 
-  c-term : {τ α β : typ} {μα μβ : trail} →
-            term[ c-type ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β →
-            c-type β → c-trail μβ →
-            c-type τ × c-type α × c-trail μα ×
-            ((μ : trail) → compatible μ μβ μβ → compatible μ μα μα)
-  c-term {μα = μα} (Val v) cα cμα with c-value v
-  ...| cτ = (cτ , cα , cμα , λ μ x → x)
-  c-term {β = δ} {μβ = μδ} (App e₁ e₂) cδ cμδ with c-term e₁ cδ cμδ
-  ...| (c₁ , cγ , cμγ , f₁) with c-term e₂ cγ cμγ
-  ...| (c₂ , cβ , cμβ , f₂) with c₁ cβ cμβ
-  ...| (cτ₂ , cτ , cα , cμα , f₃) = (cτ , cα , cμα , λ μ x → f₃ μ (f₂ μ (f₁ μ x)))
-  c-term  (Plus e₁ e₂) cβ cμβ with c-term e₁ cβ cμβ
-  ...| (c₁ , cβ₁ , cμβ₁ , f₁) with c-term e₂ cβ₁ cμβ₁
-  ...| (c₂ , cα , cμα , f₂) = (c₁ , cα , cμα , λ μ x → f₂ μ (f₁ μ x))
-  c-term (Control id c₁ c₂ c e) cβ cμβ = {!!}
-  -- with c-term (e c) cβ tt
-  -- ...| (cγ , cγ' , cμμᵢ , f₁) = {!!}
-  c-term (Prompt id e) cα cμα = ({!!} , cα , cμα , λ μ x → x)
+--   c-term : {τ α β : typ} {μα μβ : trail} →
+--             term[ c-type ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β →
+--             c-type α →
+--             --c-type β → c-trail μβ →
+--             c-type τ ×  c-type β ×
+--             --c-type α × c-trail μα ×
+--             ((μ : trail) → compatible μ μβ μβ → compatible μ μα μα)
+--   c-term {μα = μα} (Val v)  = {!!}
+--   c-term {β = δ} {μβ = μδ} (App e₁ e₂) = {!!}
+--   c-term  (Plus e₁ e₂) = {!!}
+--   -- with c-term e₁ cβ cμβ
+--   -- ...| (c₁ , cβ₁ , cμβ₁ , f₁) with c-term e₂ cβ₁ cμβ₁
+--   -- ...| (c₂ , cα , cμα , f₂) = (c₁ , cα , cμα , λ μ x → f₂ μ (f₁ μ x))
+--   c-term (Control id c₁ c₂ c e) = {!!}
+--   -- with c-term (e c) cβ tt
+--   -- ...| (cγ , cγ' , cμμᵢ , f₁) = {!!}
+--   c-term (Prompt id e) = λ cα → {!c-term e!}
+--   --= ({!!} , cα , cμα , λ μ x → x)
 
 
 -- well-formed values and expressions
@@ -201,49 +201,48 @@ mutual
 
 
 
+-- ex-tra : {μα μβ μγ : trail} →
+--          μγ extends μβ → μβ extends μα → μγ extends μα
 
-{- ex-tra : {μα μβ μγ : trail} →
-         μγ extends μβ → μβ extends μα → μγ extends μα
+-- ex-tra (∙ , refl) (μ₂ , c₂) = μ₂ , c₂
+-- ex-tra ((x ⇒ x₁ , μ₁) , c₁) (∙ , refl) = (x ⇒ x₁ , μ₁) , c₁
+-- ex-tra {∙} {μγ = μγ} ((x ⇒ x₁ , μ₁) , c₁) ((x₂ ⇒ x₃ , μ₂) , c₂) = μγ extends-bullet
+-- ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , ∙} {x₂ ⇒ x₃ , ∙} ((.x₂ ⇒ .x₃ , .(x₆ ⇒ x₇ , ∙)) , refl , refl , refl) ((.x₆ ⇒ .x₇ , .(x₄ ⇒ x₅ , μα)) , refl , refl , refl) = ((x₂ ⇒ x₃ , (x₄ ⇒ x₅ , μα))) , refl , refl , refl
+-- ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , (x ⇒ x₁ , μβ)} {x₂ ⇒ x₃ , ∙} ((.x₂ ⇒ .x₃ , .(x₆ ⇒ x₇ , (x ⇒ x₁ , μβ))) , refl , refl , refl) ((.x₆ ⇒ .x₇ , μ₂) , refl , refl , c₂) = ((x₂ ⇒ x₃ , (x₄ ⇒ x₅ , μα))) , (refl , refl , refl)
 
-ex-tra (∙ , refl) (μ₂ , c₂) = μ₂ , c₂
-ex-tra ((x ⇒ x₁ , μ₁) , c₁) (∙ , refl) = (x ⇒ x₁ , μ₁) , c₁
-ex-tra {∙} {μγ = μγ} ((x ⇒ x₁ , μ₁) , c₁) ((x₂ ⇒ x₃ , μ₂) , c₂) = μγ extends-bullet
-ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , ∙} {x₂ ⇒ x₃ , ∙} ((.x₂ ⇒ .x₃ , .(x₆ ⇒ x₇ , ∙)) , refl , refl , refl) ((.x₆ ⇒ .x₇ , .(x₄ ⇒ x₅ , μα)) , refl , refl , refl) = ((x₂ ⇒ x₃ , (x₄ ⇒ x₅ , μα))) , refl , refl , refl
-ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , (x ⇒ x₁ , μβ)} {x₂ ⇒ x₃ , ∙} ((.x₂ ⇒ .x₃ , .(x₆ ⇒ x₇ , (x ⇒ x₁ , μβ))) , refl , refl , refl) ((.x₆ ⇒ .x₇ , μ₂) , refl , refl , c₂) = ((x₂ ⇒ x₃ , (x₄ ⇒ x₅ , μα))) , (refl , refl , refl)
+-- ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , ∙} {x₂ ⇒ x₃ , (x ⇒ x₁ , ∙)} ((.x₂ ⇒ .x₃ , μ₁) , refl , refl , c₁) ((.x₆ ⇒ .x₇ , .(x₄ ⇒ x₅ , μα)) , refl , refl , refl) = (x₂ ⇒ x₃ , (x₄ ⇒ x₅ , {!!})) , refl , (refl , refl , (refl , {!!}))
 
-ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , ∙} {x₂ ⇒ x₃ , (x ⇒ x₁ , ∙)} ((.x₂ ⇒ .x₃ , μ₁) , refl , refl , c₁) ((.x₆ ⇒ .x₇ , .(x₄ ⇒ x₅ , μα)) , refl , refl , refl) = (x₂ ⇒ x₃ , (x₄ ⇒ x₅ , {!!})) , refl , (refl , refl , (refl , {!!}))
+-- ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , ∙} {x₂ ⇒ x₃ , (x ⇒ x₁ , (x₈ ⇒ x₉ , μγ))} ((.x₂ ⇒ .x₃ , μ₁) , refl , refl , c₁) ((.x₆ ⇒ .x₇ , .(x₄ ⇒ x₅ , μα)) , refl , refl , refl) = {!!}
+-- -- (x₂ ⇒ x₃ , (x₄ ⇒ x₅ , {!!})) , (refl , (refl , (refl , (refl , {!!}))))
+-- ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , (x₈ ⇒ x₉ , μβ)} {x₂ ⇒ x₃ , (x ⇒ x₁ , μγ)} ((.x₂ ⇒ .x₃ , μ₁) , refl , refl , c₁) ((.x₆ ⇒ .x₇ , μ₂) , refl , refl , c₂) = {!!}
+-- -- ex-tra (μ₁ , c₁) (∙ , refl) = (μ₁ , c₁)
+-- -- ex-tra (μ₁ , c₁) ((x ⇒ x₁ , μ₂) , c₂) = {!!}
 
-ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , ∙} {x₂ ⇒ x₃ , (x ⇒ x₁ , (x₈ ⇒ x₉ , μγ))} ((.x₂ ⇒ .x₃ , μ₁) , refl , refl , c₁) ((.x₆ ⇒ .x₇ , .(x₄ ⇒ x₅ , μα)) , refl , refl , refl) = {!!}
--- (x₂ ⇒ x₃ , (x₄ ⇒ x₅ , {!!})) , (refl , (refl , (refl , (refl , {!!}))))
-ex-tra {x₄ ⇒ x₅ , μα} {x₆ ⇒ x₇ , (x₈ ⇒ x₉ , μβ)} {x₂ ⇒ x₃ , (x ⇒ x₁ , μγ)} ((.x₂ ⇒ .x₃ , μ₁) , refl , refl , c₁) ((.x₆ ⇒ .x₇ , μ₂) , refl , refl , c₂) = {!!}
--- ex-tra (μ₁ , c₁) (∙ , refl) = (μ₁ , c₁)
--- ex-tra (μ₁ , c₁) ((x ⇒ x₁ , μ₂) , c₂) = {!!}
 
+
+-- mutual
+--   wf-value : {τ : typ} → value[ wf-type ] τ → wf-type τ 
+--   wf-value (Var x) = x
+--   wf-value (Num n) = tt
+--   wf-value (Fun wfτ₂ e) wfβ wfμβ = (wfτ₂ , wf-term (e wfτ₂) wfβ wfμβ)
+
+--   wf-term : {τ α β : typ} {μα μβ : trail} →
+--             term[ wf-type ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β →
+--             wf-type β → wf-trail μβ →
+--             wf-type τ × wf-type α × wf-trail μα ×
+--             μα extends μβ
+--   wf-term {μα = μα} (Val v) wfα wfμα with wf-value v
+--   ... | wfτ = (wfτ , wfα , wfμα , μα extends-itself)
+--   wf-term {β = δ} {μβ = μδ} (App e₁ e₂) wfδ wfμδ with wf-term e₁ wfδ wfμδ
+--   ... | (wf₁ , wfγ , wfμγ , μγ-extends-μδ) with wf-term e₂ wfγ wfμγ
+--   ... | (wf₂ , wfβ , wfμβ , μβ-extends-μγ) with wf₁ wfβ wfμβ
+--   ... | (wfτ₂ , wfτ , wfα , wfμα , μα-extends-μβ) = (wfτ , wfα , wfμα , {!!})
+--   wf-term (Plus e₁ e₂) wfα wfμβ = {!!}
+--   wf-term (Control id c₁ c₂ wf e) wfα wfμβ = {!!}
+--   wf-term (Prompt id e) wfα wfμα = {!!} -}
 
 
 mutual
-  wf-value : {τ : typ} → value[ wf-type ] τ → wf-type τ 
-  wf-value (Var x) = x
-  wf-value (Num n) = tt
-  wf-value (Fun wfτ₂ e) wfβ wfμβ = (wfτ₂ , wf-term (e wfτ₂) wfβ wfμβ)
-
-  wf-term : {τ α β : typ} {μα μβ : trail} →
-            term[ wf-type ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β →
-            wf-type β → wf-trail μβ →
-            wf-type τ × wf-type α × wf-trail μα ×
-            μα extends μβ
-  wf-term {μα = μα} (Val v) wfα wfμα with wf-value v
-  ... | wfτ = (wfτ , wfα , wfμα , μα extends-itself)
-  wf-term {β = δ} {μβ = μδ} (App e₁ e₂) wfδ wfμδ with wf-term e₁ wfδ wfμδ
-  ... | (wf₁ , wfγ , wfμγ , μγ-extends-μδ) with wf-term e₂ wfγ wfμγ
-  ... | (wf₂ , wfβ , wfμβ , μβ-extends-μγ) with wf₁ wfβ wfμβ
-  ... | (wfτ₂ , wfτ , wfα , wfμα , μα-extends-μβ) = (wfτ , wfα , wfμα , {!!})
-  wf-term (Plus e₁ e₂) wfα wfμβ = {!!}
-  wf-term (Control id c₁ c₂ wf e) wfα wfμβ = {!!}
-  wf-term (Prompt id e) wfα wfμα = {!!} -}
-
-
-{- mutual
   data SubstVal {var : typ → Set} : {τ₁ τ₂ : typ} →
                 (var τ₁ → value[ var ] τ₂) →
                 value[ var ] τ₁ →
@@ -327,6 +326,10 @@ mutual
   --frame
 data frame[_,_⟨_⟩_⟨_⟩_]_⟨_⟩_⟨_⟩_ (var : typ → Set)
      : typ → trail → typ → trail → typ → typ → trail → typ → trail → typ → Set where
+-- App : {τ₁ τ₂ α β γ δ : typ}{μα μβ μγ μδ : trail} →
+--           (e₁ : term[ var ] (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β) ⟨ μγ ⟩ γ ⟨ μδ ⟩ δ) →
+--           (e₂ : term[ var ] τ₂ ⟨ μβ ⟩ β ⟨ μγ ⟩ γ) →
+--           term[ var ] τ₁ ⟨ μα ⟩ α ⟨ μδ ⟩ δ
   App₁ : {τ₁ τ₂ α β γ δ : typ}{μα μβ μγ μδ : trail} →
          (e₂ : term[ var ] τ₂ ⟨ μβ ⟩ β ⟨ μγ ⟩ γ) →
          frame[ var , (τ₂ ⇒ τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β) ⟨ μγ ⟩ γ ⟨ μδ ⟩ δ ]
@@ -345,7 +348,10 @@ data frame[_,_⟨_⟩_⟨_⟩_]_⟨_⟩_⟨_⟩_ (var : typ → Set)
           (v₁ : value[ var ] Nat) →
           frame[ var , Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ ] Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ
             
-
+  -- Prompt : {τ α β β' : typ}{μᵢ μα : trail} →
+  --            (is-id-trail β β' μᵢ) →
+  --            (e : term[ var ] β ⟨ μᵢ ⟩ β' ⟨ ∙ ⟩ τ) →
+  --            term[ var ] τ ⟨ μα ⟩ α ⟨ μα ⟩ α
   Pro  : {τ α β β' : typ}{μᵢ μα : trail} →
          (is-id-trail β β' μᵢ) →
          frame[ var , β ⟨ μᵢ ⟩ β' ⟨ ∙ ⟩ τ ] τ ⟨ μα ⟩ α ⟨ μα ⟩ α
@@ -376,6 +382,10 @@ data pframe[_,_⟨_⟩_⟨_⟩_]_⟨_⟩_⟨_⟩_ (var : typ → Set)
          pframe[ var , τ₂ ⟨ μβ ⟩ β ⟨ μγ ⟩ γ ]
                  τ₁ ⟨ μα ⟩ α ⟨ μγ ⟩ γ
 
+  -- Plus : {α β γ : typ} {μα μβ μγ : trail} →
+  --          term[ var ] Nat ⟨ μβ ⟩ β ⟨ μγ ⟩ γ →
+  --          term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β →
+  --          term[ var ] Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ
   Plus₁ : {α β γ : typ} {μα μβ μγ : trail} →
           (e₂ : term[ var ] Nat ⟨ μα ⟩ α ⟨ μβ ⟩ β) →
           pframe[ var , Nat ⟨ μβ ⟩ β ⟨ μγ ⟩ γ ] Nat ⟨ μα ⟩ α ⟨ μγ ⟩ γ
@@ -553,5 +563,5 @@ data Reduce* {var : typ → Set} :
             (e₃ : term[ var ] τ₁ ⟨ μα ⟩ τ₂ ⟨ μβ ⟩ τ₃) →
             Reduce e₁ e₂ →
             Reduce* e₂ e₃ →
-            Reduce* e₁ e₃-}
+            Reduce* e₁ e₃
 

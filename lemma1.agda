@@ -3771,23 +3771,45 @@ aux₄-p (Frame (Plus₂ v₁) p) v κ k t = {!!}
 --          (x₂ : compatible (x₅ ⇒ α₂ , μ₀) μ₀ μ₄)
 --          (x₃ : compatible (x₅ ⇒ α₂ , μ₄) μ₃ μ₃) →
 
+-- aux₄ : ∀ {var : cpstyp → Set}{τ}{α}{β}{μα}{μβ}{μk}
+--          (e : term[ var ∘ cpsT ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β)
+--          {c : compatible μk μβ μβ}
+--          {c' : compatible μk μα μα}
+--          (κ : cpsvalue[ var ] (cpsT τ) →  cpsvalue[ var ] (cpsM μα) →
+--               cpsterm[ var ] (cpsT α))
+--          (k : var (cpsM μk))
+--          (t : var (cpsM μβ)) →
+--        cpsreduce {var}
+--        (cpsTerm e
+--        (λ v t' →
+--            κ v t')
+--             (CPSCons c (CPSVar k) (CPSVar t)))
+--        (cpsTerm e
+--         (λ v t' →
+--            κ v (CPSCons c' (CPSVar k) t'))
+--         (CPSVar t))
+
+-- aux₄ = {!!}
+
+
 aux₄ : ∀ {var : cpstyp → Set}{τ}{α}{β}{μα}{μβ}{μk}
          (e : term[ var ∘ cpsT ] τ ⟨ μα ⟩ α ⟨ μβ ⟩ β)
          {c : compatible μk μβ μβ}
-         {c' : compatible μk μα μα}
+         --{c' : compatible μk μα μα}
          (κ : cpsvalue[ var ] (cpsT τ) →  cpsvalue[ var ] (cpsM μα) →
               cpsterm[ var ] (cpsT α))
          (k : var (cpsM μk))
          (t : var (cpsM μβ)) →
-       cpsreduce {var}
-       (cpsTerm e
-       (λ v t' →
-           κ v t')
-            (CPSCons c (CPSVar k) (CPSVar t)))
-       (cpsTerm e
-        (λ v t' →
-           κ v (CPSCons c' (CPSVar k) t'))
-        (CPSVar t))
+         Σ[ c' ∈ compatible μk μα μα ]
+         (cpsreduce {var}
+         (cpsTerm e
+         (λ v t' →
+             κ v t')
+              (CPSCons c (CPSVar k) (CPSVar t)))
+         (cpsTerm e
+          (λ v t' →
+             κ v (CPSCons c' (CPSVar k) t'))
+             (CPSVar t)))
 
 aux₄ = {!!}
 {-aux₄ (Val x) κ k t x₂ x₃ = {!!}
@@ -4729,7 +4751,7 @@ aux₃ = {!!}
 
 
 
-{- correctEta : {var : cpstyp → Set} {τ₁ α β : typ} {μα μβ : trail} →
+correctEta : {var : cpstyp → Set} {τ₁ α β : typ} {μα μβ : trail} →
              {e e′ : term[ var ∘ cpsT ] τ₁ ⟨ μα ⟩ α ⟨ μβ ⟩ β} →
              (k : cpsvalue[ var ] (cpsT τ₁) → cpsvalue[ var ] (cpsM μα)
              → cpsterm[ var ] (cpsT α)) →
@@ -5775,27 +5797,26 @@ correctEta {var} {τ₁} {α} {.α} {μα} {.μα}
      (λ x' → cpsTerm (e₁ x') (CPSIdk x₁) CPSId))
     (λ v → k (CPSVar v) t)
   --⟶⟨ rLet₁ (rLet₁ (rFun (λ x₄ → rFun (λ x₅ → rFun (λ x₆ → {!aux p₂ x₄ x₅ x₆!}))))) ⟩
-  ⟶⟨ rLet₁ (rLet₁ (rFun (λ x₄ → rFun (λ x₅ → rFun (λ x₆ → {!aux₄ (pcontext-plug p₂ (Val (Var x₄))) (CPSIdk x₀) x₅ x₆!}))))) ⟩
-  {!!}
-  ⟶⟨ {!!} ⟩
-  
-  --auxを使うために
+  ⟶⟨ rLet₁ (rLet₁ (rFun (λ x₄ → rFun (λ x₅ → rFun (λ x₆ → (let (c' , red) = aux₄ (pcontext-plug p₂ (Val (Var x₄))) (CPSIdk x₀) x₅ x₆ in {!!})))))) ⟩
   CPSLet
     (CPSLet
      (CPSVal
       (CPSFun
-       (λ x₄ →
+       (λ z →
           CPSVal
           (CPSFun
-           (λ k' →
+           (λ z₁ →
               CPSVal
               (CPSFun
-               (λ t' →
-                  cpsTerm (pcontext-plug p₂ (Val (Var x₄)))
-                  (λ v t'' →
-                      CPSIdk x₀ v (CPSCons {!compatible (x₆ ⇒ α , μ₃) μ₃ μ₃!} (CPSVar k') t''))
-                  (CPSVar t'))))))))
-     (λ z → cpsTerm (e₁ z) (CPSIdk x₁) CPSId))
+               (λ z₂ →
+                  cpsTerm (pcontext-plug p₂ (Val (Var z)))
+                  (λ v t' →
+                     CPSIdk x₀ v
+                     (CPSCons
+                      (proj₁ (aux₄ (pcontext-plug p₂ (Val (Var z))) (CPSIdk x₀) z₁ z₂))
+                      (CPSVar z₁) t'))
+                  (CPSVar z₂))))))))
+     (λ x' → cpsTerm (e₁ x') (CPSIdk x₁) CPSId))
     (λ v → k (CPSVar v) t)
   ⟵⟨ rLet₁ (rLet₁ (rFun (λ x₇ → rFun (λ x₈ → rFun (λ x₉ → {!!}))))) ⟩
   CPSLet
@@ -6088,4 +6109,4 @@ correctEta {var} {τ₁} {α} {.α} {μα} {.μα}
               CPSVal (CPSFun (λ t'' → CPSIdk x₁ (CPSVar v) (CPSVar t'')))))))
         (CPSVal CPSId))
        (λ v → k (CPSVar v) t))
-  ∎ -}
+  ∎

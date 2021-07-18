@@ -555,31 +555,134 @@ subst-context (Frame (Plus₂ v₁) con) v = sPlu pSubst≠ (subst-context con v
 
 
 
-control-lemma : ∀ {var : cpstyp → Set}{τ τ₁ τ₂ α β γ γ' t₁ t₂ α' : typ} {μ₀ μ₁ μ₂ μᵢ μα μβ μα' : trail}
-              {μ[α]α : trails[ μα' ] μα'} → 
-              {μsᵢ : trails[ ∙ ] μᵢ} →
-              {μs₁ : trails[ μ₂ ] μ₁} →  
+-- control-lemma : ∀ {var : cpstyp → Set}{τ τ₁ τ₂ α β γ γ' t₁ t₂ α' : typ}
+--               {μ₀ μ₁ μ₂ μᵢ μα μβ μα' : trail}
+--               {μ[α]α : trails[ μα' ] μα'} → 
+--               {μsᵢ : trails[ ∙ ] μᵢ} →
+--               {μs₁ : trails[ μ₂ ] μ₁} →  
+--               {μ[β]α : trails[ μβ ] μα} →
+--               (p₁ : pcontext[ var ∘ cpsT , τ ⟨ μ[β]α ⟩ α ⟨ μβ ⟩ β ]
+--                             τ₁ ⟨ μsᵢ ⟩ τ₂ ⟨ ∙ ⟩ β ) →
+--               (p₂ : pcontext[ var ∘ cpsT , τ ⟨ [] ⟩ α' ⟨ μα' ⟩ α' ]
+--                             τ₁ ⟨ μs₁ ⟩ τ₂ ⟨ μ₂ ⟩ α ) →
+--               {id₀ : is-id-trails τ₁ τ₂ μsᵢ} →
+--               (id : is-id-trails γ γ' μsᵢ) →
+--               (c₁ : compatible (t₁ ⇒ t₂ , μ₁) μ₂ μ₂) →
+--               (c₂ : compatible μβ μ₂ μα) →
+--               same-pcontext p₁ p₂ →
+--               (e : var (cpsT (τ ⇒ t₁ ⟨ μs₁ ⟩ t₂ ⟨ μ₂ ⟩ α)) →
+--                    term[ var ∘ cpsT ] γ ⟨ μsᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
+--                --(k₁ : cpsvalue[ var ] cpsT t₁ → cpsvalue[ var ] cpsM μ₁ → cpsterm[ var ] cpsT t₂ ) →
+--                (k₁ : cpsvalue[ var ] cpsT τ₁ → cpsvalue[ var ] cpsMs μsᵢ → cpsterm[ var ] cpsT τ₂) →
+--                (tr : cpsvalue[ var ] cpsM ∙) →
+--                (sch : schematic k₁) →
+--                (sch' : schematicV′ k₁) →
+--                cpsreduce (cpsTerm (pcontext-plug p₁ (Control id c₁ c₂ e)) k₁ tr)
+--                (cpsTerm (App (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x))))) (Control id c₁ refl e)) k₁ tr)
+
+control-lemma : ∀ {var : cpstyp → Set}{τ τ₁ τ₂ α β γ γ' t₁ t₂ α' : typ}
+              {μ₀ μ₁ μ₃ μᵢ μα μβ μα' : trail}
+              {μ[̇̇∙]α : trails[ ∙ ] μα}
+              {μ[μ₀]μ₁ : trails[ μ₀ ] μ₁}→
+              {μ[∙]μ₃ : trails[ ∙ ] μ₃} →
+              {μ[α]μ₃ : trails[ μα ] μ₃} →  
               {μ[β]α : trails[ μβ ] μα} →
+              {μ[∙]μᵢ : trails[ ∙ ] μᵢ} →
               (p₁ : pcontext[ var ∘ cpsT , τ ⟨ μ[β]α ⟩ α ⟨ μβ ⟩ β ]
-                            τ₁ ⟨ μsᵢ ⟩ τ₂ ⟨ ∙ ⟩ β ) →
-              (p₂ : pcontext[ var ∘ cpsT , τ ⟨ [] ⟩ α' ⟨ μα' ⟩ α' ]
-                            τ₁ ⟨ μs₁ ⟩ τ₂ ⟨ μ₂ ⟩ α ) →
-              {id₀ : is-id-trails τ₁ τ₂ μsᵢ} →
-              (id : is-id-trails γ γ' μsᵢ) →
-              (c₁ : compatible (t₁ ⇒ t₂ , μ₁) μ₂ μ₂) →
-              (c₂ : compatible μβ μ₂ μα) →
+                            τ₁ ⟨ μ[∙]μ₃ ⟩ τ₂ ⟨ ∙ ⟩ β ) →
+              (p₂ : pcontext[ var ∘ cpsT , τ ⟨ []{μα'} ⟩ α' ⟨ μα' ⟩ α' ]
+                            τ₁ ⟨ μ[α]μ₃ ⟩ τ₂ ⟨ μα ⟩ α ) →
+              --{id₀ : is-id-trails τ₁ τ₂ μ[∙]μ₃} →
+              (id : is-id-trails γ γ' μ[∙]μᵢ) →
+              (c₁ : compatible (t₁ ⇒ t₂ , μ₁) μ₀ μα) →
+              (c₂ : compatible μβ μα μα) →
               same-pcontext p₁ p₂ →
-              (e : var (cpsT (τ ⇒ t₁ ⟨ μs₁ ⟩ t₂ ⟨ μ₂ ⟩ α)) →
-                   term[ var ∘ cpsT ] γ ⟨ μsᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
-               --(k₁ : cpsvalue[ var ] cpsT t₁ → cpsvalue[ var ] cpsM μ₁ → cpsterm[ var ] cpsT t₂ ) →
-               (k₁ : cpsvalue[ var ] cpsT τ₁ → cpsvalue[ var ] cpsMs μsᵢ → cpsterm[ var ] cpsT τ₂) →
-               (tr : cpsvalue[ var ] cpsM ∙) →
-               (sch : schematic k₁) →
-               (sch' : schematicV′ k₁) →
-               cpsreduce (cpsTerm (pcontext-plug p₁ (Control id c₁ c₂ e)) k₁ tr)
-               (cpsTerm (App (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x))))) (Control id c₁ refl e)) k₁ tr)
-control-lemma = {!!}
-{-control-lemma Hole Hole x₁ x₂ refl Hole e k₁ t₁ sch  sch' =  begin
+              (e : var (cpsT (τ ⇒ t₁ ⟨ μ[μ₀]μ₁ ⟩ t₂ ⟨ μ₀ ⟩ α)) →
+                   term[ var ∘ cpsT ] γ ⟨ μ[∙]μᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
+              (k₁ : cpsvalue[ var ] cpsT τ₁ → cpsvalue[ var ] cpsMs μ[∙]μ₃ → cpsterm[ var ] cpsT τ₂) →
+              (tr : cpsvalue[ var ] cpsM ∙) →
+              (sch : schematic k₁) →
+              (sch' : schematicV′ k₁) →
+              cpsreduce (cpsTerm (pcontext-plug p₁ (Control{μs₁ = μ[μ₀]μ₁} id c₁ c₂ e)) k₁ tr)
+                (cpsTerm{μs = μ[∙]μ₃} (App{μ[γ]β = μ[̇̇∙]α} (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x)))))
+                (Control{μs₁ = μ[μ₀]μ₁} id c₁ refl e)) k₁ tr)
+
+control-lemma Hole Hole id₁ c₁ c₂ x e k₁ tr sch sch' = {!!}
+control-lemma (Frame (App₁ e₂) p₁') (Frame (App₁ .e₂) p₂') x₁ x₂ x₃
+              (Frame {f₁ = (App₁ e₂)}{f₂ = (App₁ .e₂)} (App₁ .e₂) {c₁ = c₁}{c₂ = c₂} x₄) e k₁ t₁ sch sch' = begin
+
+  (cpsTerm (pcontext-plug p₁' (Control x₁ x₂ x₃ e))
+       (λ v₁ →
+          cpsTerm e₂
+          (λ v₂ t₄ →
+             CPSApp
+             (CPSApp (CPSApp (CPSVal v₁) (CPSVal v₂))
+              (CPSVal
+               (CPSFun
+                (λ v → CPSVal (CPSFun (λ t'' → k₁ (CPSVar v) (CPSVar t'')))))))
+             (CPSVal t₄)))
+       t₁)
+
+  ⟶⟨ {!control-lemma p₁' p₂'!} ⟩
+  {!!}
+  ⟶⟨ {!!} ⟩
+  (CPSLet
+       (CPSVal
+        (CPSFun
+         (λ v →
+            CPSVal
+            (CPSFun
+             (λ k' →
+                CPSVal
+                (CPSFun
+                 (λ t' →
+                    CPSLet
+                    (CPSVal (CPSAppend refl t₁ (CPSCons x₂ (CPSVar k') (CPSVar t'))))
+                    (λ t'' →
+                       CPSApp
+                       (CPSApp
+                        (CPSApp
+                         (CPSVal
+                          (CPSFun
+                           (λ x →
+                              CPSVal
+                              (CPSFun
+                               (λ k'' →
+                                  CPSVal
+                                  (CPSFun
+                                   (λ t''' →
+                                      cpsTerm (pcontext-plug p₂' (Val (Var x)))
+                                      (λ v₁ →
+                                         cpsTerm e₂
+                                         (λ v₂ t₄ →
+                                            CPSApp
+                                            (CPSApp (CPSApp (CPSVal v₁) (CPSVal v₂))
+                                             (CPSVal
+                                              (CPSFun
+                                               (λ v₃ →
+                                                  CPSVal
+                                                  (CPSFun
+                                                   (λ t'''' →
+                                                      CPSApp
+                                                      (CPSApp (CPSVal (CPSVar k''))
+                                                       (CPSVal (CPSVar v₃)))
+                                                      (CPSVal (CPSVar t''''))))))))
+                                            (CPSVal t₄)))
+                                      (CPSVar t'''))))))))
+                         (CPSVal (CPSVar v)))
+                        (CPSVal
+                         (CPSFun
+                          (λ v₁ → CPSVal (CPSFun (λ t''' → k₁ (CPSVar v₁) (CPSVar t''')))))))
+                       (CPSVal (CPSVar t''))))))))))
+       (λ x' → cpsTerm (e x') (CPSIdk x₁) CPSId))
+
+  ∎
+control-lemma (Frame (App₂ v₁) p₁) (Frame f₁ p₂) id₁ c₁ c₂ x e k₁ tr sch sch' = {!!}
+control-lemma (Frame (Plus₁ e₂) p₁) (Frame f₁ p₂) id₁ c₁ c₂ x e k₁ tr sch sch' = {!!}
+control-lemma (Frame (Plus₂ v₁) p₁) (Frame f₁ p₂) id₁ c₁ c₂ x e k₁ tr sch sch' = {!!}
+{-
+control-lemma Hole Hole x₁ x₂ refl Hole e k₁ t₁ sch  sch' = {!!}
+{-begin
   (CPSLet
        (CPSVal
         (CPSFun
@@ -756,11 +859,79 @@ control-lemma = {!!}
                           (λ v₁ → CPSVal (CPSFun (λ t''' → k₁ (CPSVar v₁) (CPSVar t''')))))))
                        (CPSVal (CPSVar t''))))))))))
        (λ x' → cpsTerm (e x') (CPSIdk x₁) CPSId))
-  ∎
+  ∎ -}
 -- cpsreduce (cpsTerm (pcontext-plug p₁ (Control x₁ x₂ x₃ e)) k₁ tr)
 --                (cpsTerm (App (Val (Fun (λ x → pcontext-plug p₃ (Val (Var x))))) (Control x₁ x₂ refl e)) k₁ tr)
 control-lemma  (Frame (App₁ e₂) p₁') (Frame (App₁ .e₂) p₃') x₁ x₂ x₃
               (Frame {f₁ = (App₁ e₂)}{f₂ = (App₁ .e₂)} (App₁ .e₂) {c₁ = c₁}{c₂ = c₂} x₄) e k₁ t₁ sch sch' = begin
+
+  (cpsTerm (pcontext-plug p₁' (Control x₁ x₂ x₃ e))
+       (λ v₁ →
+          cpsTerm e₂
+          (λ v₂ t₄ →
+             CPSApp
+             (CPSApp (CPSApp (CPSVal v₁) (CPSVal v₂))
+              (CPSVal
+               (CPSFun
+                (λ v → CPSVal (CPSFun (λ t'' → k₁ (CPSVar v) (CPSVar t'')))))))
+             (CPSVal t₄)))
+       t₁)
+
+  ⟶⟨ {!control-lemma p₁' p₃'!} ⟩
+  {!!}
+  ⟶⟨ {!!} ⟩
+  (CPSLet
+       (CPSVal
+        (CPSFun
+         (λ v →
+            CPSVal
+            (CPSFun
+             (λ k' →
+                CPSVal
+                (CPSFun
+                 (λ t' →
+                    CPSLet
+                    (CPSVal (CPSAppend refl t₁ (CPSCons x₂ (CPSVar k') (CPSVar t'))))
+                    (λ t'' →
+                       CPSApp
+                       (CPSApp
+                        (CPSApp
+                         (CPSVal
+                          (CPSFun
+                           (λ x →
+                              CPSVal
+                              (CPSFun
+                               (λ k'' →
+                                  CPSVal
+                                  (CPSFun
+                                   (λ t''' →
+                                      cpsTerm (pcontext-plug p₃' (Val (Var x)))
+                                      (λ v₁ →
+                                         cpsTerm e₂
+                                         (λ v₂ t₄ →
+                                            CPSApp
+                                            (CPSApp (CPSApp (CPSVal v₁) (CPSVal v₂))
+                                             (CPSVal
+                                              (CPSFun
+                                               (λ v₃ →
+                                                  CPSVal
+                                                  (CPSFun
+                                                   (λ t'''' →
+                                                      CPSApp
+                                                      (CPSApp (CPSVal (CPSVar k''))
+                                                       (CPSVal (CPSVar v₃)))
+                                                      (CPSVal (CPSVar t''''))))))))
+                                            (CPSVal t₄)))
+                                      (CPSVar t'''))))))))
+                         (CPSVal (CPSVar v)))
+                        (CPSVal
+                         (CPSFun
+                          (λ v₁ → CPSVal (CPSFun (λ t''' → k₁ (CPSVar v₁) (CPSVar t''')))))))
+                       (CPSVal (CPSVar t''))))))))))
+       (λ x' → cpsTerm (e x') (CPSIdk x₁) CPSId))
+
+  ∎
+{-begin
 
   (cpsTerm (pcontext-plug p₁' (Control x₁ x₂ x₃ e))
        (λ v₂ →
@@ -774,7 +945,7 @@ control-lemma  (Frame (App₁ e₂) p₁') (Frame (App₁ .e₂) p₃') x₁ x�
              (CPSVal t₄)))
        t₁)
 
-  ⟶⟨ control-lemma p₁' {!!} x₁ x₂ x₃ {!!} e
+  ⟶⟨ control-lemma p₁' {!!} x₁ ? x₃ {!!} ?
        (λ v₂ →
           cpsTerm e₂
           (λ v₃ t₄ →
@@ -1659,12 +1830,14 @@ control-lemma  (Frame (App₁ e₂) p₁') (Frame (App₁ .e₂) p₃') x₁ x�
                           (λ v₂ → CPSVal (CPSFun (λ t''' → k₁ (CPSVar v₂) (CPSVar t''')))))))
                        (CPSVal (CPSVar t''))))))))))
        (λ x' → cpsTerm (e x') (CPSIdk x₁) CPSId))
-  ∎
+  ∎-}
 -- control-lemma  (Frame (App₁ e₂) p₁') (Frame (App₁ .e₂) p₃') x₁ x₂ x₃
 --               (Frame {f₁ = (App₁ e₂)}{f₂ = (App₁ .e₂)} (App₁ .e₂) {c₁ = c₁}{c₂ = c₂} x₄) e k₁ t₁ k₂ sch sch' = begin
 --control-lemma p₁' p₃' x₁ x₂ x₃ x₄ e
 control-lemma (Frame (App₂ v₁) p₁') (Frame (App₂ .v₁) p₃') x₁ x₂ x₃
-              (Frame {f₁ = (App₂ v₁)}{f₂ = (App₂ .v₁)} (App₂ .v₁) {c₁ = c₁}{c₂ = c₂} x₄) e k₁ t₁ sch sch' = begin
+              (Frame {f₁ = (App₂ v₁)}{f₂ = (App₂ .v₁)} (App₂ .v₁) {c₁ = c₁}{c₂ = c₂} x₄) e k₁ t₁ sch sch' = {!!}
+
+{-begin
    (cpsTerm (pcontext-plug p₁' (Control x₁ x₂ x₃ e))
        (λ v₂ t₄ →
           CPSApp
@@ -2274,11 +2447,13 @@ control-lemma (Frame (App₂ v₁) p₁') (Frame (App₂ .v₁) p₃') x₁ x₂
                           (λ v₂ → CPSVal (CPSFun (λ t''' → k₁ (CPSVar v₂) (CPSVar t''')))))))
                        (CPSVal (CPSVar t''))))))))))
        (λ x' → cpsTerm (e x') (CPSIdk x₁) CPSId))
-  ∎
+  ∎ -}
 
 
 control-lemma (Frame (Plus₁ e₂) p₁') (Frame (Plus₁ .e₂) p₃') x₁ x₂ x₃
-              (Frame {f₁ = (Plus₁ e₂)}{f₂ = (Plus₁ .e₂)} (Plus₁ .e₂) {c₁ = c₁}{c₂ = c₂} x₄) e k₁ t₁ sch sch' = begin
+              (Frame {f₁ = (Plus₁ e₂)}{f₂ = (Plus₁ .e₂)} (Plus₁ .e₂) {c₁ = c₁}{c₂ = c₂} x₄) e k₁ t₁ sch sch' = {!!}
+
+{- begin
   (cpsTerm (pcontext-plug p₁' (Control x₁ x₂ x₃ e))
        (λ v₁ →
           cpsTerm e₂
@@ -2936,14 +3111,16 @@ control-lemma (Frame (Plus₁ e₂) p₁') (Frame (Plus₁ .e₂) p₃') x₁ x�
                        (CPSVal (CPSVar t''))))))))))
        (λ x' → cpsTerm (e x') (CPSIdk x₁) CPSId))
 
-  ∎
+  ∎ -}
   
 -- control-lemma  (Frame (App₁ e₂) p₁') (Frame (App₁ .e₂) p₃') x₁ x₂ x₃
 --               (Frame {f₁ = (App₁ e₂)}{f₂ = (App₁ .e₂)} (App₁ .e₂) {c₁ = c₁}{c₂ = c₂} x₄) e k₁ t₁ k₂ sch sch' = begin
 -- cpsreduce (cpsTerm (pcontext-plug p₁ (Control x₁ x₂ x₃ e)) k₁ tr)
 --                (cpsTerm (App (Val (Fun (λ x → pcontext-plug p₃ (Val (Var x))))) (Control x₁ x₂ refl e)) k₁ tr)
 control-lemma (Frame (Plus₂ v₁) p₁') (Frame (Plus₂ .v₁) p₃') x₁ x₂ x₃
-              (Frame {f₁ = (Plus₂ v₁)}{f₂ = (Plus₂ .v₁)} (Plus₂ .v₁) {c₁ = c₁}{c₂ = c₂} x₄) e k₁ t₁ sch sch' = begin
+              (Frame {f₁ = (Plus₂ v₁)}{f₂ = (Plus₂ .v₁)} (Plus₂ .v₁) {c₁ = c₁}{c₂ = c₂} x₄) e k₁ t₁ sch sch' = {!!}
+
+{- begin
 
   (cpsTerm (pcontext-plug p₁' (Control x₁ x₂ x₃ e))
        (λ v₂ t₄ →
@@ -3441,10 +3618,10 @@ control-lemma (Frame (Plus₂ v₁) p₁') (Frame (Plus₂ .v₁) p₃') x₁ x�
                           (λ v₂ → CPSVal (CPSFun (λ t''' → k₁ (CPSVar v₂) (CPSVar t''')))))))
                        (CPSVal (CPSVar t''))))))))))
        (λ x' → cpsTerm (e x') (CPSIdk x₁) CPSId))
-  ∎
+  ∎ -}
 
 
-
+{-
 aux₄-con : ∀ {var} {μ₄} {x₅} {α₂} {μ₀} {μ₃} 
          {μ₁} 
         {c₂ : compatible (x₅ ⇒ α₂ , μ₀) μ₁ μ₃}
@@ -3623,7 +3800,7 @@ aux₄-con  {μ₃ = x₄ ⇒ x₅ , μ₃} {μ₁ = x ⇒ x₁ , μ₁} {refl ,
        (CPSCons (refl , refl , snd₁) (CPSVar k)
         (CPSCons (refl , refl , snd) (CPSVar t) (CPSVar z))))
 
-  ∎ 
+  ∎ -}
 -- aux₄-con {μ₁ = x ⇒ x₁ , μ₁}{c₂}{x₂}{x₃} k t z = begin
 --   (CPSVal
 --        (CPSCons c₂ (CPSCons (refl , refl , x₂) (CPSVar k) (CPSVar t)) z))
