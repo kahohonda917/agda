@@ -607,7 +607,7 @@ control-lemma : ∀ {var : cpstyp → Set}{τ τ₁ τ₂ α β γ γ' t₁ t₂
                 (cpsTerm{μs = μ[∙]μ₃} (App{μ[γ]β = μ[̇̇∙]α} (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x)))))
                 (Control{μs₁ = μ[μ₀]μ₁} id c₁ refl e)) k₁ tr)
 
-control-lemma Hole Hole id₁ c₁ c₂ x e k₁ tr sch sch' = {!!}
+control-lemma Hole Hole id₁ c₁ c₂ Hole e k₁ tr sch sch' = {!!}
 control-lemma (Frame (App₁ e₂) p₁') (Frame (App₁ .e₂) p₂') x₁ x₂ x₃
               (Frame {f₁ = (App₁ e₂)}{f₂ = (App₁ .e₂)} (App₁ .e₂) {c₁ = c₁}{c₂ = c₂} x₄) e k₁ t₁ sch sch' = begin
 
