@@ -376,9 +376,6 @@ data same-pframe {var : typ → Set}:
                     {μ[β]α = μ[δ]ε}{μ[β']α' = μ[δ']ε}
                     {μ[δ]γ = μ[δ]γ}{μ[δ']γ' = μ[δ']γ}
                     (App₁ e₂) (App₁ e₂)
-        -- same-pframe {τ₃ = τ₃}{τ₃'}{τ₄}{τ₄'}{τ₅}{τ₅'}{μβ = μβ}{μβ'}
-        --             {μ[β]α = μ[β]γ}{μ[β']α' = μ[β']γ}{μ[δ]γ = μ[β]γ}{μ[δ']γ' = μ[β']γ'}
-        --             (App₁{μ[β]α = μ[β]γ} e₂) (App₁{μ[β]α = μ[β]γ'} e₂)
 
  App₂ : {τ₁ τ₂ α β τ₃ τ₃' τ₄ δ : typ}{μα μ₁ μ₂ μβ μβ' μδ με : trail}
         {μ[β]α : trails[ μβ ] μα}{μ[β]β : trails[ μβ ] μβ} →
@@ -486,72 +483,52 @@ data Reduce {var : typ → Set} :
             Reduce {τ₂ = τ₂}{μα = μα}(Prompt refl (Val v₁)) (Val v₁)
 
     
-  -- RControl : {τ τ₁ τ₂ α β γ γ' t₁ t₂ α' : typ} {μ₀ μ₁ μ₃ μᵢ μα μβ μα' : trail}
-  --            {μ[α]α : trails[ μα' ] μα'} → 
+  
+　 RControl : {τ α β γ γ' τ₁ τ₂ : typ}
+              {μ₀ μᵢ μα μ₃ : trail} →
+              {μ[∙]α : trails[ ∙ ] μα} →
+              {μ[∙]μ₃ : trails[ ∙ ] μ₃} →
+              {μ[μα]μ₃ : trails[ μα ] μ₃} →
+              {μ[∙]μᵢ : trails[ ∙ ] μᵢ} →
+               (p₁ : pcontext[ var , τ ⟨ μ[∙]α ⟩ α ⟨ ∙ ⟩ β ]
+                              τ₁ ⟨ μ[∙]μ₃ ⟩ τ₂ ⟨ ∙ ⟩ β ) →
+               (p₂ : pcontext[ var , τ ⟨ []{μα} ⟩ α ⟨ μα ⟩ α ]
+                              τ₁ ⟨ μ[μα]μ₃ ⟩ τ₂ ⟨ μα ⟩ α ) →
+               {id₀ : is-id-trails τ₁ τ₂ μ[∙]μ₃} →
+               (id : is-id-trails γ γ' μ[∙]μᵢ) →
+               (c₁ : compatible (τ₁ ⇒ τ₂ , μ₃) μα μα) →
+               (c₂ : compatible ∙ μα μα) →
+               same-pcontext p₁ p₂ →
+               (e : var (τ ⇒ τ₁ ⟨ μ[μα]μ₃ ⟩ τ₂ ⟨ μα ⟩ α) → term[ var ] γ ⟨ μ[∙]μᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
+               Reduce {τ₂ = τ₂}{μα = μα} (Prompt id₀
+                      (pcontext-plug p₁ (Control id c₁ c₂ e)))
+                      (Prompt{μsᵢ = μ[∙]μᵢ} id (App (Val (Fun e))
+                      (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x)))))))
+
+  -- RControl : {τ α α' β β' γ γ' t₁ t₂ τ₁ τ₂ τ₃ τ₄ τ₅ : typ}
+  --            {μ₀ μ₁ μᵢ μα μα' μβ μβ' μ₂ μ₃ μ₄ μ₅ : trail} →
+  --            {μ[∙]α : trails[ ∙ ] μα} →
   --            {μ[∙]μ₃ : trails[ ∙ ] μ₃} →
-  --            {μ[μ₀]μ₃ : trails[ μ₀ ] μ₃} →  
-  --            {μ[β]α : trails[ μβ ] μα} →
+  --            {μ[μ₂]μ₁ : trails[ μ₂ ] μ₁} →
   --            {μ[∙]μᵢ : trails[ ∙ ] μᵢ} →
-  --            (p₁ : pcontext[ var , τ ⟨ μ[β]α ⟩ α ⟨ μβ ⟩ β ]
-  --                           τ₁ ⟨ μ[∙]μ₃ ⟩ τ₂ ⟨ ∙ ⟩ β ) →
-  --            (p₂ : pcontext[ var , τ ⟨ []{μα'} ⟩ α' ⟨ μα' ⟩ α' ]
-  --                           τ₁ ⟨ μ[μ₀]μ₃ ⟩ τ₂ ⟨ μ₀ ⟩ α ) →
-  --            {id₀ : is-id-trails τ₁ τ₂ μ[∙]μ₃} →
-  --            (id : is-id-trails γ γ' μ[∙]μᵢ) →
-  --            (c₁ : compatible (τ₁ ⇒ τ₂ , μ₃) μ₀ μ₀) →
-  --            (c₂ : compatible μβ μ₀ μα) →
-  --            same-pcontext p₁ p₂ →
-  --            (e : var (τ ⇒ τ₁ ⟨ μ[μ₀]μ₃ ⟩ τ₂ ⟨ μ₀ ⟩ α) →
-  --                  term[ var ] γ ⟨ μ[∙]μᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
+  --             (p₁ : pcontext[ var , τ ⟨ μ[∙]α ⟩ α ⟨ ∙ ⟩ β ]
+  --                            τ₁ ⟨ μ[∙]μ₃ ⟩ τ₂ ⟨ ∙ ⟩ β ) →
+  --             (p₂ : pcontext[ var , τ ⟨ []{μα'} ⟩ α' ⟨ μα' ⟩ α' ]
+  --                            t₁ ⟨ μ[μ₂]μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α ) →
+  --             {id₀ : is-id-trails τ₁ τ₂ μ[∙]μ₃} →
+  --             (id : is-id-trails γ γ' μ[∙]μᵢ) →
+  --             (c₁ : compatible (t₁ ⇒ t₂ , μ₁) μ₂ μ₀) →
+  --             (c₂ : compatible ∙ μ₀ μα) →
+  --             same-pcontext p₁ p₂ →
+  --             (e : var (τ ⇒ t₁ ⟨ μ[μ₂]μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α) → term[ var ] γ ⟨ μ[∙]μᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
   --             Reduce {τ₂ = τ₂}{μα = μα} (Prompt id₀
-  --                   (pcontext-plug p₁ (Control id c₁ c₂ e)))
-  --                   (Prompt{μsᵢ = μ[∙]μᵢ} id (App (Val (Fun e))
-  --                   (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x)))))))
-             
+  --                    (pcontext-plug p₁ (Control id c₁ c₂ e)))
+  --                    (Prompt{μsᵢ = μ[∙]μᵢ} id (App (Val (Fun e))
+  --                    (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x)))))))
 
-  RControl : {τ α α' β β' γ γ' t₁ t₂ τ₁ τ₂ τ₃ τ₄ τ₅ : typ}
-             {μ₀ μ₁ μᵢ μα μα' μβ μβ' μ₂ μ₃ μ₄ μ₅ : trail} →
-             {μ[β]α : trails[ μβ ] μα} →
-             {μ[∙]μ₃ : trails[ ∙ ] μ₃} →
-             {μ[μ₂]μ₁ : trails[ μ₂ ] μ₁} →
-             {μ[∙]μᵢ : trails[ ∙ ] μᵢ} →
-              (p₁ : pcontext[ var , τ ⟨ μ[β]α ⟩ α ⟨ μβ ⟩ β ]
-                             τ₁ ⟨ μ[∙]μ₃ ⟩ τ₂ ⟨ ∙ ⟩ β ) →
-              (p₂ : pcontext[ var , τ ⟨ []{μα'} ⟩ α' ⟨ μα' ⟩ α' ]
-                             t₁ ⟨ μ[μ₂]μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α ) →
-              {id₀ : is-id-trails τ₁ τ₂ μ[∙]μ₃} →
-              (id : is-id-trails γ γ' μ[∙]μᵢ) →
-              (c₁ : compatible (t₁ ⇒ t₂ , μ₁) μ₂ μ₀) →
-              (c₂ : compatible μβ μ₀ μα) →
-              same-pcontext p₁ p₂ →
-              (e : var (τ ⇒ t₁ ⟨ μ[μ₂]μ₁ ⟩ t₂ ⟨ μ₂ ⟩ α) → term[ var ] γ ⟨ μ[∙]μᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
-              Reduce {τ₂ = τ₂}{μα = μα} (Prompt id₀
-                     (pcontext-plug p₁ (Control id c₁ c₂ e)))
-                     (Prompt{μsᵢ = μ[∙]μᵢ} id (App (Val (Fun e))
-                     (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x)))))))
+
                      
--- RControl : {τ τ₁ τ₂ α β γ γ' t₁ t₂ α' : typ} {μ₀ μ₁ μ₂ μᵢ μα μβ μα' : trail}
---              {μ[α]α : trails[ μα' ] μα'} → 
---              {μsᵢ : trails[ ∙ ] μᵢ} →
---              {μs₁ : trails[ μ₂ ] μ₁} →  
---              {μ[β]α : trails[ μβ ] μα} →
---              (p₁ : pcontext[ var , τ ⟨ μ[β]α ⟩ α ⟨ μβ ⟩ β ]
---                             τ₁ ⟨ μsᵢ ⟩ τ₂ ⟨ ∙ ⟩ β ) →
---              (p₂ : pcontext[ var , τ ⟨ [] ⟩ α' ⟨ μα' ⟩ α' ]
---                             t₁ ⟨ μs₁ ⟩ t₂ ⟨ μ₂ ⟩ α ) →
---              {id₀ : is-id-trails τ₁ τ₂ μsᵢ} →
---              (id : is-id-trails γ γ' μsᵢ) →
---              (c₁ : compatible (t₁ ⇒ t₂ , μ₁) μ₂ μ₀) →
---              (c₂ : compatible μβ μ₀ μα) →
---              same-pcontext p₁ p₂ →
---              (e : var (τ ⇒ t₁ ⟨ μs₁ ⟩ t₂ ⟨ μ₂ ⟩ α) →
---                    term[ var ] γ ⟨ μsᵢ ⟩ γ' ⟨ ∙ ⟩ β) →
---               Reduce {τ₂ = τ₂}{μα = μα} (Prompt id₀
---                     (pcontext-plug p₁ (Control id c₁ c₂ e)))
---                     (Prompt{μsᵢ = μsᵢ} id (App (Val (Fun e))
---                     (Val (Fun (λ x → pcontext-plug p₂ (Val (Var x)))))))
-
-
+  
 data Reduce* {var : typ → Set} :
              {τ₁ τ₂ τ₃ : typ}{μα μβ : trail}{μ[β]α : trails[ μβ ] μα} →
              term[ var ] τ₁ ⟨ μ[β]α ⟩ τ₂ ⟨ μβ ⟩ τ₃ →
