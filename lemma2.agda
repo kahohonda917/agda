@@ -605,7 +605,7 @@ control-lemma Hole Hole id₁ c₁ c₂ x e k₁ tr sch sch' = begin
                 (CPSFun
                  (λ t' →
                     CPSLet
-                    (CPSVal (CPSAppend {!!} tr (CPSCons c₁ (CPSVar k') (CPSVar t'))))
+                    (CPSVal (CPSAppend c₂ tr (CPSCons c₁ (CPSVar k') (CPSVar t'))))
                     (λ t'' → k₁ (CPSVar v) (CPSVar t'')))))))))
        (λ x' → cpsTerm (e x') (CPSIdk id₁) CPSId))
 
@@ -621,7 +621,7 @@ control-lemma Hole Hole id₁ c₁ c₂ x e k₁ tr sch sch' = begin
              (CPSFun
               (λ z₂ →
                  CPSLet
-                 (CPSVal (CPSAppend {!!} tr (CPSCons c₁ (CPSVar z₁) (CPSVar z₂))))
+                 (CPSVal (CPSAppend c₂ tr (CPSCons c₁ (CPSVar z₁) (CPSVar z₂))))
                  (λ z₃ →
                     CPSApp (CPSVal (CPSFun (λ z₄ → k₁ (CPSVar z) (CPSVar z₄))))
                     (CPSVal (CPSVar z₃))))))))))
@@ -639,7 +639,7 @@ control-lemma Hole Hole id₁ c₁ c₂ x e k₁ tr sch sch' = begin
              (CPSFun
               (λ z₂ →
                  CPSLet
-                 (CPSVal (CPSAppend {!!} tr (CPSCons c₁ (CPSVar z₁) (CPSVar z₂))))
+                 (CPSVal (CPSAppend c₂ tr (CPSCons c₁ (CPSVar z₁) (CPSVar z₂))))
                  (λ z₃ →
                     CPSApp
                     (CPSApp
@@ -662,7 +662,7 @@ control-lemma Hole Hole id₁ c₁ c₂ x e k₁ tr sch sch' = begin
              (CPSFun
               (λ z₂ →
                  CPSLet
-                 (CPSVal (CPSAppend {!!} tr (CPSCons c₁ (CPSVar z₁) (CPSVar z₂))))
+                 (CPSVal (CPSAppend c₂ tr (CPSCons c₁ (CPSVar z₁) (CPSVar z₂))))
                  (λ z₃ →
                     CPSApp
                     (CPSVal
@@ -783,7 +783,7 @@ control-lemma
                             (CPSVal t₄))
                        (λ x t₄ → sApp (sApp (sApp (sVal sVar=) Subst≠) Subst≠) Subst≠))
                        (λ t v₂ → tSubst e₂ (λ t₄ v₃ → sApp Subst≠ (sVal sVar=))) ⟩
-  cpsTerm {μs = {!μ[β]α!}}
+  cpsTerm {μs = {!!}}
     (App {μ[γ]β = {!!}} (Val (Fun (λ x → pcontext-plug p₂' (Val (Var x)))))
      (Control {μs₁ = {!!}} id₁ c₃ c₄ e))
     (λ v₁ →
@@ -3197,7 +3197,6 @@ control-lemma
 
 ------------------------------------------------------------------------------------------------------------------
 
-
 correctEta : {var : cpstyp → Set} {τ₁ α β : typ} {μα μβ : trail}
              {μs : trails[ μβ ] μα} →
              {e e′ : term[ var ∘ cpsT ] τ₁ ⟨ μs ⟩ α ⟨ μβ ⟩ β} →
@@ -4169,4 +4168,3 @@ correctEta {var} {τ₁} {α} {.α} {μα} {.μα} {μs}
        (λ v → k (CPSVar v) t))
 
   ∎ -}
-           
