@@ -26,7 +26,7 @@ mutual
   data trails[_]_ (μα : trail) : trail → Set where
     [] : trails[ μα ] μα
     _::⟨_⟩_ : {τ₁ τ₂ : typ} {μ μβ μγ : trail} →
-              (μk : trail) → (c : compatible μk μβ μγ) →
+              (μk : trail) → (c : compatible μβ μk μγ) →
               (μs : trails[ μα ] μβ) →
               trails[ μα ] μγ
 
@@ -45,6 +45,66 @@ compatible-equal {τ₁ ⇒ τ₁' , μ₁} {∙} refl refl = refl
 compatible-equal {τ₁ ⇒ τ₁' , μ₁} {τ₂ ⇒ τ₂' , μ₂} {.τ₁ ⇒ .τ₁' , μ₃}
                  (refl , refl , c₁) (refl , refl , c₂)
   rewrite compatible-equal c₁ c₂ = refl
+
+trails-empty : {μβ : trail} → (μ : trails[ μβ ] ∙) → μβ ≡ ∙
+trails-empty [] = refl
+trails-empty (_::⟨_⟩_ {μβ = ∙} ∙ refl μ) = trails-empty μ
+trails-empty (_::⟨_⟩_ {μβ = τ ⇒ τ' , μβ} ∙ () μ)
+trails-empty (_::⟨_⟩_ {μβ = τ ⇒ τ' , μβ} (τ₁ ⇒ τ'' , μk) () μ)
+
+assoc-compatible-r : {μα μβ μγ μ₁ μ₂ : trail}
+                     (c₁ : compatible μ₁ μβ μα)
+                     (c₂ : compatible μ₂ μγ μβ) →
+                     Σ[ μ₃ ∈ trail ]
+                     compatible μ₃ μγ μα ×
+                     compatible μ₁ μ₂ μ₃
+assoc-compatible-r {μ₁ = ∙} {μ₂} refl c₂ = (μ₂ , c₂ , refl)
+assoc-compatible-r {μ₁ = τ ⇒ τ' , μ₁} {∙} c₁ refl = ((τ ⇒ τ' , μ₁) , c₁ , refl)
+assoc-compatible-r {∙} {∙} {μ₁ = τ ⇒ τ' , μ₁} {τ₁ ⇒ τ'' , μ₂} () c₂
+assoc-compatible-r {∙} {τ₂ ⇒ τ''' , μβ} {μ₁ = τ ⇒ τ' , μ₁} {τ₁ ⇒ τ'' , μ₂} () c₂
+assoc-compatible-r {τ₂ ⇒ τ''' , μα} {∙} {∙} {μ₁ = .τ₂ ⇒ .τ''' , .μα} {τ₁ ⇒ τ'' , μ₂} refl ()
+assoc-compatible-r {τ₂ ⇒ τ''' , μα} {∙} {τ ⇒ τ' , μγ} {μ₁ = .τ₂ ⇒ .τ''' , .μα} {τ₁ ⇒ τ'' , μ₂} refl ()
+assoc-compatible-r {τ₂ ⇒ τ''' , ∙} {τ₃ ⇒ τ'''' , μβ} {∙} {μ₁ = .τ₂ ⇒ .τ''' , .(τ₃ ⇒ τ'''' , μβ)} {.τ₃ ⇒ .τ'''' , .μβ} (refl , refl , refl) refl = (τ₂ ⇒ τ''' , ∙) , (refl , refl , refl , refl)
+assoc-compatible-r {τ₂ ⇒ τ''' , ∙} {τ₃ ⇒ τ'''' , μβ} {τ ⇒ τ' , μγ} {μ₁ = .τ₂ ⇒ .τ''' , .(τ₃ ⇒ τ'''' , μβ)} {.τ₃ ⇒ .τ'''' , μ₂} (refl , refl , refl) (refl , refl , c₂) = (τ₂ ⇒ τ''' , (τ ⇒ τ' , μγ) ) , ((refl , refl , refl) , (refl , refl , refl , refl , c₂))
+assoc-compatible-r {τ₂ ⇒ τ''' , (τ ⇒ τ' , μα)} {τ₃ ⇒ τ'''' , μβ} {∙} {μ₁ = .τ₂ ⇒ .τ''' , (.τ₃ ⇒ .τ'''' , μ₁)} {.τ₃ ⇒ .τ'''' , .μβ} (refl , refl , refl , refl , c₁) refl = (τ₂ ⇒ τ''' , (τ ⇒ τ' , μα)) , refl , refl , refl , refl , refl , c₁
+assoc-compatible-r {τ₂ ⇒ τ''' , (τ ⇒ τ' , μα)} {τ₃ ⇒ τ'''' , μβ} {τ₄ ⇒ τ''''' , μγ} {μ₁ = .τ₂ ⇒ .τ''' , (.τ₃ ⇒ .τ'''' , μ₁)} {.τ₃ ⇒ .τ'''' , μ₂} (refl , refl , refl , refl , c₁) (refl , refl , c₂)
+  with assoc-compatible-r c₂ c₁
+assoc-compatible-r {τ₂ ⇒ τ''' , (τ ⇒ τ' , μα)} {τ₃ ⇒ τ'''' , ∙} {τ₄ ⇒ τ''''' , μγ} {.τ₂ ⇒ .τ''' , (.τ₃ ⇒ .τ'''' , ∙)} {.τ₃ ⇒ .τ'''' , .(τ₄ ⇒ τ''''' , μγ)} (refl , refl , refl , refl , ()) (refl , refl , refl) | (.τ₄ ⇒ .τ''''' , μ₃) , c₃ , refl , refl , c₄
+assoc-compatible-r {τ₂ ⇒ τ''' , (τ ⇒ τ' , μα)} {τ₃ ⇒ τ'''' , ∙} {τ₄ ⇒ τ''''' , μγ} {.τ₂ ⇒ .τ''' , (.τ₃ ⇒ .τ'''' , (τ₁ ⇒ τ'' , μ₁))} {.τ₃ ⇒ .τ'''' , .(τ₄ ⇒ τ''''' , μγ)} (refl , refl , refl , refl , ()) (refl , refl , refl) | (.τ₄ ⇒ .τ''''' , μ₃) , c₃ , refl , refl , c₄
+assoc-compatible-r {τ₂ ⇒ τ''' , (τ ⇒ τ' , μα)} {τ₃ ⇒ τ'''' , (.τ ⇒ .τ' , .μα)} {τ₄ ⇒ τ''''' , μγ} {.τ₂ ⇒ .τ''' , (.τ₃ ⇒ .τ'''' , ∙)} {.τ₃ ⇒ .τ'''' , (.τ₄ ⇒ .τ''''' , μ₂)} (refl , refl , refl , refl , refl) (refl , refl , refl , refl , c₂) | (.τ₄ ⇒ .τ''''' , .μ₂) , refl , refl , refl , c₄ = (τ₂ ⇒ τ''' , (τ₄ ⇒ τ''''' , μ₂)) , (refl , refl , refl , refl , c₄) , refl , refl , refl , refl , refl
+assoc-compatible-r {τ₂ ⇒ τ''' , (τ ⇒ τ' , μα)} {τ₃ ⇒ τ'''' , (.τ ⇒ .τ' , μβ)} {τ₄ ⇒ τ''''' , μγ} {.τ₂ ⇒ .τ''' , (.τ₃ ⇒ .τ'''' , (τ₅ ⇒ τ'''''' , μ₁))} {.τ₃ ⇒ .τ'''' , (.τ₄ ⇒ .τ''''' , μ₂)} (refl , refl , refl , refl , refl , refl , c₁) (refl , refl , refl , refl , c₂) | (.τ₄ ⇒ .τ''''' , μ₃) , (refl , refl , c₃) , refl , refl , c₄ = (τ₂ ⇒ τ''' , (τ₄ ⇒ τ''''' , μ₃)) , (refl , refl , refl , refl , c₄) , (refl , refl , refl , refl , refl , refl , c₃)
+
+assoc-compatible-l : {μα μβ μγ μ₁ μ₂ : trail}
+                     (c₁ : compatible μα μ₁ μβ)
+                     (c₂ : compatible μβ μ₂ μγ) →
+                     Σ[ μ₃ ∈ trail ]
+                     compatible μ₁ μ₂ μ₃ ×
+                     compatible μα μ₃ μγ
+assoc-compatible-l {∙} {μγ = μγ} refl c₂ = μγ , c₂ , refl
+assoc-compatible-l {τ ⇒ τ' , μα} {μ₁ = ∙} {μ₂} refl c₂ = μ₂ , refl , c₂
+assoc-compatible-l {τ ⇒ τ' , μα} {.τ ⇒ .τ' , μβ} {μ₁ = τ₁ ⇒ τ'' , μ₁} {∙} (refl , refl , c₁) refl = (τ₁ ⇒ τ'' , μ₁) , refl , refl , refl , c₁
+assoc-compatible-l {τ ⇒ τ' , μα} {.τ ⇒ .τ' , μβ} {.τ ⇒ .τ' , μγ} {μ₁ = τ₁ ⇒ τ'' , μ₁} {τ₂ ⇒ τ''' , μ₂} (refl , refl , c₁) (refl , refl , c₂)
+  with assoc-compatible-r c₁ c₂
+... | (.τ₁ ⇒ .τ'' , ∙) , c₃ , refl , refl , refl = (τ₁ ⇒ τ'' , ∙) , (refl , refl , refl) , refl , refl , c₃
+... | (.τ₁ ⇒ .τ'' , (τ₃ ⇒ τ'''' , μ₃)) , c₃ , refl , refl , c₄ = (τ₁ ⇒ τ'' , (τ₃ ⇒ τ'''' , μ₃)) , (refl , refl , c₄) , refl , refl , c₃
+
+diff-compatible : {μα μβ : trail}
+                  (μs : trails[ μβ ] μα) →
+                  Σ[ μ₀ ∈ trail ] compatible μβ μ₀ μα
+diff-compatible {∙} {μβ} μs with trails-empty μs
+... | refl = (∙ , refl)
+diff-compatible {τ ⇒ τ' , μα} [] = (∙ , refl)
+diff-compatible {τ ⇒ τ' , μα} (μk ::⟨ c ⟩ μs) with diff-compatible μs
+... | (μ₀ , c') with assoc-compatible-l c' c
+... | (μ₃ , c₁ , c₂) = μ₃ , c₂
+
+-- extend-compatible : {μα μβ μk : trail}
+--                     (c : compatible μk μβ μβ)
+--                     (μs : trails[ μβ ] μα) →
+--                     compatible μk μα μα
+-- extend-compatible c μs with diff-compatible μs
+-- ... | (μ , c') with assoc-compatible-l c c'
+-- ... | (μ₁ , c₁ , c₂) = {!!}
 
 is-id-trail : (τ τ' : typ) → (μ : trail) → Set
 is-id-trail τ τ' ∙ = τ ≡ τ'
