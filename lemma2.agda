@@ -3194,12 +3194,12 @@ control-lemma
 
   ∎ -}
 
-
+--一旦凍結
+{-
 aux₄ : ∀ {var : cpstyp → Set}{τ}{α}{β}{μα}{μβ}{μk}
          {μ[β]α : trails[ μβ ] μα} →
          (e : term[ var ∘ cpsT ] τ ⟨ μ[β]α ⟩ α ⟨ μβ ⟩ β)
          {c : compatible μk μβ μβ}
-         --{c' : compatible μk μα μα}
          (κ : cpsvalue[ var ] (cpsT τ) →  cpsvalue[ var ] (cpsM μα) →
               cpsterm[ var ] (cpsT α))
          (k : var (cpsM μk))
@@ -3219,7 +3219,35 @@ aux₄ (Val v) {c} κ k t = c , r*Id
 aux₄ (App e₁ e₂) {c} κ k t = {!!}
 aux₄ (Plus e₁ e₂) {c} κ k t = {!!}
 aux₄ (Control id₁ c₁ c₂ e) κ k t = {!!}
-aux₄ (Prompt id₁ e) κ k t = {!!}
+aux₄ (Prompt id₁ e) κ k t = {!!}-}
+
+--α = βとなっていた
+aux-p : ∀ {var : cpstyp → Set}{α}{μα}{μβ}
+         {τ} {β}{τ₁}
+         {μ[β]α : trails[ μβ ] μα}
+         (p : pcontext[ var ∘ cpsT , τ ⟨ [] ⟩ β ⟨ μβ ⟩ β ] τ₁ ⟨ μ[β]α ⟩ α ⟨ μβ ⟩ β)
+         (x : var (cpsT τ))
+         {c : compatible (τ₁ ⇒ α , μα) μβ μβ}
+         (κ : cpsvalue[ var ] (cpsT τ₁) →  cpsvalue[ var ] (cpsM μα) →
+              cpsterm[ var ] (cpsT α))
+         (k : var (cpsT τ₁ ⇛ (cpsMs μ[β]α ⇛ cpsT α)))
+         (t : var (cpsM μβ)) →
+        Σ[ c' ∈ compatible (τ₁ ⇒ α , μα) μα μα ]
+        (cpsreduce {var}
+        (cpsTerm (pcontext-plug p (Val (Var x)))
+        (λ v t' →
+              κ v t')
+         (CPSCons c (CPSVar k) (CPSVar t)))
+        (cpsTerm (pcontext-plug p (Val (Var x)))
+           (λ v t' →
+              κ v (CPSCons c' (CPSVar k) t'))
+                (CPSVar t)))
+
+aux-p Hole x {c} κ k t = c , r*Id
+aux-p (Frame (App₁ e₂) p) x {c} κ k t = {!!} , {!!}
+aux-p (Frame (App₂ v₁) p) x κ k t = {!!}
+aux-p (Frame (Plus₁ e₂) p) x κ k t = {!!}
+aux-p (Frame (Plus₂ v₁) p) x κ k t = {!!}
 
 aux : ∀ {var} {α} {μα}
         {τ₂} {μ₃}
@@ -3239,7 +3267,6 @@ aux : ∀ {var} {α} {μα}
        (CPSCons
         c
         (CPSVar z₁) t'))
-
 
 aux {μ₃ = τ ⇒ τ' , ∙} id z₁ v (refl , refl , c) t' = begin
   (CPSApp (CPSApp (CPSVal (CPSVar z₁)) (CPSVal (cpsV v)))
@@ -3732,29 +3759,60 @@ correctEta {var} {τ₁} {α} {.α} {μα} {.μα} {μs}
                   (CPSCons c₁ (CPSVar z₁) (CPSVar z₂)))))))))
      (λ x' → cpsTerm (e x') (CPSIdk id) CPSId))
     (λ v → k (CPSVar v) t)
-  ⟶⟨ rLet₁ (rLet₁ (rFun (λ x₁ → rFun (λ x₂ → rFun (λ x₃ → proj₂ (aux₄ (pcontext-plug p₂ (Val (Var x₁))) (CPSIdk id₀) x₂ x₃) ))))) ⟩
-  CPSLet
-    (CPSLet
-     (CPSVal
-      (CPSFun
-       (λ z →
-          CPSVal
-          (CPSFun
-           (λ z₁ →
-              CPSVal
-              (CPSFun
-               (λ z₂ →
-                  cpsTerm (pcontext-plug p₂ (Val (Var z)))
-                  (λ v t'' → CPSIdk id₀ v (CPSCons (proj₁ (aux₄ {var} (pcontext-plug p₂ (Val (Var z))) {c = c₁} (CPSIdk id₀) z₁ z₂)) (CPSVar z₁) t''))
-                  (CPSVar z₂))))))))
-     (λ x' → cpsTerm (e x') (CPSIdk id) CPSId))
-    (λ v → k (CPSVar v) t)
-  ⟵⟨ rLet₁ (rLet₁ (rFun (λ x₁ → rFun (λ x₂ → rFun (λ x₃ →
-           correctCont (pcontext-plug p₂ (Val (Var x₁)))
-             (λ v t'' →
-                CPSApp (CPSApp (CPSVal (CPSVar x₂)) (CPSVal v)) (CPSVal t''))
-             {k₂ = λ v t'' → CPSIdk id₀ v (CPSCons ((proj₁ (aux₄ {var} (pcontext-plug p₂ (Val (Var x₁))) {c = c₁} (CPSIdk id₀) x₂ x₃))) (CPSVar x₂) t'')}
-             (λ v t₁ → sApp (sApp Subst≠ (sVal sVar=)) Subst≠) λ v t₁ → aux {μ[∙]μ₃ = μ[∙]μ₃} {μ[μα]μ₃ = μ[μα]μ₃} id₀ x₂ v (proj₁ (aux₄ {var} (pcontext-plug p₂ (Val (Var x₁))) {c = c₁} (CPSIdk id₀) x₂ x₃)) t₁))))) ⟩
+    --aux-p version
+    ⟶⟨ rLet₁ (rLet₁ (rFun (λ x₁ → rFun (λ x₂ → rFun (λ x₃ → proj₂ (aux-p p₂ x₁ (CPSIdk id₀) x₂ x₃)))))) ⟩
+    CPSLet
+      (CPSLet
+       (CPSVal
+        (CPSFun
+         (λ z →
+            CPSVal
+            (CPSFun
+             (λ z₁ →
+                CPSVal
+                (CPSFun
+                 (λ z₂ →
+                    cpsTerm (pcontext-plug p₂ (Val (Var z)))
+                    (λ v t' →
+                       CPSIdk id₀ v
+                       (CPSCons (proj₁ (aux-p {var} p₂ z {c = c₁} (CPSIdk id₀) z₁ z₂)) (CPSVar z₁) t'))
+                    (CPSVar z₂))))))))
+       (λ x' → cpsTerm (e x') (CPSIdk id) CPSId))
+      (λ v → k (CPSVar v) t)
+    ⟵⟨ rLet₁ (rLet₁ (rFun (λ x₁ → rFun (λ x₂ → rFun (λ x₃ →
+                    correctCont (pcontext-plug p₂ (Val (Var x₁)))
+                      (λ v t'' →
+                         CPSApp (CPSApp (CPSVal (CPSVar x₂)) (CPSVal v)) (CPSVal t''))
+                      {k₂ =
+                       λ v t'' →
+                         CPSIdk id₀ v
+                         (CPSCons (proj₁ (aux-p {var} p₂ x₁ {c = c₁} (CPSIdk id₀) x₂ x₃)) (CPSVar x₂) t'')}
+                      (λ v t₁ → sApp (sApp Subst≠ (sVal sVar=)) Subst≠)
+                      (λ v t₁ → aux {μ[∙]μ₃ = μ[∙]μ₃} {μ[μα]μ₃ = μ[μα]μ₃} id₀ x₂ v (proj₁ (aux-p {var}  p₂ x₁ {c = c₁} (CPSIdk id₀) x₂ x₃)) t₁)))))) ⟩
+  --aux₄ varsion
+  -- ⟶⟨ rLet₁ (rLet₁ (rFun (λ x₁ → rFun (λ x₂ → rFun (λ x₃ → proj₂ (aux₄ (pcontext-plug p₂ (Val (Var x₁))) (CPSIdk id₀) x₂ x₃) ))))) ⟩
+  -- CPSLet
+  --   (CPSLet
+  --    (CPSVal
+  --     (CPSFunc
+  --      (λ z →
+  --         CPSVal
+  --         (CPSFun
+  --          (λ z₁ →
+  --             CPSVal
+  --             (CPSFun
+  --              (λ z₂ →
+  --                 cpsTerm (pcontext-plug p₂ (Val (Var z)))
+  --                 (λ v t'' → CPSIdk id₀ v (CPSCons (proj₁ (aux₄ {var} (pcontext-plug p₂ (Val (Var z))) {c = c₁} (CPSIdk id₀) z₁ z₂)) (CPSVar z₁) t''))
+  --                 (CPSVar z₂))))))))
+  --    (λ x' → cpsTerm (e x') (CPSIdk id) CPSId))
+  --   (λ v → k (CPSVar v) t)
+  -- ⟵⟨ rLet₁ (rLet₁ (rFun (λ x₁ → rFun (λ x₂ → rFun (λ x₃ →
+  --          correctCont (pcontext-plug p₂ (Val (Var x₁)))
+  --            (λ v t'' →
+  --               CPSApp (CPSApp (CPSVal (CPSVar x₂)) (CPSVal v)) (CPSVal t''))
+  --            {k₂ = λ v t'' → CPSIdk id₀ v (CPSCons ((proj₁ (aux₄ {var} (pcontext-plug p₂ (Val (Var x₁))) {c = c₁} (CPSIdk id₀) x₂ x₃))) (CPSVar x₂) t'')}
+  --            (λ v t₁ → sApp (sApp Subst≠ (sVal sVar=)) Subst≠) λ v t₁ → aux {μ[∙]μ₃ = μ[∙]μ₃} {μ[μα]μ₃ = μ[μα]μ₃} id₀ x₂ v (proj₁ (aux₄ {var} (pcontext-plug p₂ (Val (Var x₁))) {c = c₁} (CPSIdk id₀) x₂ x₃)) t₁))))) ⟩
   CPSLet
     (CPSLet
      (CPSVal
