@@ -3244,7 +3244,8 @@ aux-p : ∀ {var : cpstyp → Set}{α}{μα}{μβ}
                 (CPSVar t)))
 
 aux-p Hole x {c} κ k t = c , r*Id
-aux-p (Frame (App₁ e₂) p) x {c} κ k t = {!!} , {!!}
+aux-p {μ[β]α = μ[β]α} (Frame (App₁ e₂) p) x {c} κ k t with diff-compatible μ[β]α
+... | (μ , c') = extend-compatible' c c' , {!!}
 aux-p (Frame (App₂ v₁) p) x κ k t = {!!}
 aux-p (Frame (Plus₁ e₂) p) x κ k t = {!!}
 aux-p (Frame (Plus₂ v₁) p) x κ k t = {!!}

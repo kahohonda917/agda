@@ -106,12 +106,25 @@ diff-compatible {τ ⇒ τ' , μα} (μk ::⟨ c ⟩ μs) with diff-compatible �
 -- ... | (μ , c') with assoc-compatible-l c c'
 -- ... | (μ₁ , c₁ , c₂) = {!!}
 
+extend-compatible' : {μα μβ μ₀ : trail} {τ₁ τ₂ : typ}
+                     (c₁ : compatible (τ₁ ⇒ τ₂ , μα) μβ μβ)
+                     (c₂ : compatible μβ μ₀ μα) →
+                     compatible (τ₁ ⇒ τ₂ , μα) μα μα
+
+extend-compatible' {μβ = τ ⇒ τ' , ∙} (refl , refl , refl) c₂ = refl , refl , refl
+extend-compatible' {τ₂ ⇒ τ''' , ∙} {μβ = .τ₂ ⇒ .τ''' , (τ₁ ⇒ τ'' , μβ)} (refl , refl , refl , refl , refl) c₂ = refl , refl , refl
+extend-compatible' {τ₂ ⇒ τ''' , (τ₃ ⇒ τ'''' , μα)} {μβ = τ ⇒ τ' , (τ₁ ⇒ τ'' , μβ)} {∙} (refl , refl , refl , refl , refl , refl , c₁) refl = refl , refl , refl , refl , refl , refl , c₁
+extend-compatible' {τ₂ ⇒ τ''' , (τ₃ ⇒ τ'''' , μα)} {μβ = τ ⇒ τ' , (τ₁ ⇒ τ'' , (τ₅ ⇒ τ'''''' , μβ))} {τ₄ ⇒ τ''''' , (τ₆ ⇒ τ''''''' , μ₀)} (refl , refl , refl , refl , refl , refl , refl , refl , c₁) (refl , refl , refl , refl , refl , refl , c₂) = refl , refl , refl , refl , refl , refl , extend-compatible' (refl , refl , c₁) c₂
+
+
 is-id-trail : (τ τ' : typ) → (μ : trail) → Set
 is-id-trail τ τ' ∙ = τ ≡ τ'
 is-id-trail τ τ' (τ₁ ⇒ τ₁' , μ) = (τ ≡ τ₁) × (τ' ≡ τ₁') × (μ ≡ ∙)
 
 is-id-trails : {μα : trail} (τ τ' : typ) → (μs : trails[ ∙ ] μα) → Set
 is-id-trails {μα} τ τ' μs = is-id-trail τ τ' μα
+
+
 
 -- source term
 mutual
