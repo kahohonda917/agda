@@ -3194,17 +3194,75 @@ control-lemma
 
   ∎ -}
 
---一旦凍結
-{-
-aux₄ : ∀ {var : cpstyp → Set}{τ}{α}{β}{μα}{μβ}{μk}
+--9/22--------------------------------------------------------------------
+aux₄-s : ∀ {var : cpstyp → Set}{τ}{α}{β}{μα}{μβ}
          {μ[β]α : trails[ μβ ] μα} →
          (e : term[ var ∘ cpsT ] τ ⟨ μ[β]α ⟩ α ⟨ μβ ⟩ β)
-         {c : compatible μk μβ μβ}
+         {c : compatible (τ ⇒ α , μα) μβ μβ}
          (κ : cpsvalue[ var ] (cpsT τ) →  cpsvalue[ var ] (cpsM μα) →
               cpsterm[ var ] (cpsT α))
-         (k : var (cpsM μk))
+         (k : var (cpsT τ ⇛ (cpsMs μ[β]α ⇛ cpsT α)))
+         (t : var (cpsM μβ))
+         (c' : compatible (τ ⇒ α , μα) μα μα) →
+         (cpsreduce {var}
+         (cpsTerm e
+           (λ v t' → κ v t')
+              (CPSCons c (CPSVar k) (CPSVar t)))
+         (cpsTerm e
+          (λ v t' →
+             κ v (CPSCons c' (CPSVar k) t'))
+             (CPSVar t)))
+
+aux₄-s {var} {τ} {α} {.α} {μα} {.μα} {.[]} (Val {τ₁ = .τ} {α = .α} {μα = .μα} v) {c} κ k t c' = {!!}
+aux₄-s {var} {τ} {α} {β} {μα} {μβ} {μ[β]α} (App {τ₁ = .τ} {τ₂ = τ₂} {α = .α} {β = β₁} {γ = γ} {δ = .β} {μα = .μα} {μβ = μβ₁} {μγ = μγ} {μδ = .μβ} {μ[β]α = μ[β]α₁} {μ[γ]β = μ[γ]β} {μ[δ]γ = μ[δ]γ} {μ[δ]α = .μ[β]α} e e₁) {c} κ k t c' = begin
+  (cpsTerm e
+       (λ v₁ →
+          cpsTerm e₁
+          (λ v₂ t₂ →
+             CPSApp
+             (CPSApp (CPSApp (CPSVal v₁) (CPSVal v₂))
+              (CPSVal
+               (CPSFun
+                (λ v → CPSVal (CPSFun (λ t'' → κ (CPSVar v) (CPSVar t'')))))))
+             (CPSVal t₂)))
+       (CPSCons c (CPSVar k) (CPSVar t)))
+
+  ⟶⟨ {!aux₄-s {τ = τ₂ ⇒ τ ⟨ μ[β]α₁ ⟩ α ⟨ μβ₁ ⟩ β₁}{α = γ}{μ[β]α = μ[δ]γ} e {c = c} ? k t ?!} ⟩
+  {!!}
+  ⟶⟨ {!!} ⟩
+  (cpsTerm e
+       (λ v₁ →
+          cpsTerm e₁
+          (λ v₂ t₂ →
+             CPSApp
+             (CPSApp (CPSApp (CPSVal v₁) (CPSVal v₂))
+              (CPSVal
+               (CPSFun
+                (λ v →
+                   CPSVal
+                   (CPSFun
+                    (λ t'' → κ (CPSVar v) (CPSCons c' (CPSVar k) (CPSVar t''))))))))
+             (CPSVal t₂)))
+       (CPSVar t))
+
+  ∎
+aux₄-s {var} {.Nat} {α} {β} {μα} {μβ} {μ[β]α} (Plus {α = .α} {β = β₁} {γ = .β} {μα = .μα} {μβ = μβ₁} {μγ = .μβ} {μ[β]α = μ[β]α₁} {μ[γ]β = μ[γ]β} {μ[γ]α = .μ[β]α} e e₁) {c} κ k t c' = {!!}
+aux₄-s {var} {τ} {α} {β} {μα} {μβ} {μ[β]α} (Control {τ = .τ} {α = .α} {β = .β} {γ = γ} {γ' = γ'} {t₁ = t₁} {t₂ = t₂} {μ₀ = μ₀} {μ₁ = μ₁} {μ₂ = μ₂} {μᵢ = μᵢ} {μα = .μα} {μβ = .μβ} {μsᵢ = μsᵢ} {μs₁ = μs₁} {μ[β]α = .μ[β]α} id₁ c₁ c₂ e) {c} κ k t c' = {!!}
+aux₄-s {var} {τ} {α} {.α} {μα} {.μα} {.[]} (Prompt {τ = .τ} {α = .α} {β = β} {β' = β'} {μα = .μα} {μᵢ = μᵢ} {μsᵢ = μsᵢ} id₁ e) {c} κ k t c' = {!!}
+
+
+--9/22--------------------------------------------------------------------
+{-
+--組みの形は辞めます
+aux₄ : ∀ {var : cpstyp → Set}{τ}{α}{β}{μα}{μβ}
+         {μ[β]α : trails[ μβ ] μα} →
+         (e : term[ var ∘ cpsT ] τ ⟨ μ[β]α ⟩ α ⟨ μβ ⟩ β)
+         {c : compatible (τ ⇒ α , μα) μβ μβ}
+         (κ : cpsvalue[ var ] (cpsT τ) →  cpsvalue[ var ] (cpsM μα) →
+              cpsterm[ var ] (cpsT α))
+         (k : var (cpsT τ ⇛ (cpsMs μ[β]α ⇛ cpsT α)))
          (t : var (cpsM μβ)) →
-         Σ[ c' ∈ compatible μk μα μα ]
+         Σ[ c' ∈ compatible (τ ⇒ α , μα) μα μα ]
          (cpsreduce {var}
          (cpsTerm e
          (λ v t' →
@@ -3216,12 +3274,17 @@ aux₄ : ∀ {var : cpstyp → Set}{τ}{α}{β}{μα}{μβ}{μk}
              (CPSVar t)))
 
 aux₄ (Val v) {c} κ k t = c , r*Id
-aux₄ (App e₁ e₂) {c} κ k t = {!!}
+aux₄ {μ[β]α = μ[β]α} (App e₁ e₂) {c} κ k t with diff-compatible μ[β]α
+... | (μ , c') = (extend-compatible' c c') , {!!}
 aux₄ (Plus e₁ e₂) {c} κ k t = {!!}
-aux₄ (Control id₁ c₁ c₂ e) κ k t = {!!}
-aux₄ (Prompt id₁ e) κ k t = {!!}-}
-
+aux₄ (Control id₁ c₁ c₂ e) {c} κ k t = extend-compatible' c c₂ , {!!}
+aux₄ (Prompt id₁ e) {c} κ k t = c , r*Id
+-}
+-- (k::t)@(k'::t')
+-- k::(t@(k'::t'))
+{-
 --α = βとなっていた
+--aux-pは無理
 aux-p : ∀ {var : cpstyp → Set}{α}{μα}{μβ}
          {τ} {β}{τ₁}
          {μ[β]α : trails[ μβ ] μα}
@@ -3243,12 +3306,86 @@ aux-p : ∀ {var : cpstyp → Set}{α}{μα}{μβ}
               κ v (CPSCons c' (CPSVar k) t'))
                 (CPSVar t)))
 
+-- (cpsTerm (pcontext-plug p (Val (Var x)))
+--        (λ v₁ →
+--           cpsTerm e₂
+--           (λ v₂ t₂ →
+--              CPSApp
+--              (CPSApp (CPSApp (CPSVal v₁) (CPSVal v₂))
+--               (CPSVal
+--                (CPSFun
+--                 (λ v → CPSVal (CPSFun (λ t'' → κ (CPSVar v) (CPSVar t'')))))))
+--              (CPSVal t₂)))
+--        (CPSCons c (CPSVar k) (CPSVar t)))
 aux-p Hole x {c} κ k t = c , r*Id
 aux-p {μ[β]α = μ[β]α} (Frame (App₁ e₂) p) x {c} κ k t with diff-compatible μ[β]α
-... | (μ , c') = extend-compatible' c c' , {!!}
+... | (μ , c') = (extend-compatible' c c') , (begin
+  (cpsTerm (pcontext-plug p (Val (Var x)))
+       (λ v₁ →
+          cpsTerm e₂
+          (λ v₂ t₂ →
+             CPSApp
+             (CPSApp (CPSApp (CPSVal v₁) (CPSVal v₂))
+              (CPSVal
+               (CPSFun
+                (λ v → CPSVal (CPSFun (λ t'' → κ (CPSVar v) (CPSVar t'')))))))
+             (CPSVal t₂)))
+       (CPSCons c (CPSVar k) (CPSVar t)))
+
+   ⟶⟨ correctCont (pcontext-plug p (Val (Var x)))
+        (λ v₁ →
+           cpsTerm e₂
+           (λ v₂ t₂ →
+              CPSApp
+              (CPSApp (CPSApp (CPSVal v₁) (CPSVal v₂))
+               (CPSVal
+                (CPSFun
+                 (λ v → CPSVal (CPSFun (λ t'' → κ (CPSVar v) (CPSVar t'')))))))
+              (CPSVal t₂)))
+        {k₂ =
+         λ v₁ →
+           cpsTerm e₂
+           (λ v₂ t₂ →
+              CPSApp
+              (CPSApp (CPSApp (CPSVal v₁) (CPSVal v₂))
+               (CPSVal
+                (CPSFun
+                 (λ v → CPSVal (CPSFun (λ t'' → κ (CPSVar v) (CPSVar t'')))))))
+              (CPSVal (CPSCons {!!} (CPSVar k) t₂)))}
+        (λ v t₁ → kSubst e₂
+                      (λ x₁ →
+                         λ v₂ t₂ →
+                           CPSApp
+                           (CPSApp (CPSApp (CPSVal x₁) (CPSVal v₂))
+                            (CPSVal
+                             (CPSFun
+                              (λ v₁ → CPSVal (CPSFun (λ t'' → κ (CPSVar v₁) (CPSVar t'')))))))
+                           (CPSVal t₂))
+                      (λ x₁ t₂ → sApp (sApp (sApp (sVal sVar=) Subst≠) Subst≠) Subst≠)) (λ v t₁ → {!!}) ⟩
+   {!!}
+   ⟶⟨ {!!} ⟩
+   (cpsTerm (pcontext-plug p (Val (Var x)))
+       (λ v₁ →
+          cpsTerm e₂
+          (λ v₂ t₂ →
+             CPSApp
+             (CPSApp (CPSApp (CPSVal v₁) (CPSVal v₂))
+              (CPSVal
+               (CPSFun
+                (λ v →
+                   CPSVal
+                   (CPSFun
+                    (λ t'' →
+                       κ (CPSVar v)
+                       (CPSCons (extend-compatible' c c') (CPSVar k) (CPSVar t''))))))))
+             (CPSVal t₂)))
+       (CPSVar t))
+
+  ∎)
+--extend-compatible' c c' , {!!}
 aux-p (Frame (App₂ v₁) p) x κ k t = {!!}
 aux-p (Frame (Plus₁ e₂) p) x κ k t = {!!}
-aux-p (Frame (Plus₂ v₁) p) x κ k t = {!!}
+aux-p (Frame (Plus₂ v₁) p) x κ k t = {!!}-}
 
 aux : ∀ {var} {α} {μα}
         {τ₂} {μ₃}
@@ -3761,7 +3898,7 @@ correctEta {var} {τ₁} {α} {.α} {μα} {.μα} {μs}
      (λ x' → cpsTerm (e x') (CPSIdk id) CPSId))
     (λ v → k (CPSVar v) t)
     --aux-p version
-    ⟶⟨ rLet₁ (rLet₁ (rFun (λ x₁ → rFun (λ x₂ → rFun (λ x₃ → proj₂ (aux-p p₂ x₁ (CPSIdk id₀) x₂ x₃)))))) ⟩
+    ⟶⟨ rLet₁ (rLet₁ (rFun (λ x₁ → rFun (λ x₂ → rFun (λ x₃ → (aux₄-s (pcontext-plug p₂ (Val (Var x₁))) (CPSIdk id₀) x₂ x₃ (extend-compatible' c₁ (proj₂ (diff-compatible μ[μα]μ₃))))))))) ⟩
     CPSLet
       (CPSLet
        (CPSVal
@@ -3776,7 +3913,7 @@ correctEta {var} {τ₁} {α} {.α} {μα} {.μα} {μs}
                     cpsTerm (pcontext-plug p₂ (Val (Var z)))
                     (λ v t' →
                        CPSIdk id₀ v
-                       (CPSCons (proj₁ (aux-p {var} p₂ z {c = c₁} (CPSIdk id₀) z₁ z₂)) (CPSVar z₁) t'))
+                       (CPSCons (extend-compatible' c₁ (proj₂ (diff-compatible μ[μα]μ₃))) (CPSVar z₁) t'))
                     (CPSVar z₂))))))))
        (λ x' → cpsTerm (e x') (CPSIdk id) CPSId))
       (λ v → k (CPSVar v) t)
@@ -3787,33 +3924,9 @@ correctEta {var} {τ₁} {α} {.α} {μα} {.μα} {μs}
                       {k₂ =
                        λ v t'' →
                          CPSIdk id₀ v
-                         (CPSCons (proj₁ (aux-p {var} p₂ x₁ {c = c₁} (CPSIdk id₀) x₂ x₃)) (CPSVar x₂) t'')}
+                         (CPSCons (extend-compatible' c₁ (proj₂ (diff-compatible μ[μα]μ₃))) (CPSVar x₂) t'')}
                       (λ v t₁ → sApp (sApp Subst≠ (sVal sVar=)) Subst≠)
-                      (λ v t₁ → aux {μ[∙]μ₃ = μ[∙]μ₃} {μ[μα]μ₃ = μ[μα]μ₃} id₀ x₂ v (proj₁ (aux-p {var}  p₂ x₁ {c = c₁} (CPSIdk id₀) x₂ x₃)) t₁)))))) ⟩
-  --aux₄ varsion
-  -- ⟶⟨ rLet₁ (rLet₁ (rFun (λ x₁ → rFun (λ x₂ → rFun (λ x₃ → proj₂ (aux₄ (pcontext-plug p₂ (Val (Var x₁))) (CPSIdk id₀) x₂ x₃) ))))) ⟩
-  -- CPSLet
-  --   (CPSLet
-  --    (CPSVal
-  --     (CPSFunc
-  --      (λ z →
-  --         CPSVal
-  --         (CPSFun
-  --          (λ z₁ →
-  --             CPSVal
-  --             (CPSFun
-  --              (λ z₂ →
-  --                 cpsTerm (pcontext-plug p₂ (Val (Var z)))
-  --                 (λ v t'' → CPSIdk id₀ v (CPSCons (proj₁ (aux₄ {var} (pcontext-plug p₂ (Val (Var z))) {c = c₁} (CPSIdk id₀) z₁ z₂)) (CPSVar z₁) t''))
-  --                 (CPSVar z₂))))))))
-  --    (λ x' → cpsTerm (e x') (CPSIdk id) CPSId))
-  --   (λ v → k (CPSVar v) t)
-  -- ⟵⟨ rLet₁ (rLet₁ (rFun (λ x₁ → rFun (λ x₂ → rFun (λ x₃ →
-  --          correctCont (pcontext-plug p₂ (Val (Var x₁)))
-  --            (λ v t'' →
-  --               CPSApp (CPSApp (CPSVal (CPSVar x₂)) (CPSVal v)) (CPSVal t''))
-  --            {k₂ = λ v t'' → CPSIdk id₀ v (CPSCons ((proj₁ (aux₄ {var} (pcontext-plug p₂ (Val (Var x₁))) {c = c₁} (CPSIdk id₀) x₂ x₃))) (CPSVar x₂) t'')}
-  --            (λ v t₁ → sApp (sApp Subst≠ (sVal sVar=)) Subst≠) λ v t₁ → aux {μ[∙]μ₃ = μ[∙]μ₃} {μ[μα]μ₃ = μ[μα]μ₃} id₀ x₂ v (proj₁ (aux₄ {var} (pcontext-plug p₂ (Val (Var x₁))) {c = c₁} (CPSIdk id₀) x₂ x₃)) t₁))))) ⟩
+                      (λ v t₁ → aux {μ[∙]μ₃ = μ[∙]μ₃} {μ[μα]μ₃ = μ[μα]μ₃} id₀ x₂ v (extend-compatible' c₁ (proj₂ (diff-compatible μ[μα]μ₃))) t₁)))))) ⟩
   CPSLet
     (CPSLet
      (CPSVal
