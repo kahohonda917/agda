@@ -174,6 +174,7 @@ mutual
              (v₂ : cpsvalue[ var ] cpsT τ₁) →
              cpsSubst (λ x → k v₂ (CPSVar x)) t (k v₂ t)
 
+
   schematicK  : {var : cpstyp → Set} {τ₁ α : typ}{μα : trail}{τ : cpstyp} →
                (k : cpsvalue[ var ] τ → cpsvalue[ var ] (cpsT τ₁) →
                     cpsvalue[ var ] (cpsM μα) → cpsterm[ var ] (cpsT α)) →
@@ -3194,6 +3195,7 @@ control-lemma
 
   ∎ -}
 
+
 --9/22--------------------------------------------------------------------
 aux₄-s : ∀ {var : cpstyp → Set}{τ}{α}{β}{μα}{μβ}
          {μ[β]α : trails[ μβ ] μα} →
@@ -3204,6 +3206,7 @@ aux₄-s : ∀ {var : cpstyp → Set}{τ}{α}{β}{μα}{μβ}
          (k : var (cpsT τ ⇛ (cpsMs μ[β]α ⇛ cpsT α)))
          (t : var (cpsM μβ))
          (c' : compatible (τ ⇒ α , μα) μα μα) →
+         schematicV′ κ →
          (cpsreduce {var}
          (cpsTerm e
            (λ v t' → κ v t')
@@ -3213,6 +3216,99 @@ aux₄-s : ∀ {var : cpstyp → Set}{τ}{α}{β}{μα}{μβ}
              κ v (CPSCons c' (CPSVar k) t'))
              (CPSVar t)))
 
+aux₄-s (Val v) κ k t c' sch = {!!}
+aux₄-s (App e e₁) κ k t c' sch = {!!}
+aux₄-s (Plus e e₁) κ k t c' sch = {!!}
+aux₄-s (Control id₁ c₁ c₂ e) {c} κ k t c' sch = begin
+  (CPSLet
+       (CPSVal
+        (CPSFun
+         (λ v →
+            CPSVal
+            (CPSFun
+             (λ k' →
+                CPSVal
+                (CPSFun
+                 (λ t' →
+                    CPSLet
+                    (CPSVal
+                     (CPSAppend c₂ (CPSCons c (CPSVar k) (CPSVar t))
+                      (CPSCons c₁ (CPSVar k') (CPSVar t'))))
+                    (λ t'' → κ (CPSVar v) (CPSVar t'')))))))))
+       (λ x' → cpsTerm (e x') (CPSIdk id₁) CPSId))
+
+  ⟶⟨ rLet₁ (rFun (λ x → rFun (λ x₁ → rFun (λ x₂ → rLetApp)))) ⟩
+  CPSLet
+    (CPSVal
+     (CPSFun
+      (λ z →
+         CPSVal
+         (CPSFun
+          (λ z₁ →
+             CPSVal
+             (CPSFun
+              (λ z₂ →
+                 CPSApp (CPSVal (CPSFun (λ t'' → κ (CPSVar z) (CPSVar t''))))
+                 (CPSVal
+                  (CPSAppend c₂ (CPSCons c (CPSVar k) (CPSVar t))
+                   (CPSCons c₁ (CPSVar z₁) (CPSVar z₂)))))))))))
+    (λ x' → cpsTerm (e x') (CPSIdk id₁) CPSId)
+  ⟶⟨ rLet₁ (rFun (λ x → rFun (λ x₁ → rFun (λ x₂ → rBeta (sch (CPSAppend c₂ (CPSCons c (CPSVar k) (CPSVar t))
+       (CPSCons c₁ (CPSVar x₁) (CPSVar x₂))) (CPSVar x)))))) ⟩
+  CPSLet
+    (CPSVal
+     (CPSFun
+      (λ z →
+         CPSVal
+         (CPSFun
+          (λ z₁ →
+             CPSVal
+             (CPSFun
+              (λ z₂ →
+                 κ (CPSVar z)
+                 (CPSAppend c₂ (CPSCons c (CPSVar k) (CPSVar t))
+                  (CPSCons c₁ (CPSVar z₁) (CPSVar z₂))))))))))
+    (λ x' → cpsTerm (e x') (CPSIdk id₁) CPSId)
+  ⟶⟨ rLet₁ (rFun (λ x → rFun (λ x₁ → rFun (λ x₂ → {!!})))) ⟩
+  {!!}
+  ⟵⟨ rLet₁ (rFun (λ x → rFun (λ x₁ → rFun (λ x₂ → rBeta {!sch (CPSAppend c₂ (CPSVar t) (CPSCons c₁ (CPSVar x₁) (CPSVar x₂))) (CPSVar x)!})))) ⟩
+  CPSLet
+    (CPSVal
+     (CPSFun
+      (λ z →
+         CPSVal
+         (CPSFun
+          (λ z₁ →
+             CPSVal
+             (CPSFun
+              (λ z₂ →
+                 CPSApp
+                 (CPSVal
+                  (CPSFun
+                   (λ t'' → κ (CPSVar z) (CPSCons c' (CPSVar k) (CPSVar t'')))))
+                 (CPSVal
+                  (CPSAppend c₂ (CPSVar t)
+                   (CPSCons c₁ (CPSVar z₁) (CPSVar z₂)))))))))))
+    (λ x' → cpsTerm (e x') (CPSIdk id₁) CPSId)
+  ⟵⟨ rLet₁ (rFun (λ x → rFun (λ x₁ → rFun (λ x₂ → rLetApp)))) ⟩
+  (CPSLet
+       (CPSVal
+        (CPSFun
+         (λ v →
+            CPSVal
+            (CPSFun
+             (λ k' →
+                CPSVal
+                (CPSFun
+                 (λ t' →
+                    CPSLet
+                    (CPSVal
+                     (CPSAppend c₂ (CPSVar t) (CPSCons c₁ (CPSVar k') (CPSVar t'))))
+                    (λ t'' → κ (CPSVar v) (CPSCons c' (CPSVar k) (CPSVar t''))))))))))
+       (λ x' → cpsTerm (e x') (CPSIdk id₁) CPSId))
+  ∎
+aux₄-s (Prompt id₁ e) κ k t c' sch = {!!}
+{-
 aux₄-s {var} {τ} {α} {.α} {μα} {.μα} {.[]} (Val {τ₁ = .τ} {α = .α} {μα = .μα} v) {c} κ k t c' = {!!}
 aux₄-s {var} {τ} {α} {β} {μα} {μβ} {μ[β]α} (App {τ₁ = .τ} {τ₂ = τ₂} {α = .α} {β = β₁} {γ = γ} {δ = .β} {μα = .μα} {μβ = μβ₁} {μγ = μγ} {μδ = .μβ} {μ[β]α = μ[β]α₁} {μ[γ]β = μ[γ]β} {μ[δ]γ = μ[δ]γ} {μ[δ]α = .μ[β]α} e e₁) {c} κ k t c' = begin
   (cpsTerm e
@@ -3249,7 +3345,7 @@ aux₄-s {var} {τ} {α} {β} {μα} {μβ} {μ[β]α} (App {τ₁ = .τ} {τ₂
 aux₄-s {var} {.Nat} {α} {β} {μα} {μβ} {μ[β]α} (Plus {α = .α} {β = β₁} {γ = .β} {μα = .μα} {μβ = μβ₁} {μγ = .μβ} {μ[β]α = μ[β]α₁} {μ[γ]β = μ[γ]β} {μ[γ]α = .μ[β]α} e e₁) {c} κ k t c' = {!!}
 aux₄-s {var} {τ} {α} {β} {μα} {μβ} {μ[β]α} (Control {τ = .τ} {α = .α} {β = .β} {γ = γ} {γ' = γ'} {t₁ = t₁} {t₂ = t₂} {μ₀ = μ₀} {μ₁ = μ₁} {μ₂ = μ₂} {μᵢ = μᵢ} {μα = .μα} {μβ = .μβ} {μsᵢ = μsᵢ} {μs₁ = μs₁} {μ[β]α = .μ[β]α} id₁ c₁ c₂ e) {c} κ k t c' = {!!}
 aux₄-s {var} {τ} {α} {.α} {μα} {.μα} {.[]} (Prompt {τ = .τ} {α = .α} {β = β} {β' = β'} {μα = .μα} {μᵢ = μᵢ} {μsᵢ = μsᵢ} id₁ e) {c} κ k t c' = {!!}
-
+-}
 
 --9/22--------------------------------------------------------------------
 {-
