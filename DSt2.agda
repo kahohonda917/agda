@@ -98,14 +98,6 @@ diff-compatible {τ ⇒ τ' , μα} (μk ::⟨ c ⟩ μs) with diff-compatible �
 ... | (μ₀ , c') with assoc-compatible-l c' c
 ... | (μ₃ , c₁ , c₂) = μ₃ , c₂
 
--- extend-compatible : {μα μβ μk : trail}
---                     (c : compatible μk μβ μβ)
---                     (μs : trails[ μβ ] μα) →
---                     compatible μk μα μα
--- extend-compatible c μs with diff-compatible μs
--- ... | (μ , c') with assoc-compatible-l c c'
--- ... | (μ₁ , c₁ , c₂) = {!!}
-
 extend-compatible' : {μα μβ μ₀ : trail} {τ₁ τ₂ : typ}
                      (c₁ : compatible (τ₁ ⇒ τ₂ , μα) μβ μβ)
                      (c₂ : compatible μβ μ₀ μα) →
@@ -115,6 +107,28 @@ extend-compatible' {μβ = τ ⇒ τ' , ∙} (refl , refl , refl) c₂ = refl , 
 extend-compatible' {τ₂ ⇒ τ''' , ∙} {μβ = .τ₂ ⇒ .τ''' , (τ₁ ⇒ τ'' , μβ)} (refl , refl , refl , refl , refl) c₂ = refl , refl , refl
 extend-compatible' {τ₂ ⇒ τ''' , (τ₃ ⇒ τ'''' , μα)} {μβ = τ ⇒ τ' , (τ₁ ⇒ τ'' , μβ)} {∙} (refl , refl , refl , refl , refl , refl , c₁) refl = refl , refl , refl , refl , refl , refl , c₁
 extend-compatible' {τ₂ ⇒ τ''' , (τ₃ ⇒ τ'''' , μα)} {μβ = τ ⇒ τ' , (τ₁ ⇒ τ'' , (τ₅ ⇒ τ'''''' , μβ))} {τ₄ ⇒ τ''''' , (τ₆ ⇒ τ''''''' , μ₀)} (refl , refl , refl , refl , refl , refl , refl , refl , c₁) (refl , refl , refl , refl , refl , refl , c₂) = refl , refl , refl , refl , refl , refl , extend-compatible' (refl , refl , c₁) c₂
+
+extend-compatible : {μα μβ μγ μ₀ μ₁ : trail} {τ₁ τ₂ : typ}
+                    (c₁ : compatible (τ₁ ⇒ τ₂ , μα) μβ μβ)
+                    (c₂ : compatible μβ μ₀ μγ) →
+                    (c₃ : compatible μγ μ₁ μα) →
+                    compatible (τ₁ ⇒ τ₂ , μα) μγ μγ
+extend-compatible {μβ = τ ⇒ τ' , ∙} {∙} {∙} (refl , refl , refl) () refl
+extend-compatible {μβ = τ ⇒ τ' , ∙} {∙} {τ₁ ⇒ τ'' , μ₀} (refl , refl , refl) () refl
+extend-compatible {μβ = τ ⇒ τ' , ∙} {.τ ⇒ .τ' , .∙} {∙} (refl , refl , refl) refl c₃ = refl , refl , refl
+extend-compatible {μβ = τ ⇒ τ' , ∙} {.τ ⇒ .τ' , ∙} {τ₂ ⇒ τ''' , μ₀} (refl , refl , refl) (refl , refl , ()) c₃
+extend-compatible {μβ = τ ⇒ τ' , ∙} {.τ ⇒ .τ' , (τ₁ ⇒ τ'' , μγ)} {τ₂ ⇒ τ''' , μ₀} (refl , refl , refl) (refl , refl , ()) c₃
+extend-compatible {τ₂ ⇒ τ''' , ∙} {μβ = .τ₂ ⇒ .τ''' , (τ₁ ⇒ τ'' , μβ)} {μ₀ = ∙} (refl , refl , refl , refl , refl) refl c₃ = refl , refl , refl , refl , refl
+extend-compatible {τ₂ ⇒ τ''' , ∙} {μβ = .τ₂ ⇒ .τ''' , (τ₁ ⇒ τ'' , μβ)} {.τ₂ ⇒ .τ''' , ∙} {μ₀ = .τ₁ ⇒ .τ'' , .μβ} (refl , refl , refl , refl , refl) (refl , refl , refl) c₃ = refl , refl , refl
+extend-compatible {τ₂ ⇒ τ''' , ∙} {μβ = .τ₂ ⇒ .τ''' , (τ₁ ⇒ τ'' , μβ)} {.τ₂ ⇒ .τ''' , (τ₃ ⇒ τ'''' , μγ)} {μ₀ = .τ₁ ⇒ .τ'' , μ₀} (refl , refl , refl , refl , refl) (refl , refl , refl , refl , c₂) c₃ = refl , refl , refl , refl , refl
+extend-compatible {τ₂ ⇒ τ''' , (τ ⇒ τ' , μα)} {μβ = .τ₂ ⇒ .τ''' , (τ₁ ⇒ τ'' , μβ)} {μ₀ = ∙} (refl , refl , refl , refl , refl , refl , c₁) refl c₃ = refl , refl , refl , refl , refl , refl , c₁
+extend-compatible {τ₂ ⇒ τ''' , (τ ⇒ τ' , μα)} {μβ = .τ₂ ⇒ .τ''' , (τ₁ ⇒ τ'' , (.τ ⇒ .τ' , μβ))} {.τ₂ ⇒ .τ''' , ∙} {μ₀ = .τ₁ ⇒ .τ'' , .(τ ⇒ τ' , μβ)} {∙} (refl , refl , refl , refl , refl , refl , refl , refl , c₁) (refl , refl , refl) ()
+extend-compatible {τ₂ ⇒ τ''' , (τ ⇒ τ' , μα)} {μβ = .τ₂ ⇒ .τ''' , (τ₁ ⇒ τ'' , (.τ ⇒ .τ' , μβ))} {.τ₂ ⇒ .τ''' , ∙} {μ₀ = .τ₁ ⇒ .τ'' , .(τ ⇒ τ' , μβ)} {τ₃ ⇒ τ'''' , μ₁} (refl , refl , refl , refl , refl , refl , refl , refl , c₁) (refl , refl , refl) ()
+extend-compatible {τ₂ ⇒ τ''' , (τ ⇒ τ' , μα)} {μβ = .τ₂ ⇒ .τ''' , (τ₁ ⇒ τ'' , (.τ ⇒ .τ' , μβ))} {.τ₂ ⇒ .τ''' , (.τ ⇒ .τ' , .μα)} {μ₀ = .τ₁ ⇒ .τ'' , (.τ ⇒ .τ' , μ₀)} {∙} (refl , refl , refl , refl , refl , refl , refl , refl , c₁) (refl , refl , refl , refl , refl , refl , c₂) refl =
+  refl , refl , refl , refl , refl , refl , extend-compatible' (refl , refl , c₁) c₂
+extend-compatible {τ₂ ⇒ τ''' , (τ ⇒ τ' , μα)} {μβ = .τ₂ ⇒ .τ''' , (τ₁ ⇒ τ'' , (.τ ⇒ .τ' , μβ))} {.τ₂ ⇒ .τ''' , (τ₄ ⇒ τ''''' , .(τ ⇒ τ' , μβ))} {μ₀ = .τ₁ ⇒ .τ'' , (.τ₄ ⇒ .τ''''' , ∙)} {.τ₄ ⇒ .τ''''' , μ₁} (refl , refl , refl , refl , refl , refl , refl , refl , c₁) (refl , refl , refl , refl , refl , refl , refl) (refl , refl , refl , refl , c₃) = refl , refl , refl , refl , refl , refl , refl , refl , c₁
+extend-compatible {τ₂ ⇒ τ''' , (τ ⇒ τ' , μα)} {μβ = .τ₂ ⇒ .τ''' , (τ₁ ⇒ τ'' , (.τ ⇒ .τ' , μβ))} {.τ₂ ⇒ .τ''' , (τ₄ ⇒ τ''''' , (.τ ⇒ .τ' , μγ))} {μ₀ = .τ₁ ⇒ .τ'' , (.τ₄ ⇒ .τ''''' , (τ₃ ⇒ τ'''' , μ₀))} {.τ₄ ⇒ .τ''''' , (.τ ⇒ .τ' , μ₁)} (refl , refl , refl , refl , refl , refl , refl , refl , c₁) (refl , refl , refl , refl , refl , refl , refl , refl , c₂) (refl , refl , refl , refl , refl , refl , c₃) =
+  refl , refl , refl , refl , refl , refl , extend-compatible (refl , refl , c₁) (refl , refl , c₂) c₃
 
 
 is-id-trail : (τ τ' : typ) → (μ : trail) → Set
