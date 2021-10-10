@@ -310,9 +310,16 @@ data cpsreduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
   rCon₁    : {τ₁ τ₂ : typ}{μ₀ μ₁ μ₂ : trail} →
              {x : compatible (τ₁ ⇒ τ₂ , μ₁) μ₂ μ₀}  →
              {v₁ v₁′ : cpsvalue[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
-             {v₂ v₂′ : cpsvalue[ var ] cpsM μ₂} →
+             {v₂ : cpsvalue[ var ] cpsM μ₂} →
              cpsreduce (CPSVal v₁) (CPSVal v₁′) →
              cpsreduce (CPSVal (CPSCons x v₁ v₂)) (CPSVal (CPSCons x v₁′ v₂))
+
+  -- rConr₁    : {τ₁ τ₂ : typ}{μ₀ μ₁ μ₂ : trail} →
+  --             {x : compatible (τ₁ ⇒ τ₂ , μ₁) μ₂ μ₀}  →
+  --             {v₁ v₁′ : cpsvalue[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
+  --             {v₂ v₂′ : cpsvalue[ var ] cpsM μ₂} →
+  --             cpsreduce (CPSVal v₁) (CPSVal v₁′) →
+  --             cpsreduce (CPSVal (CPSCons refl v₁ v₂)) (CPSVal (CPSCons refl v₁′ v₂))
 
   rCon₂    : {τ₁ τ₂ : typ}{μ₀ μ₁ μ₂ : trail} →
              {x : compatible (τ₁ ⇒ τ₂ , μ₁) μ₂ μ₀}  →

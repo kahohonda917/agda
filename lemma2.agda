@@ -3196,183 +3196,6 @@ control-lemma
   ∎ -}
 
 
-------10/3------------------------------------------------------------------------------
-
-cons-assoc : ∀ {var} {τ} {τ' = α} {μ = μα} {μ = μβ} {τ = τ₃} {τ' = τ'''}
-        {μ = μ₀}
-        {μ[β]α : trails[ τ ⇒ α , μβ ] (τ ⇒ α , μα)}
-        (c : compatible (τ ⇒ α , μβ) μβ (τ ⇒ α , μα))
-        (c' : compatible (τ ⇒ α , μα) μα (τ ⇒ α , μα))
-        (c₂ : compatible (τ₃ ⇒ τ''' , μ₀) μα μβ)
-        (k : var (cpsT τ ⇛ (cpsMs μ[β]α ⇛ cpsT α)))
-        (t : cpsvalue[ var ] cpsM (τ ⇒ α , μβ))
-        (k't' : cpsvalue[ var ] cpsM (τ₃ ⇒ τ''' , μ₀)) →
-      cpsreduce
-      (CPSVal
-       (CPSCons (refl , refl , c₂)
-        (CPSCons (refl , refl , c) (CPSVar k) t) k't'))
-      (CPSVal
-       (CPSCons (refl , refl , c') (CPSVar k)
-        (CPSCons (refl , refl , c₂) t k't')))
-
-cons-assoc {τ' = α} {μ = μα} {μ = μβ} {τ = τ₃} {τ' = τ'''} {μ = μ₀} c c' c₂ k t k't' = begin
-  (CPSVal
-       (CPSCons (refl , refl , c₂)
-        (CPSCons (refl , refl , c) (CPSVar k) t) k't'))
-  ⟶⟨ rCon₁ rConst ⟩
-  CPSVal
-    (CPSCons (refl , refl , c₂)
-     (CPSFun
-      (λ v →
-         CPSVal
-         (CPSFun
-          (λ t' →
-             CPSApp (CPSApp (CPSVal (CPSVar k)) (CPSVal (CPSVar v)))
-             (CPSVal (CPSCons c t (CPSVar t')))))))
-     k't')
-  ⟶⟨ rConst ⟩
-  CPSVal
-    (CPSFun
-     (λ v →
-        CPSVal
-        (CPSFun
-         (λ t' →
-            CPSApp
-            (CPSApp
-             (CPSVal
-              (CPSFun
-               (λ v₁ →
-                  CPSVal
-                  (CPSFun
-                   (λ t'' →
-                      CPSApp (CPSApp (CPSVal (CPSVar k)) (CPSVal (CPSVar v₁)))
-                      (CPSVal (CPSCons c t (CPSVar t''))))))))
-             (CPSVal (CPSVar v)))
-            (CPSVal (CPSCons c₂ k't' (CPSVar t')))))))
-  ⟶⟨ rFun (λ x → rFun (λ x₁ → rApp₁ (rBeta (sVal (sFun (λ x₂ → sApp (sApp Subst≠ (sVal sVar=)) Subst≠)))))) ⟩
-  CPSVal
-    (CPSFun
-     (λ z →
-        CPSVal
-        (CPSFun
-         (λ z₁ →
-            CPSApp
-            (CPSVal
-             (CPSFun
-              (λ z₂ →
-                 CPSApp (CPSApp (CPSVal (CPSVar k)) (CPSVal (CPSVar z)))
-                 (CPSVal (CPSCons c t (CPSVar z₂))))))
-            (CPSVal (CPSCons c₂ k't' (CPSVar z₁)))))))
-  ⟶⟨ rFun (λ x → rFun (λ x₁ → rBeta (sApp Subst≠ (sVal (sCon SubstV≠ sVar=))))) ⟩
-  CPSVal
-    (CPSFun
-     (λ z →
-        CPSVal
-        (CPSFun
-         (λ z₁ →
-            CPSApp (CPSApp (CPSVal (CPSVar k)) (CPSVal (CPSVar z)))
-            (CPSVal (CPSCons c t (CPSCons c₂ k't' (CPSVar z₁))))))))
-  ⟵⟨ rFun (λ x → rFun (λ x₁ → rApp₂ {!cons-assoc!})) ⟩
-  CPSVal
-    (CPSFun
-     (λ v →
-        CPSVal
-        (CPSFun
-         (λ t' →
-            CPSApp (CPSApp (CPSVal (CPSVar k)) (CPSVal (CPSVar v)))
-            (CPSVal
-             (CPSCons c' (CPSCons (refl , refl , c₂) t k't') (CPSVar t')))))))
-  ⟵⟨ rConst ⟩
-  (CPSVal
-       (CPSCons (refl , refl , c') (CPSVar k)
-        (CPSCons (refl , refl , c₂) t k't')))
-  ∎
----------------------------------------10/9-------------------------------------------------------
-{-cons-assoc-g : ∀ {var : cpstyp → Set}{τ α τ' α' τ₁ α₁ τ₂ α₂ : typ}{μk μt μkt μ μ' : trail}
-               (k : cpsvalue[ var ] cpsM (τ₂ ⇒ α₂ , μk))
-               (t : cpsvalue[ var ] cpsM (τ₁ ⇒ α₁ , μt))
-               (kt : cpsvalue[ var ] cpsM μkt)
-               {c₁ : compatible (τ₂ ⇒ α₂ , μk) (τ₁ ⇒ α₁ , μt) (τ ⇒ α , μ)}
-               {c₂ : compatible (τ ⇒ α , μ) μkt (τ' ⇒ α' , μ')} →
-               Σ[ μ₀ ∈ trail ] 
-               Σ[ c₁' ∈ compatible (τ₁ ⇒ α₁ , μt) μkt μ₀ ]
-               Σ[ c₂' ∈ compatible (τ₂ ⇒ α₂ , μk) μ₀ (τ' ⇒ α' , μ') ]
-               cpsreduce
-                 (CPSVal
-                   (CPSCons c₂
-                     (CPSCons c₁ k t) kt))
-                 (CPSVal
-                   (CPSCons c₂' k
-                     (CPSCons c₁' t kt)))
-cons-assoc-g {var} {τ} {α} {.τ} {.α} {τ₁} {α₁} {τ₂} {α₂} {μk} {μt} {∙} {μ} {.μ} k t kt {refl , refl , c₁} {refl} = ((τ₁ ⇒ α₁ , μt)) , (refl , ((refl , refl , c₁) , (begin
-  (CPSVal (CPSCons refl (CPSCons (refl , refl , c₁) k t) kt))
-  ⟶⟨ rConsid₂ ⟩
-  CPSVal (CPSCons (refl , refl , c₁) k t)
-  ⟵⟨ rCon₂ rConsid₂ ⟩
-  (CPSVal (CPSCons (refl , refl , c₁) k (CPSCons refl t kt)))
-  ∎)))
-cons-assoc-g {var} {τ} {α} {τ'} {α'} {τ₁} {α₁} {τ₂} {α₂} {μk} {μt} {τ₃ ⇒ τ'' , μkt} {μ} {μ'} k t kt {refl , refl , c₁} {refl , refl , c₂} with assoc-compatible-r c₁ c₂
-... | (μa , ca₁ , ca₂) = μa , (ca₂ , ({!!} , (begin
-  (CPSVal
-       (CPSCons (refl , refl , c₂) (CPSCons (refl , refl , c₁) k t) kt))
-  ⟶⟨ rCon₁ rConst ⟩
-  CPSVal
-    (CPSCons (refl , refl , c₂)
-     (CPSFun
-      (λ v →
-         CPSVal
-         (CPSFun
-          (λ t' →
-             CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar v)))
-             (CPSVal (CPSCons c₁ t (CPSVar t')))))))
-     kt)
-  ⟶⟨ rConst ⟩
-  CPSVal
-    (CPSFun
-     (λ v →
-        CPSVal
-        (CPSFun
-         (λ t' →
-            CPSApp
-            (CPSApp
-             (CPSVal
-              (CPSFun
-               (λ v₁ →
-                  CPSVal
-                  (CPSFun
-                   (λ t'' →
-                      CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar v₁)))
-                      (CPSVal (CPSCons c₁ t (CPSVar t''))))))))
-             (CPSVal (CPSVar v)))
-            (CPSVal (CPSCons c₂ kt (CPSVar t')))))))
-  ⟶⟨ rFun (λ x → rFun (λ x₁ → rApp₁ (rBeta (sVal (sFun (λ x₂ → sApp (sApp Subst≠ (sVal sVar=)) Subst≠)))))) ⟩
-  CPSVal
-    (CPSFun
-     (λ z →
-        CPSVal
-        (CPSFun
-         (λ z₁ →
-            CPSApp
-            (CPSVal
-             (CPSFun
-              (λ z₂ →
-                 CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar z)))
-                 (CPSVal (CPSCons c₁ t (CPSVar z₂))))))
-            (CPSVal (CPSCons c₂ kt (CPSVar z₁)))))))
-  ⟶⟨ rFun (λ x → rFun (λ x₁ → rBeta (sApp Subst≠ (sVal (sCon SubstV≠ sVar=))))) ⟩
-  CPSVal
-    (CPSFun
-     (λ z →
-        CPSVal
-        (CPSFun
-         (λ z₁ →
-            CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar z)))
-            (CPSVal (CPSCons c₁ t (CPSCons c₂ kt (CPSVar z₁))))))))
-  ⟵⟨ {!!} ⟩
-  {!!}
-  ⟵⟨ {!rConst!} ⟩
-  (CPSVal (CPSCons {!!} k (CPSCons ca₂ t kt)))
-  ∎)))-}
 
 cons-assoc-2 : ∀ {var : cpstyp → Set}{τ α τ' α' τ₁ α₁ τ₂ α₂ : typ}{μk μt μkt μ μ' μ₀ : trail}
                (k : cpsvalue[ var ] cpsM (τ₂ ⇒ α₂ , μk))
@@ -3398,20 +3221,20 @@ cons-assoc-2 {var} {τ} {α} {τ'} {α'} {τ₁} {α₁} {τ₂} {α₂} {μk} {
   (CPSVal (CPSCons (refl , refl , c₂') k (CPSCons refl t kt)))
   ∎
 
-cons-assoc-2 {var} {τ} {α} {.τ} {.α} {τ₁} {α₁} {.τ} {.α} {μk} {μt} {τ₃ ⇒ τ'' , μkt} {μ} {μ'} {τ₂ ⇒ τ' , μ₀} k t kt (refl , refl , c₁) (refl , refl , c₂) (refl , refl , c₁') (refl , refl , c₂') with assoc-compatible-r c₁ c₂
-...| (μa , ca₁ , ca₂) = begin
+cons-assoc-2 {var} {τ} {α} {.τ} {.α} {τ₁} {α₁} {.τ} {.α} {.(τ₁ ⇒ α₁ , ∙)} {.(τ₃ ⇒ τ'' , μkt)} {τ₃ ⇒ τ'' , μkt} {.(τ₃ ⇒ τ'' , μkt)} {∙} {τ₁ ⇒ α₁ , ∙} k t kt (refl , refl , refl , refl , refl) (refl , refl , refl) (refl , refl , refl) (refl , refl , refl) = begin
   (CPSVal
-       (CPSCons (refl , refl , c₂) (CPSCons (refl , refl , c₁) k t) kt))
+       (CPSCons (refl , refl , refl)
+        (CPSCons (refl , refl , refl , refl , refl) k t) kt))
   ⟶⟨ rCon₁ rConst ⟩
   CPSVal
-    (CPSCons (refl , refl , c₂)
+    (CPSCons (refl , refl , refl)
      (CPSFun
       (λ v →
          CPSVal
          (CPSFun
           (λ t' →
              CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar v)))
-             (CPSVal (CPSCons c₁ t (CPSVar t')))))))
+             (CPSVal (CPSCons (refl , refl , refl) t (CPSVar t')))))))
      kt)
   ⟶⟨ rConst ⟩
   CPSVal
@@ -3429,9 +3252,9 @@ cons-assoc-2 {var} {τ} {α} {.τ} {.α} {τ₁} {α₁} {.τ} {.α} {μk} {μt}
                   (CPSFun
                    (λ t'' →
                       CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar v₁)))
-                      (CPSVal (CPSCons c₁ t (CPSVar t''))))))))
+                      (CPSVal (CPSCons (refl , refl , refl) t (CPSVar t''))))))))
              (CPSVal (CPSVar v)))
-            (CPSVal (CPSCons c₂ kt (CPSVar t')))))))
+            (CPSVal (CPSCons refl kt (CPSVar t')))))))
   ⟶⟨ rFun (λ x → rFun (λ x₁ → rApp₁ (rBeta (sVal (sFun (λ x₂ → sApp (sApp Subst≠ (sVal sVar=)) Subst≠)))))) ⟩
   CPSVal
     (CPSFun
@@ -3444,8 +3267,8 @@ cons-assoc-2 {var} {τ} {α} {.τ} {.α} {τ₁} {α₁} {.τ} {.α} {μk} {μt}
              (CPSFun
               (λ z₂ →
                  CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar z)))
-                 (CPSVal (CPSCons c₁ t (CPSVar z₂))))))
-            (CPSVal (CPSCons c₂ kt (CPSVar z₁)))))))
+                 (CPSVal (CPSCons (refl , refl , refl) t (CPSVar z₂))))))
+            (CPSVal (CPSCons refl kt (CPSVar z₁)))))))
   ⟶⟨ rFun (λ x → rFun (λ x₁ → rBeta (sApp Subst≠ (sVal (sCon SubstV≠ sVar=))))) ⟩
   CPSVal
     (CPSFun
@@ -3454,8 +3277,9 @@ cons-assoc-2 {var} {τ} {α} {.τ} {.α} {τ₁} {α₁} {.τ} {.α} {μk} {μt}
         (CPSFun
          (λ z₁ →
             CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar z)))
-            (CPSVal (CPSCons c₁ t (CPSCons c₂ kt (CPSVar z₁))))))))
-  ⟵⟨ rFun (λ x → rFun (λ x₁ → rApp₂ {!cons-assoc-2 t kt (CPSVar x₁) ? ? c₂ !})) ⟩
+            (CPSVal
+             (CPSCons (refl , refl , refl) t (CPSCons refl kt (CPSVar z₁))))))))
+  ⟵⟨ rFun (λ x → rFun (λ x₁ → rApp₂ (cons-assoc-2 t kt (CPSVar x₁) (refl , refl , refl) refl refl (refl , refl , refl)))) ⟩
   CPSVal
     (CPSFun
      (λ v →
@@ -3464,9 +3288,245 @@ cons-assoc-2 {var} {τ} {α} {.τ} {.α} {τ₁} {α₁} {.τ} {.α} {μk} {μt}
          (λ t' →
             CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar v)))
             (CPSVal
-             (CPSCons c₂' (CPSCons (refl , refl , c₁') t kt) (CPSVar t')))))))
+             (CPSCons refl (CPSCons (refl , refl , refl) t kt) (CPSVar t')))))))
   ⟵⟨ rConst ⟩
-  (CPSVal (CPSCons (refl , refl , c₂') k (CPSCons (refl , refl , c₁') t kt)))
+  (CPSVal
+       (CPSCons (refl , refl , refl) k
+        (CPSCons (refl , refl , refl) t kt)))
+  ∎
+cons-assoc-2 {var} {τ} {α} {.τ} {.α} {τ₁} {α₁} {.τ} {.α} {.(τ₁ ⇒ α₁ , (τ₂ ⇒ τ' , μ₀))} {τ₄ ⇒ τ''' , μt} {.τ₄ ⇒ .τ''' , μkt} {.(τ₄ ⇒ τ''' , μkt)} {∙} {τ₁ ⇒ α₁ , (τ₂ ⇒ τ' , μ₀)} k t kt (refl , refl , refl , refl , refl , refl , snd) (refl , refl , refl) (refl , refl , refl , refl , snd₁) (refl , refl , refl) = begin
+  (CPSVal
+       (CPSCons (refl , refl , refl)
+        (CPSCons (refl , refl , refl , refl , refl , refl , snd) k t) kt))
+  ⟶⟨ rCon₁ rConst ⟩
+  CPSVal
+    (CPSCons (refl , refl , refl)
+     (CPSFun
+      (λ v →
+         CPSVal
+         (CPSFun
+          (λ t' →
+             CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar v)))
+             (CPSVal (CPSCons (refl , (refl , (refl , (refl , snd)))) t (CPSVar t')))))))
+     kt)
+  ⟶⟨ rConst ⟩
+  CPSVal
+    (CPSFun
+     (λ v →
+        CPSVal
+        (CPSFun
+         (λ t' →
+            CPSApp
+            (CPSApp
+             (CPSVal
+              (CPSFun
+               (λ v₁ →
+                  CPSVal
+                  (CPSFun
+                   (λ t'' →
+                      CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar v₁)))
+                      (CPSVal
+                       (CPSCons (refl , refl , refl , refl , snd) t (CPSVar t''))))))))
+             (CPSVal (CPSVar v)))
+            (CPSVal (CPSCons refl kt (CPSVar t')))))))
+  ⟶⟨ rFun (λ x → rFun (λ x₁ → rApp₁ (rBeta (sVal (sFun (λ x₂ → sApp (sApp Subst≠ (sVal sVar=)) Subst≠)))))) ⟩
+  CPSVal
+    (CPSFun
+     (λ z →
+        CPSVal
+        (CPSFun
+         (λ z₁ →
+            CPSApp
+            (CPSVal
+             (CPSFun
+              (λ z₂ →
+                 CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar z)))
+                 (CPSVal
+                  (CPSCons (refl , refl , refl , refl , snd) t (CPSVar z₂))))))
+            (CPSVal (CPSCons refl kt (CPSVar z₁)))))))
+  ⟶⟨ rFun (λ x → rFun (λ x₁ → rBeta (sApp Subst≠ (sVal (sCon SubstV≠ sVar=))))) ⟩
+  CPSVal
+    (CPSFun
+     (λ z →
+        CPSVal
+        (CPSFun
+         (λ z₁ →
+            CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar z)))
+            (CPSVal
+             (CPSCons (refl , refl , refl , refl , snd) t
+              (CPSCons refl kt (CPSVar z₁))))))))
+  ⟵⟨ rFun (λ x → rFun (λ x₁ → rApp₂ (cons-assoc-2 t kt (CPSVar x₁) (refl , refl , refl , refl , snd₁)
+                                           refl refl (refl , (refl , (refl , (refl , snd))))))) ⟩
+  CPSVal
+    (CPSFun
+     (λ v →
+        CPSVal
+        (CPSFun
+         (λ t' →
+            CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar v)))
+            (CPSVal
+             (CPSCons refl (CPSCons (refl , refl , refl , refl , snd₁) t kt)
+              (CPSVar t')))))))
+  ⟵⟨ rConst ⟩
+  (CPSVal
+       (CPSCons (refl , refl , refl) k
+        (CPSCons (refl , refl , refl , refl , snd₁) t kt)))
+  ∎
+    -- (CPSVal
+    --                (CPSCons c₂
+    --                  (CPSCons c₁ k t) kt))
+    --              (CPSVal
+    --                (CPSCons c₂' k
+    --                  (CPSCons c₁' t kt)))
+cons-assoc-2 {var} {τ} {α} {.τ} {.α} {τ₁} {α₁} {.τ} {.α} {τ₅ ⇒ τ'''' , μk} {μt} {τ₃ ⇒ τ'' , μkt} {τ₄ ⇒ τ''' , μ} {τ₂ ⇒ τ' , μ'} {τ₁ ⇒ α₁ , ∙} k t kt (refl , refl , refl , refl , c₁) (refl , refl , refl , refl , c₂) (refl , refl , refl) (refl , refl , refl , refl , c₂') = begin
+  (CPSVal
+       (CPSCons (refl , refl , refl , refl , c₂)
+        (CPSCons (refl , refl , refl , refl , c₁) k t) kt))
+  ⟶⟨ rCon₁ rConst ⟩
+  CPSVal
+    (CPSCons (refl , refl , refl , refl , c₂)
+     (CPSFun
+      (λ v →
+         CPSVal
+         (CPSFun
+          (λ t' →
+             CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar v)))
+             (CPSVal (CPSCons (refl , (refl , c₁)) t (CPSVar t')))))))
+     kt)
+  ⟶⟨ rConst ⟩
+  CPSVal
+    (CPSFun
+     (λ v →
+        CPSVal
+        (CPSFun
+         (λ t' →
+            CPSApp
+            (CPSApp
+             (CPSVal
+              (CPSFun
+               (λ v₁ →
+                  CPSVal
+                  (CPSFun
+                   (λ t'' →
+                      CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar v₁)))
+                      (CPSVal (CPSCons (refl , refl , c₁) t (CPSVar t''))))))))
+             (CPSVal (CPSVar v)))
+            (CPSVal (CPSCons (refl , (refl , c₂)) kt (CPSVar t')))))))
+  ⟶⟨ rFun (λ x → rFun (λ x₁ → rApp₁ (rBeta (sVal (sFun (λ x₂ → sApp (sApp Subst≠ (sVal sVar=)) Subst≠)))))) ⟩
+  CPSVal
+    (CPSFun
+     (λ z →
+        CPSVal
+        (CPSFun
+         (λ z₁ →
+            CPSApp
+            (CPSVal
+             (CPSFun
+              (λ z₂ →
+                 CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar z)))
+                 (CPSVal (CPSCons (refl , refl , c₁) t (CPSVar z₂))))))
+            (CPSVal (CPSCons (refl , refl , c₂) kt (CPSVar z₁)))))))
+  ⟶⟨ rFun (λ x → rFun (λ x₁ → rBeta (sApp Subst≠ (sVal (sCon SubstV≠ sVar=))))) ⟩
+  CPSVal
+    (CPSFun
+     (λ z →
+        CPSVal
+        (CPSFun
+         (λ z₁ →
+            CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar z)))
+            (CPSVal
+             (CPSCons (refl , refl , c₁) t
+              (CPSCons (refl , refl , c₂) kt (CPSVar z₁))))))))
+  ⟵⟨ rFun (λ x → rFun (λ x₁ → rApp₂ (cons-assoc-2 t kt (CPSVar x₁) (refl , refl , refl)
+                                           (refl , refl , c₂') (refl , (refl , c₂)) (refl , (refl , c₁))))) ⟩
+  CPSVal
+    (CPSFun
+     (λ v →
+        CPSVal
+        (CPSFun
+         (λ t' →
+            CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar v)))
+            (CPSVal
+             (CPSCons (refl , (refl , c₂')) (CPSCons (refl , refl , refl) t kt) (CPSVar t')))))))
+  ⟵⟨ rConst ⟩
+  (CPSVal
+       (CPSCons (refl , refl , refl , refl , c₂') k
+        (CPSCons (refl , refl , refl) t kt)))
+  ∎
+cons-assoc-2 {var} {τ} {α} {.τ} {.α} {τ₁} {α₁} {.τ} {.α} {τ₅ ⇒ τ'''' , μk} {μt} {τ₃ ⇒ τ'' , μkt} {τ₇ ⇒ τ'''''' , μ} {τ₂ ⇒ τ' , μ'} {τ₁ ⇒ α₁ , (τ₄ ⇒ τ''' , μ₀)} k t kt (refl , refl , refl , refl , c₁) (refl , refl , refl , refl , c₂) (refl , refl , c₁') (refl , refl , refl , refl , c₂') = begin
+  (CPSVal
+       (CPSCons (refl , refl , refl , refl , c₂)
+        (CPSCons (refl , refl , refl , refl , c₁) k t) kt))
+  ⟶⟨ rCon₁ rConst ⟩
+  CPSVal
+    (CPSCons (refl , refl , refl , refl , c₂)
+     (CPSFun
+      (λ v →
+         CPSVal
+         (CPSFun
+          (λ t' →
+             CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar v)))
+             (CPSVal (CPSCons (refl , (refl , c₁)) t (CPSVar t')))))))
+     kt)
+  ⟶⟨ rConst ⟩
+  CPSVal
+    (CPSFun
+     (λ v →
+        CPSVal
+        (CPSFun
+         (λ t' →
+            CPSApp
+            (CPSApp
+             (CPSVal
+              (CPSFun
+               (λ v₁ →
+                  CPSVal
+                  (CPSFun
+                   (λ t'' →
+                      CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar v₁)))
+                      (CPSVal (CPSCons (refl , refl , c₁) t (CPSVar t''))))))))
+             (CPSVal (CPSVar v)))
+            (CPSVal (CPSCons (refl , (refl , c₂)) kt (CPSVar t')))))))
+  ⟶⟨ rFun (λ x → rFun (λ x₁ → rApp₁ (rBeta (sVal (sFun (λ x₂ → sApp (sApp Subst≠ (sVal sVar=)) Subst≠)))))) ⟩
+  CPSVal
+    (CPSFun
+     (λ z →
+        CPSVal
+        (CPSFun
+         (λ z₁ →
+            CPSApp
+            (CPSVal
+             (CPSFun
+              (λ z₂ →
+                 CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar z)))
+                 (CPSVal (CPSCons (refl , refl , c₁) t (CPSVar z₂))))))
+            (CPSVal (CPSCons (refl , refl , c₂) kt (CPSVar z₁)))))))
+  ⟶⟨ rFun (λ x → rFun (λ x₁ → rBeta (sApp Subst≠ (sVal (sCon SubstV≠ sVar=))))) ⟩
+  CPSVal
+    (CPSFun
+     (λ z →
+        CPSVal
+        (CPSFun
+         (λ z₁ →
+            CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar z)))
+            (CPSVal
+             (CPSCons (refl , refl , c₁) t
+              (CPSCons (refl , refl , c₂) kt (CPSVar z₁))))))))
+  ⟵⟨ rFun (λ x → rFun (λ x₁ → rApp₂ (cons-assoc-2 t kt (CPSVar x₁) (refl , refl , c₁')
+                                           (refl , refl , c₂') (refl , (refl , c₂)) (refl , (refl , c₁))))) ⟩
+  CPSVal
+    (CPSFun
+     (λ v →
+        CPSVal
+        (CPSFun
+         (λ t' →
+            CPSApp (CPSApp (CPSVal k) (CPSVal (CPSVar v)))
+            (CPSVal
+             (CPSCons (refl , (refl , c₂')) (CPSCons (refl , refl , c₁') t kt) (CPSVar t')))))))
+  ⟵⟨ rConst ⟩
+  (CPSVal
+       (CPSCons (refl , refl , refl , refl , c₂') k
+        (CPSCons (refl , refl , c₁') t kt)))
   ∎
 
 --------------------------------------------------------------------------------------------------------------------------
@@ -3504,8 +3564,8 @@ assoc {var} {τ} {α} {τ₁ ⇒ τ' , μα} {τ₂ ⇒ τ'' , μβ} {τ₃ ⇒ 
   CPSVal
     (CPSCons (refl , refl , c₂)
      (CPSCons (refl , refl , c) (CPSVar k) t) k't')
-  ⟶⟨ {!!} ⟩
-  --cons-assoc c c' c₂ k t k't'
+  ⟶⟨ cons-assoc-2 (CPSVar k) t k't' (refl , refl , c) (refl , refl , c₂)
+       (refl , refl , c₂) (refl , refl , c') ⟩
   CPSVal
     (CPSCons (refl , refl , c') (CPSVar k)
      (CPSCons (refl , refl , c₂) t k't'))
@@ -3538,7 +3598,7 @@ aux₄-s : ∀ {var : cpstyp → Set}{τ}{α}{β}{μα}{μβ}
 aux₄-s (Val v) κ k t c' sch = {!!}
 aux₄-s (App e e₁) κ k t c' sch = {!!}
 aux₄-s (Plus e e₁) κ k t c' sch = {!!}
-aux₄-s (Control id₁ c₁ c₂ e) {c} κ k t c' sch = begin
+aux₄-s {μ[β]α = μ[β]α} (Control id₁ c₁ c₂ e) {c} κ k t c' sch = begin
   (CPSLet
        (CPSVal
         (CPSFun
@@ -3572,7 +3632,7 @@ aux₄-s (Control id₁ c₁ c₂ e) {c} κ k t c' sch = begin
                   (CPSAppend c₂ (CPSCons c (CPSVar k) (CPSVar t))
                    (CPSCons c₁ (CPSVar z₁) (CPSVar z₂)))))))))))
     (λ x' → cpsTerm (e x') (CPSIdk id₁) CPSId)
-  ⟶⟨ rLet₁ (rFun (λ x → rFun (λ x₁ → rFun (λ x₂ → rApp₂ {!!})))) ⟩
+  ⟶⟨ rLet₁ (rFun (λ x → rFun (λ x₁ → rFun (λ x₂ → rApp₂ (assoc {μ[β]α = μ[β]α} k (CPSVar t) (CPSCons c₁ (CPSVar x₁) (CPSVar x₂))))))) ⟩
   CPSLet
     (CPSVal
      (CPSFun
