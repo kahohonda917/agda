@@ -21,7 +21,6 @@ data cpstyp : Set where
   ∙ : cpstyp
 
 --typ transform
-
 mutual
   cpsT : typ → cpstyp
   cpsT Nat = Nat
@@ -36,27 +35,17 @@ mutual
   cpsMs : {μα μβ : trail} → (μs : trails[ μβ ] μα) → cpstyp
   cpsMs {μα}μs = cpsM μα
 
-
---target
-
+--CPS項
 mutual
   data cpsvalue[_]_ (var : cpstyp → Set) : cpstyp → Set where
     CPSVar   : {τ₁ : cpstyp} → var τ₁ → cpsvalue[ var ] τ₁
     CPSNum   : ℕ → cpsvalue[ var ] Nat
     CPSFun   : {τ₁ τ₂ : cpstyp} → (var τ₂ → cpsterm[ var ] τ₁) →
                cpsvalue[ var ] (τ₂ ⇛ τ₁)
-
     CPSId    : cpsvalue[ var ] ∙
-    -- CPSTrail : {τ₁ : cpstyp} → cpsvalue[ var ] τ₁ →
-    --            cpsvalue[ var ] τ₁
-
     CPSAppend : {μ₁ μ₂ μ₃ : trail} → compatible μ₁ μ₂ μ₃ →
                 cpsvalue[ var ] cpsM μ₁ →
                 cpsvalue[ var ] cpsM μ₂ → cpsvalue[ var ] cpsM μ₃
-    -- CPSCons   : {τ₁ τ₂ : typ}{μ₀ μ₁ μ₂ : trail} → compatible (τ₁ ⇒ τ₂ , μ₁) μ₂ μ₀  →
-    --             cpsvalue[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂)) →
-    --             cpsvalue[ var ] cpsM μ₂ → cpsvalue[ var ] cpsM μ₀
-
     CPSCons   : {μ₀ μ₁ μ₂ : trail} → compatible μ₁ μ₂ μ₀  →
                 cpsvalue[ var ] cpsM μ₁ →
                 cpsvalue[ var ] cpsM μ₂ → cpsvalue[ var ] cpsM μ₀
@@ -71,21 +60,10 @@ mutual
                 cpsterm[ var ] τ₂
     CPSPlus   : cpsterm[ var ] Nat →
                 cpsterm[ var ] Nat →
-                cpsterm[ var ] Nat
-                
+                cpsterm[ var ] Nat                
     CPSIdk    : {τ₁ τ₂ : typ} {μ : trail} → is-id-trail τ₁ τ₂ μ →
                 cpsvalue[ var ] cpsT τ₁ →
                 cpsvalue[ var ] cpsM μ → cpsterm[ var ] cpsT τ₂
-                
-    -- CPSAppend : {μ₁ μ₂ μ₃ : trail} → compatible μ₁ μ₂ μ₃ →
-    --             cpsterm[ var ] cpsM μ₁ →
-    --             cpsterm[ var ] cpsM μ₂ → cpsterm[ var ] cpsM μ₃
-    -- CPSCons   : {τ₁ τ₂ : typ}{μ₀ μ₁ μ₂ : trail} → compatible (τ₁ ⇒ τ₂ , μ₁) μ₂ μ₀  →
-    --             cpsterm[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂)) →
-    --             cpsterm[ var ] cpsM μ₂ → cpsterm[ var ] cpsM μ₀
-
-
-
 
 mutual
   cpsV : {τ₁ : typ} → {var : cpstyp → Set} →
