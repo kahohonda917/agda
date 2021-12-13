@@ -3597,7 +3597,7 @@ aux₄-s : ∀ {var : cpstyp → Set}{τ}{α}{β}{μα}{μβ}
 
 aux₄-s (Val v) κ k t c' sch = {!!}
 aux₄-s (App e e₁) κ k t c' sch = {!!}
-aux₄-s (Plus e e₁) κ k t c' sch = {!!}
+aux₄-s {μβ = τ ⇒ τ' , μβ} (Plus e e₁) κ k t c' sch = {!!}
 aux₄-s {μ[β]α = μ[β]α} (Control id₁ c₁ c₂ e) {c} κ k t c' sch = begin
   (CPSLet
        (CPSVal
