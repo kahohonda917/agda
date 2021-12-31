@@ -134,13 +134,6 @@ mutual
     sId  : {τ : cpstyp} → {v : cpsvalue[ var ] τ} →
            cpsSubstVal (λ _ → CPSIdt) v CPSIdt
 
-{-  sTra : {τ τ₁ : cpstyp} →
-           {e : var τ → cpsvalue[ var ] τ₁} →
-           {v : cpsvalue[ var ] τ} →
-           {e′ : cpsvalue[ var ] τ₁} →
-           cpsSubstVal e v e′ →
-           cpsSubstVal (λ y → (e y)) v e′ -}
-
   data cpsSubst {var : cpstyp → Set} : {τ₁ τ₂ : cpstyp} →
                 (var τ₁ → cpsterm[ var ] τ₂) →
                 cpsvalue[ var ] τ₁ →
@@ -253,13 +246,6 @@ data cpsReduce {var : cpstyp → Set} : {τ₁ : cpstyp} →
   rConsid  : {τ₁ τ₂ : typ} {μ₁ : trail} →
              {v : cpsvalue[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
              cpsReduce (CPSCons refl (CPSVal v) (CPSVal CPSIdt)) (CPSVal v)
-
-{-
-  rConsid₂  : {τ₁ τ₂ : typ} {μ₁ : trail} →
-              {v₁ : cpsvalue[ var ] (cpsT τ₁ ⇛ (cpsM μ₁ ⇛ cpsT τ₂))} →
-              {id : cpsvalue[ var ] ∙} →
-              cpsReduce (CPSVal (CPSCons refl v₁ id)) (CPSVal v₁)
--}
 
   rConst   : {τ₁ τ₂ : typ} {μ₁ μ₁' μ₂' : trail} →
              {c₁ : compatible (τ₁ ⇒ τ₂ , μ₁) μ₁'
@@ -467,67 +453,6 @@ data cpsEqual {var : cpstyp → Set} : {τ₁ : cpstyp} →
              {e₂ : var τ₁ → cpsterm[ var ] τ₂} →
              cpsEqual (CPSLet e₁ (λ x → e₂ x))
                       (CPSApp (CPSVal (CPSFun (λ x → e₂ x))) e₁)
-
-  {-
-  -- idk v (k::t) <-> k v t
-  eIdkt    : {α τ₂ : typ} {μ₀ μ₁ μα μ₃ : trail} →
-             {μ[∙]μ₃ : trails[ ∙ ] μ₃} →
-             {μ[μα]μ₃ : trails[ μα ] μ₃} →
-             {id : is-id-trails τ₂ α μ[∙]μ₃} →
-             {v : cpsvalue[ var ] cpsT τ₂} →
-             {c : compatible (τ₂ ⇒ α , μ₃) μ₃ μ₃} →
-             {k : cpsvalue[ var ] (cpsT τ₂ ⇛ (cpsMs μ[μα]μ₃ ⇛ cpsT α))} →
-             {t : cpsvalue[ var ] cpsMs μ[μα]μ₃} →
-             cpsEqual
-              (CPSIdk id (CPSVal v) (CPSCons c (CPSVal k) (CPSVal t)))
-              (CPSApp (CPSApp (CPSVal k) (CPSVal v)) (CPSVal t))
-  -}
-
-  {-
-  Goal: cpsEqual
-        (CPSIdk id₀ (CPSVal (cpsV v))
-         (CPSCons (extend-compatible' c₁ (proj₂ (diff-compatible μ[μα]μ₃)))
-          (CPSVal (CPSVar x₁)) (CPSVal t₁)))
-        (CPSApp (CPSApp (CPSVal (CPSVar x₁)) (CPSVal (cpsV v)))
-         (CPSVal t₁))
-  ————————————————————————————————————————————————————————————
-  t₁      : cpsvalue[ (λ v₁ → var v₁) ] cpsMs μ[μα]μ₃
-  v       : value[ (λ v₁ → var v₁) ∘ cpsT ] τ₂
-  x₂      : var (cpsM μα)
-  x₁      : var (cpsT τ₂ ⇛ (cpsMs μ[μα]μ₃ ⇛ cpsT α))
-  x       : var (cpsT τ)
-  e       : (var ∘ cpsT) (τ ⇒ τ₂ ⟨ μ[μα]μ₃ ⟩ α ⟨ μα ⟩ α₁) →
-            term[ var ∘ cpsT ] γ ⟨ μ[∙]μᵢ ⟩ γ' ⟨ ∙ ⟩ τ₁
-  same    : same-pcontext p₁ p₂
-  c₁      : compatible (τ₂ ⇒ α , μ₃) μα μα
-  id      : is-id-trails γ γ' μ[∙]μᵢ
-  id₀     : is-id-trails τ₂ α μ[∙]μ₃
-  p₂      : pcontext[ var ∘ cpsT , τ ⟨ [] ⟩ α₁ ⟨ μα ⟩ α₁ ] τ₂ ⟨
-            μ[μα]μ₃ ⟩ α ⟨ μα ⟩ α₁
-  p₁      : pcontext[ var ∘ cpsT , τ ⟨ μ[∙]α ⟩ α₁ ⟨ ∙ ⟩ τ₁ ] τ₂ ⟨
-            μ[∙]μ₃ ⟩ α ⟨ ∙ ⟩ τ₁
-  μ[∙]μᵢ  : trails[ ∙ ] μᵢ   (not in scope)
-  μ[μα]μ₃ : trails[ μα ] μ₃
-  μ[∙]μ₃  : trails[ ∙ ] μ₃
-  μ[∙]α   : trails[ ∙ ] μα
-  μ₃      : trail   (not in scope)
-  μᵢ      : trail   (not in scope)
-  μ₀      : trail   (not in scope)
-  τ₂      : typ   (not in scope)
-  γ'      : typ   (not in scope)
-  γ       : typ   (not in scope)
-  α₁      : typ   (not in scope)
-  τ       : typ   (not in scope)
-  sch'    : schematicV′ k
-  sch     : schematicV k
-  t       : cpsvalue[ var ] cpsM μα
-  k       : cpsvalue[ var ] cpsT τ₁ →
-            cpsvalue[ var ] cpsMs [] → cpsterm[ var ] cpsT α
-  μα      : trail   (not in scope)
-  α       : typ   (not in scope)
-  τ₁      : typ   (not in scope)
-  var     : cpstyp → Set   (not in scope)
-  -}
 
   -- idt @ e <-> let v = e in idt @ v <-> let v = e in v <-> e
   eApdidΩ : {μ₂ : trail} →
