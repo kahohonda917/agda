@@ -1,34 +1,18 @@
 \section{CPS変換の正当性}
 CPS変換の正当性を、一部を除いてAgdaで実装した。この節ではCPS変換の正当性を証明する。そのために証明に必要な補題から見ていく。
 \subsection{補題}
-\begin{lemma}[CPS変換と代入の可換性]
+\begin{lemma}[CPS変換と代入の可換性]\upshape
   任意の項$e_1$、値$v$、継続$k$、trail $t$について$\LamP{x}{e_1\,x}[v]\mapsto e_2$が成り立つとき、$\LamP{x}{\CPSTh{e_1\,x} \SAppS k \SAppS t}[\CPSTh{v}] \mapsto \CPSTh{e_2} \SAppS k \SAppS t$が成り立つ。
 \end{lemma}
 これは$e_1$の中にある$x$を$v$に置き換えると$e_2$になる時、$e_1$のCPS変化後の項にある$x$を$v$のCPS変換後の値で置き換えると$e_2$のCPS変換結果になる、つまり代入とCPS変換の可換性を示している。
 
-\begin{lemma}[継続に関する代入演算]
-  任意の項$e$、値$v$、trail $t$、$schematic$な継続$k$について\\
-  $\LamP{x}{\CPSTh{e} \SAppS (k_1\, x) \SAppS t}[v] \mapsto \CPSTh{e} \SAppS (k_1\,v) \SAppS t$が成り立つ。
+\begin{lemma}[継続に関する代入演算]\upshape
+  任意の項$e$、値$v$、trail $t$、schematicな継続$k$について\\
+  $\LamP{x}{\CPSTh{e} \SAppS (k\, x) \SAppS t}[v] \mapsto \CPSTh{e} \SAppS (k\,v) \SAppS t$が成り立つ。
 \end{lemma}
-継続$k$の変数の構造が変わらない場合、$k$の中の$x$を$v$で置き換えられることを示している。
-
-\begin{lemma}[継続の簡約に関する補題]
-  任意の項$e_1$、値$v$、trail $t$、$schematic$な継続$k_1$について\\
-  $(k_1 \SAppS \CPSTh{v} \SAppS t) \to (k_2 \SAppS \CPSTh{v} \SAppS t)$が成り立つとき、
-  $\CPSTh{e}\SAppS k_1 \SAppS t_2 \to \CPSTh{e}\SAppS k_2 \SAppS t_2$が成り立つ。
-\end{lemma}
-継続の部分を同じ意味を持つものに置き換え証明を進めたい時に使う。
-
-\subsection{正当性の証明}
-CPS変換前の項を簡約した後にCPS変換した項と、CPS変換後の項が$\beta$同値であること、
-つまり以下の定理を示す。
-% 定理4
-\begin{theorem}[正当性の証明]
-  任意の項$e$,$\, e'$について$e \to e'$が成り立つならば任意のtrail $t$とschematicな継続$\kappa$に対して$\CPSTh{e}\SAppS k \SAppS t =_{\beta} \CPSTh{e'} \SAppS k \SAppS t$が成り立つ。
-\end{theorem}
-
-ここで$=_{\beta}$は$\beta$同値である。
-$schematic$というのは、「引数の変数の構造を変更しない」性質のことである。
+継続$k$が schematic な場合（引数の構造を尊重する場合）、
+$k$の中の$x$を$v$で置き換えられることを示している。
+schematic \cite{DF1992}というのは、「引数の構造を尊重する」性質のことで、
 本稿で扱う継続$k$は値とtrailの二つを受け取るため、
 次の二式がこの性質を表す。\\
 \[
@@ -38,20 +22,38 @@ $schematic$というのは、「引数の変数の構造を変更しない」性
 \end{array}
 \]
 
-証明は、$e \to e'$の簡約規\textsf{RBeta}・\textsf{RFrame}・\textsf{RControl}・\textsf{RPrompt}で場合分けして実装した。\textsf{RControl}以外はCPS変換の定義と簡約規則を適用し、補題を使って変形することによって示すことができた。この部分はAgdaに載せることができた。\textsf{RControl}では、前述した補題の他にcontrolのための補題を立てる必要があった。また、trailに差分の情報を入れ、論理関係を使う必要もあった。これらについて次節以降で見ていく。
+\begin{lemma}[継続の簡約に関する補題]\upshape
+  任意の項$e_1$、値$v$、trail $t$、schematicな継続$k_1$について\\
+  $(k_1 \SAppS \CPSTh{v} \SAppS t) \to (k_2 \SAppS \CPSTh{v} \SAppS t)$が成り立つとき、
+  $\CPSTh{e}\SAppS k_1 \SAppS t_2 \to \CPSTh{e}\SAppS k_2 \SAppS t_2$が成り立つ。
+\end{lemma}
+継続の部分を同じ意味を持つものに置き換え証明を進めたい時に使う。
+
+\subsection{正当性の証明}
+CPS変換前の項を簡約した後にCPS変換した項と、CPS変換後の項が$\beta$同値であること、
+つまり以下の定理を示す。
+% 定理4
+\begin{theorem}[正当性の証明]\upshape
+  任意の項$e$,$\, e'$について$e \to e'$が成り立つならば任意のtrail $t$とschematicな継続$k$に対して$\CPSTh{e}\SAppS k \SAppS t =_{\beta} \CPSTh{e'} \SAppS k \SAppS t$が成り立つ。
+\end{theorem}
+
+ここで$=_{\beta}$は$\beta$同値である。
+証明は、$e \to e'$の簡約基\textsf{RBeta}・\textsf{RFrame}・\textsf{RControl}・\textsf{RPrompt}で場合分けして実装した。\textsf{RControl}以外はCPS変換の定義と簡約規則を適用し、補題を使って変形することによって示すことができた。この部分はAgdaに載せることができた。\textsf{RControl}では、前述した補題の他にcontrolのための補題を立てる必要があった。また、trailに差分の情報を入れ、論理関係を使う必要もあった。これらについて次節以降で見ていく。
 
 
 \subsection{controlのための補題}
-定理4のcontrolのケースでは、任意のtrail tとschematicな継続$k$に対して\\
+定理4のcontrolのケースでは、任意のtrail $t$とschematicな継続$k$に対して\\
 $\CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\SAppS k \SAppS t =_{\beta} \CPSTh{\Prompt{\App{\LamP{c}{e_1}}{\LamP{x}{E_p[x]}}}} \SAppS k \SAppS t$ が成り立つ事を示すということになる。そこでコンテキストで囲まれた左辺をCPS変換の定義によって展開できる形に変換するために次の補題を立てた。
 
-\begin{lemma}[context-lemma]
-  任意の項$e$、\textsf{trail} $t$、$schematic$な継続$k$について\\
+\begin{lemma}[context-lemma]\upshape
+  任意の項$e$、trail $t$、schematicな継続$k$について\\
   $\CPSTh{\Prompt{E_p[e]}}\,k\,t =_{\beta} \CPSTh{\App{\LamP{x}{E_p[x]}}{e}}\,k\,t$
 \end{lemma}
+（context-lemma の証明について、一言触れる。）
 
-そして、$\CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\SAppS k \SAppS t =_{\beta} \CPSTh{\Prompt{\App{\LamP{c}{e_1}}{\LamP{x}{E_p[x]}}}} \SAppS k \SAppS t$を示すためにこの両辺をCPS変換の定義によって展開していく。\\
-\begin{figure}[h]
+そして、$\CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\SAppS k \SAppS t =_{\beta} \CPSTh{\Prompt{\App{\LamP{c}{e_1}}{\LamP{x}{E_p[x]}}}} \SAppS k \SAppS t$を示すためにこの両辺をCPS変換の定義によって展開していく。
+
+\begin{figure}
 \[
 \begin{array}{cl}
  & \CPSTh{\Prompt{\App{\LamP{c}{e_1}}{\LamP{x}{E_p[x]}}}}\,k\,t\\
@@ -121,9 +123,9 @@ $\CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\SAppS k \SAppS t =_{\beta} \CPSTh{\Promp
 \caption{簡約規則右辺の展開}
 \label{ControlReRight}
 \end{figure}
-\\
-\\
-\begin{figure}[h!]
+
+
+\begin{figure}
 \[
 \begin{array}{cl}
   & \CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\,k\,t\ \\
@@ -200,12 +202,13 @@ $\CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\SAppS k \SAppS t =_{\beta} \CPSTh{\Promp
 \caption{簡約規則左辺の展開}
 \label{ControlReLeft}
 \end{figure}
+
 図\ref{ControlReRight},\ref{ControlReLeft}に$\beta$同値を示したい両辺の展開を示した。それぞれの最終行に注目したい。両辺を見比べて形が異なっている部分を切り出すと次のようになる。\\
 \[
 \begin{array}{l}
   \DLam{v'}{\DLam{k'}{\DLam{t'}{\CPSTh{E_p[x]}[\Change{x}{v'}]\
         \SLamP{a}{\SLam{t''}{k' \DAppS a \DAppS t''}}\ t'}}}\\
-  \DLamS v'.\DLamS k'.\DLamS t'.
+  \DLamS v'.\,\DLamS k'.\,\DLamS t'.\,
 
      \CPSTh{E_p[x]}[\Change{x}{v'}]\
      \Idk\ \ConsP{k'}{t'}\\
@@ -214,30 +217,35 @@ $\CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\SAppS k \SAppS t =_{\beta} \CPSTh{\Promp
 \]
 \\
 ここで、上の式の継続部分について、$\SLam{a}{\SLam{t''}{k' \DAppS a \DAppS t''}}=\SLam{a}{\SLam{t''}{\Idk \DAppS a \DAppS \ConsP{k'}{t''}}}$と変換できる。なぜなら、$\SLam{a}{\SLam{t''}{\Idk \DAppS a \DAppS \ConsP{k'}{t''}}}$を$\Idk$の定義に従って展開すると
-$\SLam{a}{\SLam{t''}{\ConsP{k'}{t''}} \DAppS a \DAppS \Idt}$であり、$t''=\Bullet$の場合には$::$の定義より、$\SLam{a}{\SLam{t''}{k' \DAppS a \DAppS \Idt}}$で、$t''\neq \Bullet$の場合には$\SLam{a}{\SLam{t''}{k' \DAppS a \DAppS t''}}$になるからである。\\
-\\
-さらに$\Idk = \SLam{a}{\SLam{t''}{\Idk \DAppS a \DAppS t''}}$と表すことが出来ることから上の二式をかなり近い形に変換することができた。
+$\SLam{a}{\SLam{t''}{\ConsP{k'}{t''}} \DAppS a \DAppS \Idt}$であり、$t''=\Idt$の場合には$::$の定義より、$\SLam{a}{\SLam{t''}{k' \DAppS a \DAppS \Idt}}$で、$t''\neq \Idt$の場合には$\SLam{a}{\SLam{t''}{k' \DAppS a \DAppS t''}}$になるからである。
+
+さらに$\Idk = \SLam{a}{\SLam{t''}{\Idk \SAppS a \SAppS t''}}$と表すことが出来ることから上の二式をかなり近い形に変換することができた。
 \[
 \begin{array}{l}
   \DLam{v'}{\DLam{k'}{\DLam{t'}{\CPSTh{E_p[x]}[\Change{x}{v'}]\
         \SLamP{a}{\SLam{t''}{\Idk \DAppS a \DAppS \ConsP{k'}{t''}}}\ t'}}}\\
-  \DLamS v'.\DLamS k'.\DLamS t'.
+  \DLamS v'.\,\DLamS k'.\,\DLamS t'.\,
 
      \CPSTh{E_p[x]}[\Change{x}{v'}]\
-     \SLam{a}{\SLam{t''}{\Idk \DAppS a \DAppS t''}}\ \ConsP{k'}{t'}\\
+     \SLamP{a}{\SLam{t''}{\Idk \SAppS a \SAppS t''}}\ \ConsP{k'}{t'}\\
      
 \end{array}
 \]
 そこで次の重要な補題を立てた。
 
-\begin{lemma}[$k$の移動]
-  任意の項$e$、$k$、trail $t$に対して\\
-  $\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{t_0}}}}\ \ConsP{k'}{t'}}}}
-  =_{\beta} \\
-  \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{\ConsP{k'}{t_0}}}}}\ t'}}}$が成り立つ。
+\begin{lemma}[$k$の移動]\upshape
+  任意の項$e$に対して以下が成り立つ。
+\[
+\begin{array}{cl}
+& \DLam{v}{\DLam{k}{\DLam{t}{\CPSTh{e}[\Change{x}{v}] \SLamP{v_0}{\SLam{t_0}{\DApp{\Idk}{\DApp{v_0}{t_0}}}}\ \ConsP{k}{t}}}} \\
+  =_{\beta} &
+  \DLam{v}{\DLam{k}{\DLam{t}{\CPSTh{e}[\Change{x}{v}] \SLamP{v_0}{\SLam{t_0}{\SApp{\Idk}{\SApp{v_0}{\ConsP{k}{t_0}}}}}\ t}}}
+\end{array}
+\]
 \label{KMove}
 \end{lemma}
-この補題では、trailに連なっている$k$の位置が継続に渡すtrailに移動しても$\beta$同値が成り立つ事を意味しており、亀山さんの論文\cite{KY2008}にも記載されている。これを補題として、定理4から呼び出すためにはtrailに関していくつかの補題が必要であった。左辺では$k$と$t$を\textsf{cons}で繋げているのに対して、右辺では$k$と$t_0$を継続の中で繋げているため、型を保証する\textsf{compatible}が両辺で異なっている。補題\ref{KMove}を呼び出すためにはこの両方の\textsf{compatible}が必要だったのである。そこでtrailの型を変更して補題を立てた。次節で見ていく。
+この補題では、trailに連なっている$k$の位置が継続に渡すtrailに移動しても$\beta$同値が成り立つ事を意味しており、Kameyama, Yonezawa \cite{KY2008}でも同様の補題を使っている。
+これを補題として、定理4から呼び出すためにはtrailに関していくつかの補題が必要であった。左辺では$k$と$t$をtrailで繋げているのに対して、右辺では$k$と$t_0$を継続の中で繋げているため、この結合が型制約を満たしていることを保証する\textsf{compatible}関係が両辺で異なっている。補題\ref{KMove}を呼び出すためにはこの両方の\textsf{compatible}関係が必要となる。そこでtrailの型を変更して補題を立てた。次節で見ていく。
 
 \subsection{trailの差分情報}
 trailの型に差分情報を渡して次のようにAgdaで定義した。
@@ -247,32 +255,42 @@ trailの型に差分情報を渡して次のようにAgdaで定義した。
 data trails[_]_ (μα : trail) : trail → Set where
  [] : trails[ μα ] μα
  _::<_>_ : {τ1 τ2 : typ} {μ μβ μγ : trail} →
-              (μk : trail) → (c : compatible μβ μk μγ) →
-              (μs : trails[ μα ] μβ) →
-              trails[ μα ] μγ
+           (μk : trail) → (c : compatible μβ μk μγ) →
+           (μs : trails[ μα ] μβ) →
+           trails[ μα ] μγ
 \end{verbatim}
 
 trailsはtrailの差分情報を表している。$\mu_{\alpha}$をベースとして、空のtrailを受け取る場合の差分は$\mu_{\alpha}$と$\mu_{\alpha}$の差になる。$\mu_{\alpha}$に1つ以上のtrailを連ねてできた$\mu_s$に空ではない$\mu_k$を連ねる場合は、$\mu_{\beta}$と$\mu_k$を繋げたら型が$\mu_{\gamma}$になる事保証する\textsf{compatible}を同時に渡して$\mu_{\alpha}$から$\mu_{\gamma}$の差分を返している。
 このtrailsを使い、持っているtrailsの型から\textsf{compatible}関係を導くことが出来る補題を立てた。これで補題6をメイン定理から呼び出す準備が整った。
-\begin{lemma}[diff-compatible]
-  $\mu_{\beta}$に一つ以上のtrailが連なって$\mu_{\alpha}$になったtrailsと任意のtrail$\mu_0$について$\Compatible{\mu_{\beta}}{\mu_0}{\mu_{\alpha}}$が成り立つ。
+\begin{lemma}[diff-compatible]\upshape
+  $\mu_{\beta}$に一つ以上のtrailが連なって$\mu_{\alpha}$になったなら、
+ あるtrail $\mu_0$が存在して
+ $\Compatible{\mu_{\beta}}{\mu_0}{\mu_{\alpha}}$が成り立つ。
 \end{lemma}
 
 
 \subsection{論理関係を使った手証明}
-補題\ref{KMove}を示すにあたって、Appのケースでは2つの項の再帰だけではなく、項が実行された後の値$v$においても補題を満たさなければならないと分かった。つまり、これを示すには論理関係の定義が必要である。論理関係は環境を明示的に表現する必要があり、PHOASを扱うAgdaに載せるのは難しい。そこで補題\ref{KMove}の証明に関しては手証明で進めることにする。補題\ref{KMove}を証明できるように定義した論理関係を下に示す。
+補題\ref{KMove}を示すにあたって、Appのケースでは2つの部分項の再帰だけではなく、関数部分の項が実行された結果の値$v$においても補題を満たさなければならないと分かった。
+つまり、単純な項に関する帰納法では証明はできない。
+そこで、これを示すために論理関係を定義した。
+論理関係のメイン定理は、環境を明示的に表現する必要があり、環境部分を
+メタレベル（Agda のレベル）で扱うPHOASで実装するのは難しい。
+そこで補題\ref{KMove}の証明に関しては手証明で進めることにする。
+補題\ref{KMove}を証明できるように定義した論理関係を下に示す。
 
 \[
 \begin{array}{l}
   (M, M')\in R_d \ \Longleftrightarrow\ M =_{\beta}M'\\
   (M, M')\in R_{\tau_2 \rightarrow \tau_1 (\mu_{\alpha}) \alpha (\mu_{\beta})\beta}\\
-  \Longleftrightarrow\\
+  \begin{array}{cl}
+  \Longleftrightarrow &
   \forall (V, V')\in R_{\tau_2}.\\
-  and\ \forall (k,k')\in k_{\tau_1(\mu_{\alpha})\alpha}\\
-  and\ \forall (\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}.\\
-  and\  \forall (t, t')\in T_{\mu_{\beta}}.\\
-  (M\ V \ \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \Cons{k}{t}, M\ V' \ \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t')\in R_{\beta}\\
-  (M\ V \ \Lam{t_0}{K[\Lam{t_1}{t_1}]}\ t, M\ V' \ \Lam{t_0}{K[\Lam{t_1}{t_1}]}\ t')\in R_{\beta}\\
+& \forall (k,k')\in k_{\tau_1(\mu_{\alpha})\alpha}.\\
+& \forall (\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}.\\
+& \forall (t, t')\in T_{\mu_{\beta}}.\\
+& (M\ V \ \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \Cons{k}{t}, M\ V' \ \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t')\in R_{\beta}\\
+& (M\ V \ \Lam{t_0}{K[\Lam{t_1}{t_1}]}\ t, M\ V' \ \Lam{t_0}{K[\Lam{t_1}{t_1}]}\ t')\in R_{\beta}\\
+  \end{array}
 \end{array}
 \]
 $k$について\\
@@ -280,7 +298,7 @@ $k$について\\
 \begin{array}{lcl}
   (k,k')\in k_{\tau_1(\mu_{\alpha})\alpha} &\Longleftrightarrow&
   \forall (V, V')\in R_{\tau_1}.\\
-  & & and\ \forall (t, t')\in T_{\mu_{\alpha}}.\\
+  & & \forall (t, t')\in T_{\mu_{\alpha}}.\\
   & & (k\ V\ t, k'\ V'\ t')\in R_{\alpha}\\
 \end{array}
 \]
@@ -288,12 +306,13 @@ $k$について\\
 \[
 \begin{array}{l}
   (\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}}) \in K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}\\
-  \Longleftrightarrow\\
-  \forall (V, V')\in R_{\tau_1}.\\
-  and\ \forall (t, t')\in T_{\mu_{\alpha}}.\\
-  (\Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ \Cons{k}{t}, \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ V'\ t')\in R_{\alpha}\\
-  (\Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ t, \Lam{v_0}{K[\Lam{t_1}{t_1}]}\ V'\ t')\in R_{\alpha}\\
-[3mm]
+  \begin{array}{cl}
+  \Longleftrightarrow
+& \forall (V, V')\in R_{\tau_1}.\\
+& \forall (t, t')\in T_{\mu_{\alpha}}.\\
+& (\Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ \Cons{k}{t}, \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ V'\ t')\in R_{\alpha}\\
+& (\Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ t, \Lam{v_0}{K[\Lam{t_1}{t_1}]}\ V'\ t')\in R_{\alpha}
+  \end{array}\\[3mm]
   (t, t')\in T_{bullet}\ \Longleftrightarrow\  t=t'=idt\\
   (t, t')\in T_{\tau(\mu_{\alpha})\alpha}\ \Longleftrightarrow\ t=_{\beta}t'\\
 \end{array}
@@ -309,8 +328,8 @@ $k$について\\
 %% この定理を示すことで\\
 %% $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t}, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t')\in R_{\beta}$が得られる。\\
 定理\ref{HandMain}を使って補題\ref{KMove}の\\
-$(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{t_0}}}}\ \ConsP{k'}{t'}}}},\\
-\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{\ConsP{k'}{t_0}}}}}\ t'}}})
+$(\DLam{v}{\DLam{k}{\DLam{t}{\CPSTh{e}[\Change{x}{v}] \SLamP{v_0}{\SLam{t_0}{\DApp{\Idk}{\DApp{v_0}{t_0}}}}\ \ConsP{k}{t}}}},\\
+\ \DLam{v}{\DLam{k}{\DLam{t}{\CPSTh{e}[\Change{x}{v}] \SLamP{v_0}{\SLam{t_0}{\SApp{\Idk}{\SApp{v_0}{\ConsP{k}{t_0}}}}}\ t}}})
 \in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$を示していく。\\
 次の補題を使う。\\
 \begin{lemma}[簡約と論理関係の保存]
