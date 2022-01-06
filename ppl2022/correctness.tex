@@ -292,36 +292,35 @@ trailsはtrailの差分情報を表している。$\mu_{\alpha}$をベースと�
   \begin{array}{cl}
   \Longleftrightarrow &
   \forall (V, V')\in R_{\tau_2}.\\
-& \forall (k,k')\in k_{\tau_1(\mu_{\alpha})\alpha}.\\
-& \forall (\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}.\\
+& \forall\  k:\mu_{k}. (k, k)\in T_{\mu_k}\\
+& \forall (\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^k_{\tau_1(\mu_{\alpha})\alpha}.\\
 & \forall (t, t')\in T_{\mu_{\beta}}.\\
-& (M\ V \ \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \Cons{k}{t}, M\ V' \ \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t')\in R_{\beta}\\
+& (M\ V \ \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t}, M\ V' \ \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ t')\in R_{\beta}\\
 & (M\ V \ \Lam{t_0}{K[\Lam{t_1}{t_1}]}\ t, M\ V' \ \Lam{t_0}{K[\Lam{t_1}{t_1}]}\ t')\in R_{\beta}\\
   \end{array}
 \end{array}
 \]
-$k$について\\
-\[
-\begin{array}{lcl}
-  (k,k')\in k_{\tau_1(\mu_{\alpha})\alpha} &\Longleftrightarrow&
-  \forall (V, V')\in R_{\tau_1}.\\
-  & & \forall (t, t')\in T_{\mu_{\alpha}}.\\
-  & & (k\ V\ t, k'\ V'\ t')\in R_{\alpha}\\
-\end{array}
-\]
-コンテキストとtrailについて
+コンテキストについて
 \[
 \begin{array}{l}
-  (\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}}) \in K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}\\
+  (\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}}) \in K^k_{\tau_1(\mu_{\alpha})\alpha}\\
   \begin{array}{cl}
   \Longleftrightarrow
 & \forall (V, V')\in R_{\tau_1}.\\
 & \forall (t, t')\in T_{\mu_{\alpha}}.\\
-& (\Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ \Cons{k}{t}, \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ V'\ t')\in R_{\alpha}\\
+& (\Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ \ConsP{k}{t}, \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ V'\ t')\in R_{\alpha}\\
 & (\Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ t, \Lam{v_0}{K[\Lam{t_1}{t_1}]}\ V'\ t')\in R_{\alpha}
-  \end{array}\\[3mm]
-  (t, t')\in T_{bullet}\ \Longleftrightarrow\  t=t'=idt\\
-  (t, t')\in T_{\tau(\mu_{\alpha})\alpha}\ \Longleftrightarrow\ t=_{\beta}t'\\
+  \end{array}
+\end{array}
+\]
+trailについて
+\[
+\begin{array}{lcl}
+  (t, t')\in T_{bullet} &\Longleftrightarrow&  t=t'=idt\\
+  (t, t')\in T_{\tau_1(\mu_{\alpha})\alpha} &\Longleftrightarrow&
+  \forall (V, V')\in R_{\tau_1}.\\
+  & & \forall (t_2, t_2')\in T_{\mu_{\alpha}}.\\
+  & & (t\ V\ t_2, t'\ V'\ t_2')\in R_{\alpha}\\
 \end{array}
 \]
 
@@ -342,9 +341,10 @@ $R$ 関係はふたつの結論がある。
 定理\ref{HandMain}を使う事で補題\ref{KMove}を系の形で示すことが出来る。
 今後の節では定理\ref{HandMain}の証明、補題\ref{KMove}の証明の順に見ていく。
 \begin{theorem}
-  $x_i:\tau_i \vdash e:\tau \TrailsType{\alpha}{\beta} \TrailType{\beta}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i}$かつ$(k,k')\in k_{\tau_1(\mu_{\alpha})\alpha}$を満たす$k,k'$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}$を満たすような任意のコンテキスト$K$と、$(t, t') \in T_{\mu_{\beta}}$を満たす任意の$t, t'$とについて、\\
-  $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t}, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t')\in R_{\beta}$と\\
-  $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t')\in R_{\beta}$が成り立つ。
+  $x_i:\tau_i \vdash e:\tau \TrailsType{\alpha}{\beta} \TrailType{\beta}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i}$かつ任意の$\mu_k$型の$k$について$(k,k)\in T_{\mu_k}$が成り立ち、$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^k_{\tau_1(\mu_{\alpha})\alpha}$を満たすような任意のコンテキスト$K$と、$(t, t') \in T_{\mu_{\beta}}$を満たす任意の$t, t'$とについて、\\
+  (A)\ $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t}, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ t')\in R_{\beta}$\\
+  (B)\ $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t')\in R_{\beta}$が成り立つ。\\
+  ただし、(A)での$k$は$\Compatible{\mu_k}{\mu_{\alpha}}{\mu_{\alpha}}\ \Compatible{\mu_k}{\mu_{\beta}}{\mu_{\beta}}$を満たす。\\
 \label{HandMain}
 \end{theorem}
 定理\ref{HandMain}を示すにあたって必要となった補題を下に挙げる。
@@ -353,8 +353,8 @@ $R$ 関係はふたつの結論がある。
 \label{Reduction2}
 \end{lemma}
 \begin{lemma}
-  コンテキスト$\Lam{v_0}{\Lam{t_0}{K[f]}}=\Lam{v_0}{\Lam{t_0}{\Idk\ v_0\ (f\ t_0)}}$は\\
-  $(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\beta(\mu_{id})\beta'}$を満たす。
+  $(k,k)\in T_{\mu_k}$の時、コンテキスト$\Lam{v_0}{\Lam{t_0}{K[f]}}=\Lam{v_0}{\Lam{t_0}{\Idk\ v_0\ (f\ t_0)}}$は\\
+  $(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^k_{\beta(\mu_{id})\beta'}$を満たす。
 \label{IdkContext}
 \end{lemma}
 これは該当のコンテキストが$K$の条件を満たす事を示しており、$\Idk$が登場するcontrolとpromptのケースで使う。
@@ -487,7 +487,7 @@ $\mu$について、\\
 \caption{\textsf{comptible}展開1}
 \label{Compatible1}
 \end{figure}
-より$\mu=\Trail{t_1}{t_2}{\mu'}$と置くことができるので(F)は次のようになる。\\
+図\ref{Compatible1}より$\mu=\Trail{t_1}{t_2}{\mu'}$と置くことができるので(F)は次のようになる。\\
 \\
 (F)\ $(\Lam{v_2}{\Lam{t_2'}{\LamP{v_1}{\Lam{t_1'}{\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}}\ v_1\ \Cons{\ConsP{k_1}{t_{l2}}}{t_1'}}}\ v_2\ \ConsP{t_3}{t_2'}},\\
 \qquad \Lam{v_2}{\Lam{t_2'}{\LamP{v_1}{\Lam{t_1'}{\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{\Cons{k_1'}{t_1}}]}}}\ v_1\ \ConsP{t_{r2}}{t_1'}}}\ v_2\ \ConsP{t_4}{t_2'}})\in T_{t_1(\mu')t_2}$を示す。\\
@@ -550,19 +550,20 @@ $(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}
 \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ t'}}})
 \in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$をまず考える。
 \\
-任意の$(V,V')\in R_{\tau_2}\  (k_2,k_2')\in k_{\tau_1(\mu_{\alpha})\alpha}\  (\LamP{v_0}{\Lam{t_0}{K[]}},\LamP{v_0}{\Lam{t_0}{K[]}})\in K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}\  (t_2,t_2')\in_{\mu_{\beta}}$について、\\
-(A)\ $(\LamP{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k'}{t'}}}}\ V\ k_2\ t_2,\\
-\qquad \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t'}}}\ V'\ k_2'\ t_2')\in R_{\beta}$と\\
-(B)\ $(\LamP{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k'}{t'}}}}\ V\ k_2\ t_2,\\
-\qquad \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t'}}}\ V'\ k_2'\ t_2')\in R_{\beta}$を示せば良い。\\
+$(k, k)\in T_{\mu_k}\ (V,V')\in R_{\tau_2}\  (\LamP{v_0}{\Lam{t_0}{K[]}},\LamP{v_0}{\Lam{t_0}{K[]}})\in K^k_{\tau_1(\mu_{\alpha})\alpha}\  (t_2,t_2')\in_{\mu_{\beta}}$について、\\
+\\
+(A)\ $(\LamP{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k'}{t'}}}}\ V\ k\ t_2,\\
+\qquad \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t'}}}\ V'\ k\ t_2')\in R_{\beta}$と\\
+(B)\ $(\LamP{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k'}{t'}}}}\ V\ k\ t_2,\\
+\qquad \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t'}}}\ V'\ k\ t_2')\in R_{\beta}$を示せば良い。\\
 補題\ref{Reduction2}より簡約できるので\\
-(A)\ $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k_2}{t_2},
- \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k_2'}{t_1}}]}}\ t_2')\in R_{\beta}$\\
+(A)\ $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t_2},
+ \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ t_2')\in R_{\beta}$\\
 (B)\ $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2,
  \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2')\in R_{\beta}$\\
 \\
 定理\ref{HandMain}より、\\
-(A)'\ $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k_2}{t_2}, \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k_2'}{t_1}}]}}\ t_2')\in R_{\beta}$と\\
+(A)'\ $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t_2}, \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ t_2')\in R_{\beta}$と\\
 (B)'\  $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2, \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2')\in R_{\beta}$が成り立つ。\\
 これで\\
 $(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ \ConsP{k'}{t'}}}},\\
