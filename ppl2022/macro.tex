@@ -1,0 +1,119 @@
+% 型
+\newcommand\Int{\textsf{int}}
+\newcommand\Nat{\textsf{Nat}}
+\newcommand\Bool{\textsf{Bool}}
+\newcommand\Arrow[2]{{#1}\rightarrow{#2}}
+\newcommand\TypeArrow[6]{{#1}\rightarrow{#2}\,(#3)\,#4\,(#5)\,#6}
+\newcommand\TypeTh[3]{#1 \vdash #2 : #3}
+\newcommand\Type[5]{#1\,(#2)\,#3\,(#4)\,#5}
+\newcommand\Trail[3]{#1 \rightarrow \langle#3\rangle\ #2}
+\newcommand\ArrowTh[5]{({#1}\rightarrow{#2}\rightarrow{#3})\rightarrow{#4}\rightarrow{#5}}
+\newcommand\ArrowSix[6]{{#1}\to({#2}\rightarrow{#3}\rightarrow{#4})\rightarrow{#5}\rightarrow{#6}}
+\newcommand\ArrowFour[4]{{#1}\to({#2}\rightarrow{#3}\rightarrow{#4})}
+\newcommand\ArrowS[3]{#1\rightarrow#2\,#3}
+\newcommand\Trails[2]{#1 \lbrack \tiny{#2} \rbrack}
+
+\newcommand\Compatible[3]{\textsf{compatible}(#1,\,#2,\,#3)}
+\newcommand\IsIdTrail[3]{\textsf{id-cont-type}(#1,\,#2,\,#3)}
+\newcommand\MuId{\mu_\textit{id}}
+% ラムダ式
+\newcommand\SAppS{\,\overline{@}\,}
+\newcommand\DAppS{\,\underline{@}\,}
+\newcommand\SLamS{\overline{\lambda}}
+\newcommand\DLamS{\underline{\lambda}}
+\newcommand\Lam[2]{\lambda{#1}.\,{#2}}
+\newcommand\LamP[2]{(\Lam{#1}{#2})}
+\newcommand\SLam[2]{\overline{\lambda}{#1}.\,{#2}}
+\newcommand\SLamP[2]{(\SLam{#1}{#2})}
+\newcommand\DLam[2]{\underline{\lambda}{#1}.\,{#2}}
+\newcommand\DLamP[2]{(\DLam{#1}{#2})}
+\newcommand\App[2]{{#1}\,@\,{#2}}
+\newcommand\AppP[2]{(\App{#1}{#2})}
+\newcommand\SApp[2]{{#1}\,\overline{@}\,{#2}}
+\newcommand\SAppP[2]{(\SApp{#1}{#2})}
+\newcommand\DApp[2]{{#1}\,\underline{@}\,{#2}}
+\newcommand\DAppP[2]{(\DApp{#1}{#2})}
+\newcommand\Shift[2]{{\cal S}{#1}.\,{#2}}
+\newcommand\ShiftP[2]{(\Shift{#1}{#2})}
+\newcommand\Reset[1]{\langle{#1}\rangle}
+\newcommand\Control[2]{{\cal F}{#1}.\,{#2}}
+\newcommand\ControlP[2]{(\Control{#1}{#2})}
+\newcommand\Prompt[1]{\langle{#1}\rangle}
+\newcommand\DLet[3]{\underline{\textsf{let}}\ #1=#2\ \underline{\textsf{in}}\ #3}
+\newcommand\Co{\textsf{compatible}}
+\newcommand\Is{\textsf{id-cont-type}}
+\newcommand\Idk{\textsf{id}_k}
+\newcommand\Idt{\textsf{id}_t}
+\newcommand\RCon{\textsf{RControl}}
+\newcommand\RPro{\textsf{RPrompt}}
+\newcommand\Append[2]{#1\,@\,#2}
+\newcommand\Cons[2]{#1::#2}
+\newcommand\DAppend[2]{#1\,\underline{@}\,#2}
+\newcommand\DCons[2]{#1\underline{::}\,#2}
+\newcommand\DLett[2]{\underline{\textsf{let}}\ #1=#2}
+\newcommand\DIn[1]{\ \underline{\textsf{in}}\ #1}
+\newcommand\DLetS{\underline{\textsf{let}}\ }
+\newcommand\DInS{\ \underline{\textsf{in}}}
+\newcommand\Myequal{\!\!\!=\!\!\!}
+\newcommand\ConsP[2]{(#1::#2)}
+
+% 型システム
+\newcommand\Judge[3]{#1\vdash#2:#3}
+\newcommand\JudgeShift[5]{#1;#2\vdash#3:#4;#5}
+\newcommand\JudgeZero[4]{#1\vdash#2:#3\,#4}
+\newcommand\JudgeTrail[5]{#1\vdash#2:#3,#4,#5}
+
+% control
+\newcommand\TType[2]{({#1})\,#2}
+\newcommand\TsType[3]{({#1}\lbrack \tiny{_{#3}} \rbrack)\,#2}
+\newcommand\TrailType[1]{(\mu_{#1})\,#1}
+\newcommand\TrailsType[2]{(\mu_{#1}\lbrack \tiny{_{\mu_{#2}}} \rbrack)\,#1}
+\newcommand\ArrowTrail[4]{#1\rightarrow{#2},#3,#4}
+\newcommand\ArrowTrailP[4]{(\ArrowTrail{#1}{#2}{#3}{#4})}
+
+% dynamic な構文
+\newcommand\DShift[2]{\underline{\mathcal{S}} #1.\,#2}
+\newcommand\DControl[2]{\underline{\mathcal{F}} #1.\,#2}
+\newcommand\DControlP[2]{(\underline{\mathcal{F}} #1.\,#2)}
+\newcommand\DReset[1]{\underline{\langle}\,#1\,\underline{\rangle}}
+\newcommand\DShiftZero[2]{\underline{\mathcal{S}_0} #1.\,#2}
+\newcommand\DControlZero[2]{\underline{\mathcal{F}_0} #1.\,#2}
+\newcommand\DResetZero[1]{\underline{\langle}\,#1\,\underline{\rangle_0}}
+\newcommand\DResetZeroT[3]{\underline{\langle}\,#1\,^{#2}\underline{\rangle_0}^{#3}}
+
+% static なλ式
+\newcommand\AppTrail[3]{#1\,#2\,#3}
+\newcommand\AppTrailP[3]{(#1\,#2\,#3)}
+
+\newcommand\LamT[3]{\lambda#1^{#2}.\, #3}
+\newcommand\LamPT[3]{(\lambda#1^{#2}.\, #3)}
+\newcommand\AppT[4]{#1^{#2}\,#3^{#4}}
+\newcommand\AppPT[4]{#1^{#2}\,(#3)^{#4}}
+
+\newcommand\sfTrue{\textsf{true}}
+
+% 規則名
+\newcommand\TVar{(\textsc{TVar})}
+\newcommand\TFun{(\textsc{TFun})}
+\newcommand\TApp{(\textsc{TApp})}
+\newcommand\TShift{(\textsc{TShift})}
+\newcommand\TControl{(\textsc{TControl})}
+\newcommand\TReset{(\textsc{TReset})}
+\newcommand\TPrompt{(\textsc{TPrompt})}
+\newcommand\RBeta{(\textsf{RBeta})}
+\newcommand\RFrame{(\textsf{RFrame})}
+\newcommand\RControl{(\textsf{RControl})}
+\newcommand\RPrompt{(\textsf{RPrompt})}
+
+% 意味論
+
+\newcommand\Bullet{\bullet}
+
+% CPS 変換
+\newcommand\CPS[4]{[\![{#1}]\!]\,#2\,#3\,#4}
+\newcommand\CPSI[4]{{\sf{\varepsilon}} [\![{#1}]\!]\,#2\,#3\,#4}
+\newcommand\CPSITh[1]{{\sf{\varepsilon}} [\![{#1}]\!]}
+\newcommand\CPSTh[1]{[\![{#1}]\!]}
+\newcommand\Change[2]{#2/#1}
+\newcommand\CPSType[1]{[\![{#1}]\!]_{\tau}}
+\newcommand\CPSTrail[1]{[\![{#1}]\!]_{\mu}}
