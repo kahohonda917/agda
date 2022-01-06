@@ -2,23 +2,23 @@
 この節では CPS 変換の入力となる DS 項と CPS 変換を定義する。
 \subsection{DS項の定義}
 本稿で扱う言語は、単純型付き$\lambda$計算に control/prompt を加えた体系である。本稿では、この言語を直接形式 (direct style) で書かれた項という意味で CPS 項と対比して DS 項と呼ぶ。その構文を図\ref{DSsyntax}に示す。
-\begin{figure}[h]
+\begin{figure}
 \[
 \begin{array}{rrcl}
        値 & v & := & x \ | \ \Lam{x}{e}\\
        項 & e & := & v\  |\ \App{e_1}{e_2}\ |
        \ \Control{c}{e}\ |\ \Prompt{e} \\
 [3mm]
-       ピュアフレーム & F^p & := & \App{[]}{e}\ |\ \App{v}{[]}\\
-       ピュアな評価文脈 & E^p & := & []\ |\ F^p[E^p]\\
-       フレーム & F & := & \App{[]}{e}\ |\ \App{v}{[]}\ |\ \Prompt{[]}\\
-       評価文脈 & E & := & []\ |\ F[E]
+       ピュアフレーム & F^p & := & \App{[\ ]}{e}\ |\ \App{v}{[\ ]}\\
+       ピュアな評価文脈 & E^p & := & [\ ]\ |\ F^p[E^p]\\
+       フレーム & F & := & \App{[\ ]}{e}\ |\ \App{v}{[\ ]}\ |\ \Prompt{[\ ]}\\
+       評価文脈 & E & := & [\ ]\ |\ F[E]
 \end{array}
 \]
 \caption{DS項の構文}
 \label{DSsyntax}
 \end{figure}
-値は変数・$\lambda$抽象のふたつからなり、項は値か関数適用かcontrol/promptである。図\ref{DSsyntax}の後半には評価文脈が定義されている。ふたつのフレームの規則は left-to-right の実行順を表現している。また、ピュアなフレーム、評価文脈は、hole が prompt に囲まれていない評価文脈を表していて、controlの簡約規則を定義するときに使われる。
+値は変数・$\lambda$抽象のふたつからなり、項は値か関数適用かcontrol/promptである。図\ref{DSsyntax}の後半には評価文脈が定義されている。ふたつのフレームの規則は left-to-right の実行順を表現している。また、ピュアなフレーム、評価文脈は、hole $[.]$が prompt に囲まれていない評価文脈を表していて、controlの簡約規則を定義するときに使われる。
 
 $\Prompt{e}$ は prompt と呼ばれ、$e$ の継続を限定する命令、$\Control{c}{e}$ は control と呼ばれ、現在の限定継続を切り取り、$c$ に束縛して、$e$ を実行する命令である。ここで、切り取られる限定継続の周りには prompt が入らない点が shift とは異なる点である。例えば、以下のプログラム\cite{FSCD2021}を考える。
 \[
@@ -40,8 +40,8 @@ $\Prompt{e}$ は prompt と呼ばれ、$e$ の継続を限定する命令、$\Co
 \end{array}
 \]
 
-最初のcontrolオペレーターでは、promptによって$[.]+(\Control{k_2}{\textsf{b2s}\ (k_2\ 8)})$([.]はhole)という継続が切り取られている。そしてそれを$\Lam{x}{x}\ +\ (\Control{k_2}{\textsf{b2s}\ (k_2\ 8)})$と$\lambda$の形式で$k_1$に渡している。ここで、k1 に渡される継続の本体部分は（shift とは異なり）
-  $\Lam{x}{\langle x}\ +\ (\Control{k_2}{\textsf{b2s}\ (k_2\ 8)})\rangle$ のように prompt は\textbf{つかない}ことに注意しよう。そしてその上で$\textsf{is0}\ (k_1\ 5)$の実行に移る。$k_1$に$\lambda$抽象を代入して関数適用を行うと、再度controlの項が出てくる。このcontrolでは、$\textsf{is0}\ (5 + [.])$という継続が切り取られ、$\Lam{x}{\textsf{is0}\ (5 + x)}$という形で$k_2$に渡される。ここでも $k2$ に渡される継続の本体部分には prompt はつかない。ここで、$k1$ に入っている継続の本体部分に prompt が存在していたら $5+[.]$ が prompt で囲まれるため、ここで切り取られる継続は $5+[.]$ のみとなるところだったが、prompt では囲まれていないため \textsf{is0} も一緒に切り取られている。その上で$\textsf{b2s}\ (k_2\ 8)$を実行するので$k_2$に渡った$\lambda$抽象に8を関数適用して$\Prompt{\textsf{b2s}\ (\textsf{is0}\ (5+8))}$となる。ここでも、$\textsf{is0} (5 + [.])$ の周りには prompt がないので、\textsf{b2s} も一緒に切
+最初のcontrolオペレーターでは、promptによって$[.]+(\Control{k_2}{\textsf{b2s}\ (k_2\ 8)})$という継続が切り取られている。そしてそれを$\Lam{x}{x}\ +\ (\Control{k_2}{\textsf{b2s}\ (k_2\ 8)})$と$\lambda$の形式で$k_1$に渡している。ここで、$k_1$ に渡される継続の本体部分は（shift とは異なり）
+  $\Lam{x}{\langle x}\ +\ (\Control{k_2}{\textsf{b2s}\ (k_2\ 8)})\rangle$ のように prompt はつかないことに注意しよう。そしてその上で$\textsf{is0}\ (k_1\ 5)$の実行に移る。$k_1$に$\lambda$抽象を代入して関数適用を行うと、再度controlの項が出てくる。このcontrolでは、$\textsf{is0}\ (5 + [.])$という継続が切り取られ、$\Lam{x}{\textsf{is0}\ (5 + x)}$という形で$k_2$に渡される。ここでも $k_2$ に渡される継続の本体部分には prompt はつかない。ここで、$k_1$ に入っている継続の本体部分に prompt が存在していたら $5+[.]$ が prompt で囲まれるため、ここで切り取られる継続は $5+[.]$ のみとなるところだったが、prompt では囲まれていないため \textsf{is0} も一緒に切り取られている。その上で$\textsf{b2s}\ (k_2\ 8)$を実行するので$k_2$に渡った$\lambda$抽象に8を関数適用して$\Prompt{\textsf{b2s}\ (\textsf{is0}\ (5+8))}$となる。ここでも、$\textsf{is0} (5 + [.])$ の周りには prompt がないので、\textsf{b2s} も一緒に切
 り取られることになる。このように$k_1$を呼び出した時の継続と$k_2$を呼び出した時の継続が連なっていることが分かる。promptの中身、$\textsf{b2s}\ (\textsf{is0}\ 13)$は実行すると\textsf{"false"}となり、これは値になっているためpromptの外側に出すことができる。つまり、\textsf{"false"}がこのプログラムの結果となる。
 
 例から分かるように、control/promptオペレーターを使うことによって、「切り取られた継続を呼び出す時の継続」（上の例では \textsf{is0} と \textsf{b2s}）が連なっていく。これがtrailの概念である。
@@ -92,10 +92,10 @@ prompt で囲わないような評価文脈を示す。これで、直近の pro
                     {\DLamP{v}{\DLam{t''}
                         {\SApp{\SApp{k}{v}}{t''}}}}}{t_2}}}}{t_1}}}}{t}\\
   
-  \CPS{e_1 + e_2}{\rho}{k}{t} & = & \CPSTh{e_1}\, \rho \,
-      (\SLamS v_1 .\, \SLamS t_1 .\, \CPSTh{e_2} \, \rho \,
-         (\SLamS v_2 .\, \SLamS t_2 .\,\\
-  & &  \DLet{v}{v_1+v_2}{\SApp{k}{\SApp{v}{t_2}}})\, t_1)\, t\\
+%  \CPS{e_1 + e_2}{\rho}{k}{t} & = & \CPSTh{e_1}\, \rho \,
+%      (\SLamS v_1 .\, \SLamS t_1 .\, \CPSTh{e_2} \, \rho \,
+%         (\SLamS v_2 .\, \SLamS t_2 .\,\\
+%  & &  \DLet{v}{v_1+v_2}{\SApp{k}{\SApp{v}{t_2}}})\, t_1)\, t\\
   
   \CPS{\Control{c}{e}}{\rho}{k}{t} & = & \DLet{x'}
       {\DLam{v}{\DLam{k'}{\DLam{t'}
@@ -115,7 +115,7 @@ $\Prompt{e}$ を実行する際には、$e$ を初期継続 $\Idk$ と初期 tra
 
 $\Control{c}{e}$ を実行する際にも、その body 部分である $e$ は $\Idk$ と $\Idt$ の元で実行される。しかし、prompt の場合とは違って $e$ では変数 $c$ を通じて限定継続にアクセスできるようになっている。その定義 $x'$ は、捕捉した限定継続 $k$を実行するというものだが、その際、捕捉した trail である $t$ を「$x'$ を実行したときの継続 $k'$ と trail $t'$」（つまり呼び出し文脈）と結合している。このようにすることで、$k$ の実行中に再び control が使われた際、呼び出し文脈も含めて補足することができるようになっている。
 
-ここで、trail を結合するのに使われる @ と :: の定義は図\ref{ConsAppend}に示されている。@ と :: をリストの \textsf{append} と \textsf{cons} と解釈すると Yonezawa, Kameyama \cite{KY2008} らが採用しているように、trail は呼び出し文脈のリストになるが、本稿では trail は関数で表現されており、図\ref{ConsAppend}に示す形で合成される。
+ここで、trail を結合するのに使われる @ と :: の定義は図\ref{ConsAppend}に示されている \cite{shan-simulation}。@ と :: をリストの \textsf{append} と \textsf{cons} と解釈すると Yonezawa, Kameyama \cite{KY2008} らが採用しているように、trail は呼び出し文脈のリストになるが、本稿では trail は関数で表現されており、図\ref{ConsAppend}に示す形で合成される。
 \begin{figure}[h]
 \[
 \begin{array}{lcl}
@@ -211,7 +211,7 @@ $\Control{c}{e}$ を実行する際にも、その body 部分である $e$ は 
 図\ref{TypeSystem}に型システムを示す。control/prompt に対する型システムは、CPSインタプリタから自然に導くことができる\cite{FSCD2021}。ここで、型判定$\Gamma \vdash e : \tau(\mu_{\alpha})\alpha(\mu_{\beta})\beta$は「型環境 $\Gamma$ の元で式 $e$ は $\tau$ 型を持ち、$\tau \rightarrow \mu_{\alpha} \rightarrow \alpha$ 型の継続と $\mu_{\beta}$ 型の trail の元で実行すると、最終的に $\beta$ 型の値になる」と読む。
 ここで $\alpha$ を initial answer type、$\beta$ を final answer type、また$\mu_{\beta}$ を initial trail type、$\mu_{\alpha}$ を final trail type と呼ぶ。（順番が逆になっていることに注意。）
 
-CPS インタプリタ $\CPS{e}{\rho}{k}{t}$ を考えたとき、$e$ の型が $\tau$、$k$ の型が$\tau \rightarrow \mu_{\alpha} \rightarrow \alpha$、$t$ の型が $\mu_{\beta}$ で $\CPS{e}{\rho}{k}{t}$ 全体の型が$\beta$ となっており、各構文に対してそれぞれの型を調べていくと図\ref{typeSystem}の型システムを得ることができる。
+CPS インタプリタ $\CPS{e}{\rho}{k}{t}$ を考えたとき、$e$ の型が $\tau$、$k$ の型が$\tau \rightarrow \mu_{\alpha} \rightarrow \alpha$、$t$ の型が $\mu_{\beta}$ で $\CPS{e}{\rho}{k}{t}$ 全体の型が$\beta$ となっており、各構文に対してそれぞれの型を調べていくと図\ref{TypeSystem}の型システムを得ることができる。
 
 ここで、\textsf{id-cont-type} は $\Idk$ が満たさなくてはいけない型制約、\textsf{compatible} は @ と :: が満たさなくてはいけない型制約を表し、図\ref{IsidCompatible}のように定義される。それぞれ $\Idk$ と @, :: の定義式（図\ref{ConsAppend}）の各行で型が矛盾しないようにするための制約となっている。
 
@@ -240,18 +240,18 @@ CPS インタプリタ $\CPS{e}{\rho}{k}{t}$ を考えたとき、$e$ の型が 
 \label{IsidCompatible}
 \end{figure}
 
-図\ref{TypeSystem}の型システムは、基本的には \cite{FSCD2021} で示した型システムと同一だが、後にCPS 変換の証明を行う際に必要な性質を得るため、$\mu_{\alpha}[_{\mu_{\beta}}]$ という型を final trail type の部分で使用している。この型は、基本的には$\mu_{\alpha}$ のことだが、その型が $\mu_{\beta}$ に 0 個以上の呼び出し文脈をくっつけた形で得られることを表現しており、図\ref{TrailsDef}のように定義される。
-
-\begin{figure}[h]
-\[
-\begin{array}{rrcl}
-  trails & \mu_s & := & \bullet\ |\ \mu k :: \langle c \rangle \ \mu_{\beta} \lbrack {_{\mu_{\alpha}}} \rbrack\\
-\end{array}
-\]
-\caption{trails の定義}
-\label{TrailsDef}
-\end{figure}
-
+図\ref{TypeSystem}の型システムは、基本的には \cite{FSCD2021} で示した型システムと同一だが、後にCPS 変換の証明を行う際に必要な性質を得るため、$\mu_{\alpha}[_{\mu_{\beta}}]$ という型を final trail type の部分で使用している。%この型は、基本的には$\mu_{\alpha}$ のことだが、その型が $\mu_{\beta}$ に 0 個以上の呼び出し文脈をくっつけた形で得られることを表現しており、図\ref{TrailsDef}のように定義される。
+%
+%\begin{figure}[h]
+%\[
+%\begin{array}{rrcl}
+%  trails & \mu_s & := & \bullet\ |\ \mu k :: \langle c \rangle \ \mu_s \\
+%\end{array}
+%\]
+%\caption{trails の定義}
+%\label{TrailsDef}
+%\end{figure}
+%
 $\mu_{\alpha}[_{\mu_{\beta}}]$ の形の型は、必ず$\tau \TrailsType{\alpha}{\beta}\TrailType{\beta}$のように現れ、特に [.] の中の型と initial trail type は必ず等しくなる。これで、final trail type は常に initial trail type に呼び出し文脈を 0個以上くっつけたもの（final trail type は initial trail type を拡張したもの）になっていることを型システムレベルで表現している。この性質は、\cite{FSCD2021} の型システムから導出できると予想されるが、その方法が明らかではなかったため、その性質を埋め込んだ型システムを採用している。
 
 %% 型システムに出てきた$\Is$と$\Co$は、それぞれ$\Is$は初期継続$\Idk$と、$\Co$はtrailと継続を繋げる\textsf{cons}・\textsf{append}と関係がある。$\Idk$・\textsf{cons}・\textsf{append}において両辺で型が等しい事を保証するために作られた制約である。それぞれ定義と対応しているので、下に示す。
