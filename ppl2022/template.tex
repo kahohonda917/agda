@@ -24,7 +24,7 @@
 
 本稿は、単純型付きλ計算に限定継続演算子であるcontrol/prompt\cite{POPL88}を加えた体系でのCPS変換の証明の定式化を目指している。control/promptは四種ある限定継続演算子のうちの一つで、controlが「その時点での継続を切り取ってくる命令」、promptが「切り取られる継続の範囲を限定する命令」である。同じく限定継続演算子の一種であるshift/reset\cite{DF1990} においてはCPS変換の証明が定式化されており、本稿ではそれをcontrol/promptに拡張する。
 
-control/promptはshift/resetの定式化のときに加えて、継続が連なったtrailという概念が加わっているため更に持っている型が増えている。例えば、shift/resetの際は一つの型で表現されていた継続は、control/promptではtrailが入ったことにより$\Arrow{\tau_1}{\Arrow{\mu_{\alpha}}{\alpha}}$という三つの型で表現される。trailの構造に対しても場合分けが必要になり、手で証明するのは困難であるためAgda上で証明を行う。ただし、論理関係の定義が必要な部分の証明は手で行った。
+control/promptはshift/resetの定式化のときに加えて、継続が連なったtrailという概念が加わっているため更に持っている型が増えている。例えば、shift/resetの際は$\Arrow{\tau}{\tau}$と二つの型で表現されていた継続は、control/promptではtrailが入ったことにより$\Arrow{\tau_1}{\Arrow{\mu_{\alpha}}{\alpha}}$という三つの型で表現される。trailの構造に対しても場合分けが必要になり、手で証明するのは困難であるためAgda上で証明を行う。ただし、論理関係の定義が必要な部分の証明は手で行った。
 
 以下、2節でcontrol/prompt入り単純型付き$\lambda$計算の定式化を、3節でCPS変換を定式化した上で、4節でCPS変換の正当性を証明する。また、5節で関連研究を、6節でまとめと今後の課題を述べる。
 
