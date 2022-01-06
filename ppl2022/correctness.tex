@@ -322,31 +322,43 @@ $k$について\\
 \]
 \\
 
-
-\subsection{手証明のメイン定理とcontrol}
-ここで、環境が入った次の定理を示した。
+\subsection{手証明のメイン定理と補題}
+ここで、環境が入った次の定理を提示する。定理\ref{HandMain}を使う事で補題\ref{KMove}を示すことが出来る。今後の節では定理\ref{HandMain}の証明、補題\ref{KMove}の証明の順に見ていく。
 \begin{theorem}
   $x_i:\tau_i \vdash e:\tau \TrailsType{\alpha}{\beta} \TrailType{\beta}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i}$かつ$(k,k')\in k_{\tau_1(\mu_{\alpha})\alpha}$を満たす$k,k'$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}$を満たすような任意のコンテキスト$K$と、$(t, t') \in T_{\mu_{\beta}}$を満たす任意の$t, t'$とについて、\\
   $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t}, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t')\in R_{\beta}$と\\
   $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t')\in R_{\beta}$が成り立つ。
 \label{HandMain}
 \end{theorem}
-定理\ref{HandMain}は$e$について場合分けを行って証明した。証明の核心であるcontrolのケースについて下に示す。その他のケースについては付録に記載している。\\
-controlのケースを示すために次の補題が必要となった。
+定理\ref{HandMain}を示すにあたって必要となった補題を下に挙げる。
+\begin{lemma}[簡約と論理関係の保存]
+  $(M_l', M_r') \in R_{\tau}、M_l \rightarrow_{\beta} M_l'、M_r \rightarrow_{\beta} M_r'$のとき$(M_l, M_r) \in R_{\tau}$が成り立つ。
+\label{Reduction2}
+\end{lemma}
+\begin{lemma}
+  コンテキスト$\Lam{v_0}{\Lam{t_0}{K[f]}}=\Lam{v_0}{\Lam{t_0}{\Idk\ v_0\ (f\ t_0)}}$は\\
+  $(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\beta(\mu_{id})\beta'}$を満たす。
+\label{IdkContext}
+\end{lemma}
+これは該当のコンテキストがKの条件を満たす事を示しており、$\Idk$が登場するcontrolとpromptのケースで使う。\\
+controlのケースを示すためにさらに次の二つの補題が必要となった。
 \begin{lemma}
   $\Compatible{\Trail{\tau_1}{\tau_1'}{\mu_1}}{\mu_2}{\mu_3}$かつ$(t_1, t_1')\in T_{\tau_1(\mu_1)\tau_1'}、(t_2, t_2')\in T_{\mu_2}、$のとき\\
   $(\Cons{t_1}{t_2}, \Cons{t_1'}{t_2'})\in T_{\mu_3}$
 \label{TCompatible}
 \end{lemma}
 補題\ref{TCompatible}は、論理関係の$T$の定義と持っている\textsf{compatible}関係から新たな$T$の関係を示すものである。\\
-次の\textsf{cons-assoc}についてはAgdaに実装済みである。trailの形で場合分けを行い、帰納法の仮定を使う事で示せた。
 \begin{lemma}
   任意のtrail\ $t_1,t_2,t_3$について以下が成り立つ。\\
   $\Cons{\ConsP{t_1}{t_2}}{t_3} =_{\beta} \Cons{t_1}{\ConsP{t_2}{t_3}}$
 \label{ConsAssoc}
 \end{lemma}
-ここから定理\ref{HandMain}についてcontrolのケースの概略を書いていく。\\
+補題\ref{ConsAssoc}は\textsf{cons-assoc}としてAgdaに実装済みである。trailの形で場合分けを行い、帰納法の仮定を使う事で示せた。
+補題\ref{ConsAssoc}以外については手で証明を行ったため付録に記載する。
 
+\subsection{定理\ref{HandMain}の証明}
+定理\ref{HandMain}は$e$について場合分けを行って証明した。証明の核心であるcontrolのケースについて下に示す。その他のケースについては付録に記載している。\\
+\\
 示すことは以下のようになる。\\
 $x_i:\tau_i\ \vdash \Control{k}{e}:\tau \TrailType{\alpha} \TrailType{\beta}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i}$かつ\\
 $(k,k')\in k_{\tau(\mu_{\alpha})\alpha}$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\tau(\mu_{\alpha})\alpha}$を満たすような任意のコンテキスト$K$と、$(t_l, t_r) \in T_{\mu_{\beta}}$を満たす任意の$t, t'$と任意の$k$について、\\
@@ -511,11 +523,7 @@ $(t_3,t_4)\in T_{\mu_{\alpha}}\ (t_{\mu_2},t_{\mu_2}')\in T_{\mu'}$で図\ref{Co
 $(\DLam{v}{\DLam{k}{\DLam{t}{\CPSTh{e}[\Change{x}{v}] \SLamP{v_0}{\SLam{t_0}{\DApp{\Idk}{\DApp{v_0}{t_0}}}}\ \ConsP{k}{t}}}},\\
 \ \DLam{v}{\DLam{k}{\DLam{t}{\CPSTh{e}[\Change{x}{v}] \SLamP{v_0}{\SLam{t_0}{\SApp{\Idk}{\SApp{v_0}{\ConsP{k}{t_0}}}}}\ t}}})
 \in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$を示していく。\\
-次の補題を使う。\\
-\begin{lemma}[簡約と論理関係の保存]
-  $(M_l', M_r') \in R_{\tau}、M_l \rightarrow_{\beta} M_l'、M_r \rightarrow_{\beta} M_r'$のとき$(M_l, M_r) \in R_{\tau}$が成り立つ。
-\label{Reduction2}
-\end{lemma}
+\\
 $(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ \ConsP{k'}{t'}}}},\\
 \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ t'}}})
 \in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$をまず考える。
@@ -539,16 +547,9 @@ $(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}
 \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ t'}}})
 \in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$が示せた。
 \\
-ここで、次の補題を使う。
-\begin{lemma}
-  コンテキスト$\Lam{v_0}{\Lam{t_0}{K[f]}}=\Lam{v_0}{\Lam{t_0}{\Idk\ v_0\ (f\ t_0)}}$は\\
-  $(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\beta(\mu_{id})\beta'}$を満たす。
-\label{IdkContext}
-\end{lemma}
-これにより補題\ref{KMove}が示せた。\\
+補題\ref{IdkContext}により以下のようになり、補題\ref{KMove}が示せた。\\
 $(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{t_0}}}}\ \ConsP{k'}{t'}}}},\\
 \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{\ConsP{k'}{t_0}}}}}\ t'}}})
 \in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$\\
-\\
-この節に出てくる補題については手で証明を行ったため付録に記載する。
+
 
