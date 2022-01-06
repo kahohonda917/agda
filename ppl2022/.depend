@@ -1,0 +1,1 @@
+template.pdf : Makefile macro.tex template.tex intro.tex definition.tex correctness.tex related.tex conclusion.tex appendix.tex paper.bib

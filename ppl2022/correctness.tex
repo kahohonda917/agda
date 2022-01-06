@@ -1,0 +1,527 @@
+\section{CPS変換の正当性}
+CPS変換の正当性を、一部を除いてAgdaで実装した。この節ではCPS変換の正当性を証明する。そのために証明に必要な補題から見ていく。
+\subsection{補題}
+\begin{lemma}[CPS変換と代入の可換性]
+  任意の項$e_1$、値$v$、継続$k$、trail $t$について$\LamP{x}{e_1\,x}[v]\mapsto e_2$が成り立つとき、$\LamP{x}{\CPSTh{e_1\,x} \SAppS k \SAppS t}[\CPSTh{v}] \mapsto \CPSTh{e_2} \SAppS k \SAppS t$が成り立つ。
+\end{lemma}
+これは$e_1$の中にある$x$を$v$に置き換えると$e_2$になる時、$e_1$のCPS変化後の項にある$x$を$v$のCPS変換後の値で置き換えると$e_2$のCPS変換結果になる、つまり代入とCPS変換の可換性を示している。
+
+\begin{lemma}[継続に関する代入演算]
+  任意の項$e$、値$v$、trail $t$、$schematic$な継続$k$について\\
+  $\LamP{x}{\CPSTh{e} \SAppS (k_1\, x) \SAppS t}[v] \mapsto \CPSTh{e} \SAppS (k_1\,v) \SAppS t$が成り立つ。
+\end{lemma}
+継続$k$の変数の構造が変わらない場合、$k$の中の$x$を$v$で置き換えられることを示している。
+
+\begin{lemma}[継続の簡約に関する補題]
+  任意の項$e_1$、値$v$、trail $t$、$schematic$な継続$k_1$について\\
+  $(k_1 \SAppS \CPSTh{v} \SAppS t) \to (k_2 \SAppS \CPSTh{v} \SAppS t)$が成り立つとき、
+  $\CPSTh{e}\SAppS k_1 \SAppS t_2 \to \CPSTh{e}\SAppS k_2 \SAppS t_2$が成り立つ。
+\end{lemma}
+継続の部分を同じ意味を持つものに置き換え証明を進めたい時に使う。
+
+\subsection{正当性の証明}
+CPS変換前の項を簡約した後にCPS変換した項と、CPS変換後の項が$\beta$同値であること、
+つまり以下の定理を示す。
+% 定理4
+\begin{theorem}[正当性の証明]
+  任意の項$e$,$\, e'$について$e \to e'$が成り立つならば任意のtrail $t$とschematicな継続$\kappa$に対して$\CPSTh{e}\SAppS k \SAppS t =_{\beta} \CPSTh{e'} \SAppS k \SAppS t$が成り立つ。
+\end{theorem}
+
+ここで$=_{\beta}$は$\beta$同値である。
+$schematic$というのは、「引数の変数の構造を変更しない」性質のことである。
+本稿で扱う継続$k$は値とtrailの二つを受け取るため、
+次の二式がこの性質を表す。\\
+\[
+\begin{array}{lcl}
+  (k \SAppS x \SAppS t)[\Change{x}{v}] & = & k \SAppS v \SAppS t\\
+  (k \SAppS v \SAppS x)[\Change{x}{t}] & = & k \SAppS v \SAppS t\\
+\end{array}
+\]
+
+証明は、$e \to e'$の簡約規\textsf{RBeta}・\textsf{RFrame}・\textsf{RControl}・\textsf{RPrompt}で場合分けして実装した。\textsf{RControl}以外はCPS変換の定義と簡約規則を適用し、補題を使って変形することによって示すことができた。この部分はAgdaに載せることができた。\textsf{RControl}では、前述した補題の他にcontrolのための補題を立てる必要があった。また、trailに差分の情報を入れ、論理関係を使う必要もあった。これらについて次節以降で見ていく。
+
+
+\subsection{controlのための補題}
+定理4のcontrolのケースでは、任意のtrail tとschematicな継続$k$に対して\\
+$\CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\SAppS k \SAppS t =_{\beta} \CPSTh{\Prompt{\App{\LamP{c}{e_1}}{\LamP{x}{E_p[x]}}}} \SAppS k \SAppS t$ が成り立つ事を示すということになる。そこでコンテキストで囲まれた左辺をCPS変換の定義によって展開できる形に変換するために次の補題を立てた。
+
+\begin{lemma}[context-lemma]
+  任意の項$e$、\textsf{trail} $t$、$schematic$な継続$k$について\\
+  $\CPSTh{\Prompt{E_p[e]}}\,k\,t =_{\beta} \CPSTh{\App{\LamP{x}{E_p[x]}}{e}}\,k\,t$
+\end{lemma}
+
+そして、$\CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\SAppS k \SAppS t =_{\beta} \CPSTh{\Prompt{\App{\LamP{c}{e_1}}{\LamP{x}{E_p[x]}}}} \SAppS k \SAppS t$を示すためにこの両辺をCPS変換の定義によって展開していく。\\
+\begin{figure}[h]
+\[
+\begin{array}{cl}
+ & \CPSTh{\Prompt{\App{\LamP{c}{e_1}}{\LamP{x}{E_p[x]}}}}\,k\,t\\
+ = & let\ v = \CPSTh{\App{\LamP{c}{e_1}}{\LamP{x}{E_p[x]}}}(idk)(\bullet)\ in\ 
+  k\SAppS v \SAppS t\\
+  = & let\ v = \CPSTh{\LamP{c}{e_1}}\ \SLamP{v_1}{
+    \SLam{t_1}{\CPSTh{\LamP{x}{E_p[x]}}\ \SLamP{v_2}{
+        \SLam{t_2}{\DApp{\DApp{\DApp{v_1}{v_2}}
+                    {\DLamP{v_2'}{\DLam{t''}
+                        {\SApp{\SApp{idk}{v_2'}}{t''}}}}}{t_2}}}}t_1} \ \bullet\ \\
+  & in\ k\SAppS v \SAppS t\\
+  = & let\ v = \SLamP{v_1}{
+    \SLam{t_1}{\CPSTh{\LamP{x}{E_p[x]}}\ \SLamP{v_2}{
+        \SLam{t_2}{\DApp{\DApp{\DApp{v_1}{v_2}}
+                    {\DLamP{v_2'}{\DLam{t''}
+                        {\SApp{\SApp{idk}{v_2'}}{t''}}}}}{t_2}}}}t_1} \\
+  & \SAppS
+  \DLamP{ve}{\DLamP{k'e}{\DLamP{t'e}{\CPSTh{e}[\Change{c}{ve}]\
+        \SLamP{a}{\SLamP{t''e}{k'e \DAppS a \DAppS t''e}}\ t'e}}} \SAppS \bullet\ in\
+  k\SAppS v \SAppS t\\
+
+  = & let\ v = \CPSTh{\LamP{x}{E_p[x]}}\ (\SLamS v_2.\ 
+  \SLamS t_2.\ \\
+   & \DApp{\DApp{\DApp{\DLamP{ve}{\DLamP{k'e}{\DLamP{t'e}{\CPSTh{e}[\Change{c}{ve}]\
+        \SLamP{a}{\SLamP{t''e}{k'e \DAppS a \DAppS t''e}}\ t'e}}}}{v_2}}
+                    {\DLamP{v_2'}{\DLam{t''}
+                        {\SApp{\SApp{idk}{v_2'}}{t''}}}}}{t_2})\bullet\\
+  & in\ k\SAppS v \SAppS t\\
+
+  = & let\ v = (\SLamS v_2.\ 
+  \SLamS t_2.\ 
+  \DApp{\DApp{\DApp{\DLamP{ve}{\DLamP{k'e}{\DLamP{t'e}{\CPSTh{e}[\Change{c}{ve}]\
+        \SLamP{a}{\SLamP{t''e}{k'e \DAppS a \DAppS t''e}}\ t'e}}}}{v_2}}
+                    {\DLamP{v_2'}{\DLam{t''}
+                        {\SApp{\SApp{idk}{v_2'}}{t''}}}}}{t_2})\\
+  & \SAppS \DLamP{vE}{\DLam{k'E}{\DLam{t'E}{\CPSTh{E_p[x]}[\Change{x}{vE}]\
+  \SLamP{aE}{\SLam{t''E}{k'E \DAppS aE \DAppS t''E}}\ t'E}}} \SAppS \bullet \ in\
+  k\SAppS v \SAppS t\\
+
+  = & let\ v =  \DLamP{ve}{\DLamP{k'e}{\DLamP{t'e}{\CPSTh{e}[\Change{c}{ve}]\
+              \SLamP{a}{\SLamP{t''e}{k'e \DAppS a \DAppS t''e}}\ t'e}}}\DAppS\\
+      & \DLamP{vE}{\DLam{k'E}{\DLam{t'E}{\CPSTh{E_p[x]}[\Change{x}{vE}]\
+              \SLamP{aE}{\SLam{t''E}{k'E \DAppS aE \DAppS t''E}}\ t'E}}} \DAppS
+                    \DLamP{v_2'}{\DLam{t''}
+                      {\SApp{\SApp{idk}{v_2'}}{t''}}}\DAppS{\bullet}\\
+                    & in\ k\SAppS v \SAppS t\\
+
+  \to & let\ v = \CPSTh{e}[\Change{c}{\DLamP{vE}{\DLam{k'E}{\DLam{t'E}{\CPSTh{E_p[x]}[\Change{x}{vE}] \SLamP{aE}{\SLam{t''E}{k'E \DAppS aE \DAppS t''E}}\ t'E}}}}]\\
+        & \SLamP{a}{\SLamP{t''e}{\DLamP{v_2'}{\DLam{t''}
+              {\SApp{\SApp{idk}{v_2'}}{t''}}} \DAppS a \DAppS t''e}}\ \bullet
+  \ in\
+  k\SAppS v \SAppS t\\
+
+  \to & let\ v = \CPSTh{e}[\Change{c}{\DLamP{vE}{\DLam{k'E}{\DLam{t'E}{\CPSTh{E_p[x]}[\Change{x}{vE}] \SLamP{aE}{\SLam{t''E}{k'E \DAppS aE \DAppS t''E}}\ t'E}}}}]\\
+        & \SLamP{a}{\SLamP{t''e}{
+              \SApp{\SApp{idk}{a}}{t''e}}}\ \bullet
+  \ in\
+  k\SAppS v \SAppS t\\
+
+  \leftarrow & let\ v =\ let\ x'=
+  \DLam{v'}{\DLam{k'}{\DLam{t'}{\CPSTh{E_p[x]}[\Change{x}{v'}]\
+        \SLamP{a}{\SLam{t''}{k' \DAppS a \DAppS t''}}\ t'}}}\ \\
+  & in\ \CPSTh{e}[\Change{c}{x'}]\
+  idk\ \bullet \ in\ k\SAppS v \SAppS t\\
+\end{array}
+\]
+\caption{簡約規則右辺の展開}
+\label{ControlReRight}
+\end{figure}
+\\
+\\
+\begin{figure}[h!]
+\[
+\begin{array}{cl}
+  & \CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\,k\,t\ \\
+  = & let\ v=\CPSTh{E_p[\Control{c}{e_1}]}\ idk\ \bullet\ in\
+  k\SAppS v \SAppS t\\
+
+  \to & let\ v=\CPSTh{\App{\LamP{x}{E_p[x]}}{(\Control{c}{e_1})}}\ idk\ \bullet\ in\
+  k\SAppS v \SAppS t\ (補題5より)\\
+
+  = & let\ v=\CPSTh{\LamP{x}{E_p[x]}}\ (\SLamS v_1.\SLamS t_1.\CPSTh{\Control{c}{e_1}}\
+  (\SLamS v_2.\SLamS t_2.\\ & \DAppP{\DAppP{\DAppP{v_1}{v_2}}
+                    {\DLamP{v'}{\DLam{t''}
+                        {\SApp{\SApp{idk}{v'}}{t''}}}}}{t_2})\ t_1\ ) \bullet\ in\ k\SAppS v \SAppS t\\
+
+  = & let\ v=(\SLamS v_1.\SLamS t_1.\CPSTh{\Control{c}{e_1}}\
+  (\SLamS v_2.\SLamS t_2.\DAppP{\DAppP{\DAppP{v_1}{v_2}}
+                    {\DLamP{v'}{\DLam{t''}
+                        {\SApp{\SApp{idk}{v'}}{t''}}}}}{t_2})\ t_1\ )\\
+ & \SAppS \DLamP{v_3}{\DLam{k_2'}{\DLam{t_2'}{\CPSTh{E_p[x]}[\Change{x}{v_3}]\
+        \SLamP{a}{\SLam{t_2''}{k_2' \DAppS a \DAppS t_2''}}\ t_2'}}} \SAppS \bullet \ in\
+  k\SAppS v \SAppS t\\
+
+  = & let\ v=(\SLamS v_1.\SLamS t_1.let\ x'= (\DLamS vF.\DLamS k'F.\DLam{t'F}{let\ t''F=\Append{t_1}{\Cons{k'F}{t'F}}}\\
+  & in\ (\SLamS v_2.\SLamS t_2.\DAppP{\DAppP{\DAppP{v_1}{v_2}}
+                    {\DLamP{v'}{\DLam{t''}
+                        {\SApp{\SApp{idk}{v'}}{t''}}}}}{t_2})\SAppS vF \SAppS t''F)\ in\
+            \CPSTh{e}[\Change{c}{x'}]\ idk\ \bullet)\\
+  & \SAppS \DLamP{v_3}{\DLam{k_2'}{\DLam{t_2'}{\CPSTh{E_p[x]}[\Change{x}{v_3}]\
+        \SLamP{a}{\SLam{t_2''}{k_2' \DAppS a \DAppS t_2''}}\ t_2'}}} \SAppS \bullet \ in\
+            k\SAppS v \SAppS t\\
+[3mm]
+  & (中略)\\
+[3mm]
+  %% = & let\ v=let\ x'= (\DLamS vF.\DLamS k'F.\DLam{t'F}
+  %%               {let\ t''F=\Append{\bullet}{\Cons{k'F}{t'F}}}\\
+  %% & in\ (\SLamS v_2.\SLamS t_2.\DAppP{\DAppP{\DAppP
+  %%     {\DLamP{v_3}{\DLam{k_2'}{\DLam{t_2'}{\CPSTh{E_p[x]}[\Change{x}{v_3}]\
+  %%       \SLamP{a}{\SLam{t_2''}{k_2' \DAppS a \DAppS t_2''}}\ t_2'}}}}{v_2}}
+  %%                   {\DLamP{v'}{\DLam{t''}
+  %%                       {\SApp{\SApp{idk}{v'}}{t''}}}}}{t_2})\\
+  %%               & \SAppS vF \SAppS t''F)\ in\ \CPSTh{e}[\Change{c}{x'}]\ idk\ \bullet \ in\
+  %%               k\SAppS v \SAppS t\\
+
+  %% = & let\ v=let\ x'= (\DLamS vF.\DLamS k'F.\DLam{t'F}
+  %%               {let\ t''F=\Append{\bullet}{\Cons{k'F}{t'F}}}\\
+  %% & in\ (\DAppP{\DAppP{\DAppP
+  %%     {\DLamP{v_3}{\DLam{k_2'}{\DLam{t_2'}{\CPSTh{E_p[x]}[\Change{x}{v_3}]\
+  %%       \SLamP{a}{\SLam{t_2''}{k_2' \DAppS a \DAppS t_2''}}\ t_2'}}}}{vF}}
+  %%                   {\DLamP{v'}{\DLam{t''}
+  %%                       {\SApp{\SApp{idk}{v'}}{t''}}}}}{t''F}))\ \\
+  %%               & in\ \CPSTh{e}[\Change{c}{x'}]\ idk\ \bullet \ in\
+  %%               k\SAppS v \SAppS t\\
+
+ \to & let\ v=let\ x'= (\DLamS vF.\DLamS k'F.\DLam{t'F}
+                {let\ t''F=\Append{\bullet}{\Cons{k'F}{t'F}}}\\
+  & in\ (
+     \CPSTh{E_p[x]}[\Change{x}{vF}]\
+        \SLamP{a}{\SLam{t_2''}{\DLamP{v'}{\DLam{t''}
+                        {\SApp{\SApp{idk}{v'}}{t''}}} \DAppS a \DAppS t_2''}}\ t''F
+        )\ in\ \CPSTh{e}[\Change{c}{x'}]\ idk\ \bullet \ \\
+        & in\
+        k\SAppS v \SAppS t\\
+
+
+  \to & let\ v=let\ x'= \DLamS v'.\DLamS k'.\DLamS t'.
+
+     \CPSTh{E_p[x]}[\Change{x}{v'}]\
+        idk\ \ConsP{k'}{t'}\\
+                    & in\ \CPSTh{e}[\Change{c}{x'}]\ idk\ \bullet \ in\
+                k\SAppS v \SAppS t\\
+
+\end{array}
+\]
+\caption{簡約規則左辺の展開}
+\label{ControlReLeft}
+\end{figure}
+図\ref{ControlReRight},\ref{ControlReLeft}に$\beta$同値を示したい両辺の展開を示した。それぞれの最終行に注目したい。両辺を見比べて形が異なっている部分を切り出すと次のようになる。\\
+\[
+\begin{array}{l}
+  \DLam{v'}{\DLam{k'}{\DLam{t'}{\CPSTh{E_p[x]}[\Change{x}{v'}]\
+        \SLamP{a}{\SLam{t''}{k' \DAppS a \DAppS t''}}\ t'}}}\\
+  \DLamS v'.\DLamS k'.\DLamS t'.
+
+     \CPSTh{E_p[x]}[\Change{x}{v'}]\
+     \Idk\ \ConsP{k'}{t'}\\
+     
+\end{array}
+\]
+\\
+ここで、上の式の継続部分について、$\SLam{a}{\SLam{t''}{k' \DAppS a \DAppS t''}}=\SLam{a}{\SLam{t''}{\Idk \DAppS a \DAppS \ConsP{k'}{t''}}}$と変換できる。なぜなら、$\SLam{a}{\SLam{t''}{\Idk \DAppS a \DAppS \ConsP{k'}{t''}}}$を$\Idk$の定義に従って展開すると
+$\SLam{a}{\SLam{t''}{\ConsP{k'}{t''}} \DAppS a \DAppS \Idt}$であり、$t''=\Bullet$の場合には$::$の定義より、$\SLam{a}{\SLam{t''}{k' \DAppS a \DAppS \Idt}}$で、$t''\neq \Bullet$の場合には$\SLam{a}{\SLam{t''}{k' \DAppS a \DAppS t''}}$になるからである。\\
+\\
+さらに$\Idk = \SLam{a}{\SLam{t''}{\Idk \DAppS a \DAppS t''}}$と表すことが出来ることから上の二式をかなり近い形に変換することができた。
+\[
+\begin{array}{l}
+  \DLam{v'}{\DLam{k'}{\DLam{t'}{\CPSTh{E_p[x]}[\Change{x}{v'}]\
+        \SLamP{a}{\SLam{t''}{\Idk \DAppS a \DAppS \ConsP{k'}{t''}}}\ t'}}}\\
+  \DLamS v'.\DLamS k'.\DLamS t'.
+
+     \CPSTh{E_p[x]}[\Change{x}{v'}]\
+     \SLam{a}{\SLam{t''}{\Idk \DAppS a \DAppS t''}}\ \ConsP{k'}{t'}\\
+     
+\end{array}
+\]
+そこで次の重要な補題を立てた。
+
+\begin{lemma}[$k$の移動]
+  任意の項$e$、$k$、trail $t$に対して\\
+  $\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{t_0}}}}\ \ConsP{k'}{t'}}}}
+  =_{\beta} \\
+  \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{\ConsP{k'}{t_0}}}}}\ t'}}}$が成り立つ。
+\label{KMove}
+\end{lemma}
+この補題では、trailに連なっている$k$の位置が継続に渡すtrailに移動しても$\beta$同値が成り立つ事を意味しており、亀山さんの論文\cite{KY2008}にも記載されている。これを補題として、定理4から呼び出すためにはtrailに関していくつかの補題が必要であった。左辺では$k$と$t$を\textsf{cons}で繋げているのに対して、右辺では$k$と$t_0$を継続の中で繋げているため、型を保証する\textsf{compatible}が両辺で異なっている。補題\ref{KMove}を呼び出すためにはこの両方の\textsf{compatible}が必要だったのである。そこでtrailの型を変更して補題を立てた。次節で見ていく。
+
+\subsection{trailの差分情報}
+trailの型に差分情報を渡して次のようにAgdaで定義した。
+
+
+\begin{verbatim}
+data trails[_]_ (μα : trail) : trail → Set where
+ [] : trails[ μα ] μα
+ _::<_>_ : {τ1 τ2 : typ} {μ μβ μγ : trail} →
+              (μk : trail) → (c : compatible μβ μk μγ) →
+              (μs : trails[ μα ] μβ) →
+              trails[ μα ] μγ
+\end{verbatim}
+
+trailsはtrailの差分情報を表している。$\mu_{\alpha}$をベースとして、空のtrailを受け取る場合の差分は$\mu_{\alpha}$と$\mu_{\alpha}$の差になる。$\mu_{\alpha}$に1つ以上のtrailを連ねてできた$\mu_s$に空ではない$\mu_k$を連ねる場合は、$\mu_{\beta}$と$\mu_k$を繋げたら型が$\mu_{\gamma}$になる事保証する\textsf{compatible}を同時に渡して$\mu_{\alpha}$から$\mu_{\gamma}$の差分を返している。
+このtrailsを使い、持っているtrailsの型から\textsf{compatible}関係を導くことが出来る補題を立てた。これで補題6をメイン定理から呼び出す準備が整った。
+\begin{lemma}[diff-compatible]
+  $\mu_{\beta}$に一つ以上のtrailが連なって$\mu_{\alpha}$になったtrailsと任意のtrail$\mu_0$について$\Compatible{\mu_{\beta}}{\mu_0}{\mu_{\alpha}}$が成り立つ。
+\end{lemma}
+
+
+\subsection{論理関係を使った手証明}
+補題\ref{KMove}を示すにあたって、Appのケースでは2つの項の再帰だけではなく、項が実行された後の値$v$においても補題を満たさなければならないと分かった。つまり、これを示すには論理関係の定義が必要である。論理関係は環境を明示的に表現する必要があり、PHOASを扱うAgdaに載せるのは難しい。そこで補題\ref{KMove}の証明に関しては手証明で進めることにする。補題\ref{KMove}を証明できるように定義した論理関係を下に示す。
+
+\[
+\begin{array}{l}
+  (M, M')\in R_d \ \Longleftrightarrow\ M =_{\beta}M'\\
+  (M, M')\in R_{\tau_2 \rightarrow \tau_1 (\mu_{\alpha}) \alpha (\mu_{\beta})\beta}\\
+  \Longleftrightarrow\\
+  \forall (V, V')\in R_{\tau_2}.\\
+  and\ \forall (k,k')\in k_{\tau_1(\mu_{\alpha})\alpha}\\
+  and\ \forall (\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}.\\
+  and\  \forall (t, t')\in T_{\mu_{\beta}}.\\
+  (M\ V \ \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \Cons{k}{t}, M\ V' \ \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t')\in R_{\beta}\\
+  (M\ V \ \Lam{t_0}{K[\Lam{t_1}{t_1}]}\ t, M\ V' \ \Lam{t_0}{K[\Lam{t_1}{t_1}]}\ t')\in R_{\beta}\\
+\end{array}
+\]
+$k$について\\
+\[
+\begin{array}{lcl}
+  (k,k')\in k_{\tau_1(\mu_{\alpha})\alpha} &\Longleftrightarrow&
+  \forall (V, V')\in R_{\tau_1}.\\
+  & & and\ \forall (t, t')\in T_{\mu_{\alpha}}.\\
+  & & (k\ V\ t, k'\ V'\ t')\in R_{\alpha}\\
+\end{array}
+\]
+コンテキストとtrailについて
+\[
+\begin{array}{l}
+  (\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}}) \in K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}\\
+  \Longleftrightarrow\\
+  \forall (V, V')\in R_{\tau_1}.\\
+  and\ \forall (t, t')\in T_{\mu_{\alpha}}.\\
+  (\Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ \Cons{k}{t}, \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ V'\ t')\in R_{\alpha}\\
+  (\Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ t, \Lam{v_0}{K[\Lam{t_1}{t_1}]}\ V'\ t')\in R_{\alpha}\\
+[3mm]
+  (t, t')\in T_{bullet}\ \Longleftrightarrow\  t=t'=idt\\
+  (t, t')\in T_{\tau(\mu_{\alpha})\alpha}\ \Longleftrightarrow\ t=_{\beta}t'\\
+\end{array}
+\]
+\\
+ここで、環境が入った次の定理を示した。
+\begin{theorem}
+  $x_i:\tau_i \vdash e:\tau \TrailsType{\alpha}{\beta} \TrailType{\beta}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i}$かつ$(k,k')\in k_{\tau_1(\mu_{\alpha})\alpha}$を満たす$k,k'$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}$を満たすような任意のコンテキスト$K$と、$(t, t') \in T_{\mu_{\beta}}$を満たす任意の$t, t'$とについて、\\
+  $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t}, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t')\in R_{\beta}$と\\
+  $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t')\in R_{\beta}$が成り立つ。
+\label{HandMain}
+\end{theorem}
+%% この定理を示すことで\\
+%% $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t}, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t')\in R_{\beta}$が得られる。\\
+定理\ref{HandMain}を使って補題\ref{KMove}の\\
+$(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{t_0}}}}\ \ConsP{k'}{t'}}}},\\
+\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{\ConsP{k'}{t_0}}}}}\ t'}}})
+\in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$を示していく。\\
+次の補題を使う。\\
+\begin{lemma}[簡約と論理関係の保存]
+  $(M_l', M_r') \in R_{\tau}、M_l \rightarrow_{\beta} M_l'、M_r \rightarrow_{\beta} M_r'$のとき$(M_l, M_r) \in R_{\tau}$が成り立つ。
+\label{Reduction2}
+\end{lemma}
+$(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ \ConsP{k'}{t'}}}},\\
+\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ t'}}})
+\in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$をまず考える。
+\\
+任意の$(V,V')\in R_{\tau_2}\  (k_2,k_2')\in k_{\tau_1(\mu_{\alpha})\alpha}\  (\LamP{v_0}{\Lam{t_0}{K[]}},\LamP{v_0}{\Lam{t_0}{K[]}})\in K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}\  (t_2,t_2')\in_{\mu_{\beta}}$について、\\
+(A)\ $(\LamP{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k'}{t'}}}}\ V\ k_2\ t_2,\\
+\qquad \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t'}}}\ V'\ k_2'\ t_2')\in R_{\beta}$と\\
+(B)\ $(\LamP{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k'}{t'}}}}\ V\ k_2\ t_2,\\
+\qquad \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t'}}}\ V'\ k_2'\ t_2')\in R_{\beta}$を示せば良い。\\
+補題\ref{Reduction2}より簡約できるので\\
+(A)\ $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k_2}{t_2},
+ \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k_2'}{t_1}}]}}\ t_2')\in R_{\beta}$\\
+(B)\ $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2,
+ \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2')\in R_{\beta}$\\
+\\
+定理\ref{HandMain}より、\\
+(A)'\ $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k_2}{t_2}, \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k_2'}{t_1}}]}}\ t_2')\in R_{\beta}$と\\
+(B)'\  $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2, \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2')\in R_{\beta}$が成り立つ。\\
+これで\\
+$(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ \ConsP{k'}{t'}}}},\\
+\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ t'}}})
+\in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$が示せた。
+\\
+ここで、次の補題を使う。
+\begin{lemma}
+  コンテキスト$\Lam{v_0}{\Lam{t_0}{K[f]}}=\Lam{v_0}{\Lam{t_0}{\Idk\ v_0\ (f\ t_0)}}$は\\
+  $(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\beta(\mu_{id})\beta'}$を満たす。
+\label{IdkContext}
+\end{lemma}
+これにより補題\ref{KMove}が示せた。\\
+$(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{t_0}}}}\ \ConsP{k'}{t'}}}},\\
+\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{\ConsP{k'}{t_0}}}}}\ t'}}})
+\in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$\\
+\\
+メイン定理や補題の詳細な証明方法については付録に記載するが、この証明の核心であるcontrolのケースについて下に示していく。
+\subsection{controlケースの手証明}
+controlのケースを示すために次の補題が必要となった。
+\begin{lemma}
+  $\Compatible{\Trail{\tau_1}{\tau_1'}{\mu_1}}{\mu_2}{\mu_3}$かつ$(t_1, t_1')\in T_{\tau_1(\mu_1)\tau_1'}、(t_2, t_2')\in T_{\mu_2}、$のとき\\
+  $(\Cons{t_1}{t_2}, \Cons{t_1'}{t_2'})\in T_{\mu_3}$
+\label{TCompatible}
+\end{lemma}
+補題\ref{TCompatible}は、論理関係の$T$の定義と持っている\textsf{compatible}関係から新たな$T$の関係を示すものである。\\
+次の\textsf{cons-assoc}についてはAgdaに実装済みである。
+\begin{lemma}
+  任意のtrail\ $t_1,t_2,t_3$について以下が成り立つ。\\
+  $\Cons{\ConsP{t_1}{t_2}}{t_3} =_{\beta} \Cons{t_1}{\ConsP{t_2}{t_3}}$
+\label{ConsAssoc}
+\end{lemma}
+ここから定理\ref{HandMain}についてcontrolのケースの概略を書いていく。\\
+
+示すことは以下のようになる。\\
+$x_i:\tau_i\ \vdash \Control{k}{e}:\tau \TrailType{\alpha} \TrailType{\beta}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i}$かつ\\
+$(k,k')\in k_{\tau(\mu_{\alpha})\alpha}$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\tau(\mu_{\alpha})\alpha}$を満たすような任意のコンテキスト$K$と、$(t_l, t_r) \in T_{\mu_{\beta}}$を満たす任意の$t, t'$と任意の$k$について、\\
+  (A)\ $(\rho \CPSTh{\Control{c}{e}} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ (\Cons{k}{t_l}), \rho \CPSTh{\Control{c}{e}} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t_r)\in R_{\beta}$と\\
+(B)\ $(\rho \CPSTh{\Control{c}{e}}\ \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_l, \rho \CPSTh{\Control{c}{e}} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_r)\in R_{\beta}$が成り立つ。\\
+\\
+(A)について、CPS変換と$\beta_{\Omega}$を使って以下のように変換できる。\\
+(A)\ $(\DLet{x'}
+      {\Lam{v}{\Lam{k'}{\Lam{t'}
+        {\App{\App{\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}}{v}}{\DAppend{\ConsP{k}{t_l}}{\ConsP{k'}{t'}}}}}}}
+      {\CPS{e}{\rho[\Change{c}{x'}]}{\Idk}{\Idt}},\\
+\qquad   \DLet{x'}
+      {\Lam{v}{\Lam{k'}{\Lam{t'}
+        {\App{\App{\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}}{v}}{\DAppend{t_r}{\ConsP{k'}{t'}}}}}}}
+      {\CPS{e}{\rho[\Change{c}{x'}]}{\Idk}{\Idt}})
+      \in R_{\beta}$\\
+\\
+ここで、Agdaで示した補題\ref{ConsAssoc}より$\DAppend{\ConsP{k}{t_l}}{\ConsP{k'}{t'}} =_{\beta} \Cons{k}{(\DAppend{t_l}{\ConsP{k'}{t'}}})$である。\\
+%% $(\DLet{x'}
+%%       {\Lam{v}{\Lam{k'}{\Lam{t'}
+%%         {\App{\App{\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}}{v}}{\Cons{k}{(\DAppend{t_l}{\ConsP{k'}{t'}}})}}}}}
+%%       {\CPS{e}{\rho[\Change{c}{x'}]}{\Idk}{\Idt}},\\
+%%    \DLet{x'}
+%%       {\Lam{v}{\Lam{k'}{\Lam{t'}
+%%         {\App{\App{\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}}{v}}{\DAppend{t_r}{\ConsP{k'}{t'}}}}}}}
+%%       {\CPS{e}{\rho[\Change{c}{x'}]}{\Idk}{\Idt}})
+%%       \in R_{\beta}$\\
+      左右の$x'$の中身をそれぞれ$X,Y$とおくと、\\
+      $(\CPS{e}{\rho[\Change{c}{X}]}{\Idk}{\Idt},\CPS{e}{\rho[\Change{c}{Y}]}{\Idk}{\Idt})\in R_{\beta}$を示せば良い。\\
+\\
+$e$に対しての帰納法の仮定より、\\
+$x_i:\tau_i\ c:\tau \rightarrow t_1, (\mu_1) t_2 (\mu_2) \alpha \vdash e : \gamma (\mu_{id}) \gamma' (\Bullet) \beta$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i}$で\\
+$(k,k')\in k_{\gamma (\mu_{id}) \gamma'}$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\gamma (\mu_{id}) \gamma'}$を満たすような任意のコンテキスト$K$と、$(t, t') \in T_{\Bullet}$を満たす任意の$t, t'$について、\\
+$(\rho \CPSTh{e}\ \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t')\in R_{\beta}$が成り立つ。\\
+\\
+$\Lam{v_0}{\Lam{t_0}{K[f]}}\ =\ \Lam{v_0}{\Lam{t_0}{\Idk\ v_0\ (f\ t_0)}}$\\
+上のコンテキストは$K^{kk'}_{\gamma (\mu_{id}) \gamma'}$を満たし(補題\ref{IdkContext})、$(t, t') \in T_{\Bullet}$より$t=t'=\Idt$なので
+帰納法の仮定で(A)を導くには、$(X,Y)\in R_{\tau \rightarrow t_1, (\mu_1) t_2 (\mu_2) \alpha}$を示す。\\
+%% $(\Lam{v}{\Lam{k'}{\Lam{t'}
+%%     {\App{\App{\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}}{v}}{\Cons{k}{(\DAppend{t_l}{\ConsP{k'}{t'}}})}}}},\\
+%%   \Lam{v}{\Lam{k'}{\Lam{t'}
+%%       {\App{\App{\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}}{v}}{\DAppend{t_r}{\ConsP{k'}{t'}}}}}})\in R_{\tau \rightarrow t_1, (\mu_1) t_2 (\mu_2) \alpha}$\\
+\\
+$R_{\tau \rightarrow t_1, (\mu_1) t_2 (\mu_2) \alpha}$の定義から\\
+$(V,V')\in R_{\tau}$と$(k_1,k_1')\in k_{t_1 (\mu_1) t_2}$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in K^{k_1k_1'}_{t_1 (\mu_1) t_2}$を満たすコンテキスト$K_1$と$(t_{l2},t_{r2})\in T_{\mu_1}$について\\
+(C)\ $(X\ V\ \Lam{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}\ \ConsP{k_1}{t_{l2}},Y\ V'\ \Lam{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{\Cons{k_1'}{t_1}}]}}\ t_{r2})\in R_{\alpha}$\\
+(D)\ $(X\ V\ \Lam{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}\ t_{l2},Y\ V'\ \Lam{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}\ t_{r2})\in R_{\alpha}$を示せば良い。\\
+\\
+(C)について\\
+X,Yを代入して補題\ref{Reduction2}より簡約できるので\\
+$(\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ \Cons{k}{(\DAppend{t_l}{\ConsP{\Lam{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}}{\ConsP{k_1}{t_{l2}}}}}),\\
+\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ V'\ \DAppend{t_r}{\ConsP{\Lam{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{\Cons{k_1'}{t_1}}]}}}{t_{r2}}})\in R_{\alpha}$を示す。\\
+\\
+$(\LamP{v_0}{\Lam{t_0}{K[]}},\LamP{v_0}{\Lam{t_0}{K[]}})\in K^{kk'}_{\tau(\mu_{\alpha})\alpha}$を満たしているから\\
+$(V,V')\in R_{\tau}$と$(t, t')\in T_{\mu_{\alpha}}$について\\
+$(\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ \ConsP{k}{t},
+\Lam{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ V'\ t')\in R_{\alpha}$\\
+\\
+そこで、\\
+(E)\ $(\DAppend{t_l}{\ConsP{\Lam{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}}{\ConsP{k_1}{t_{l2}}}},
+\DAppend{t_r}{\ConsP{\Lam{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{\Cons{k_1'}{t_1}}]}}}{t_{r2}}})\in T_{\mu_{\alpha}}$を示す。\\
+\\
+ここで、$\Compatible{\Trail{t_1}{t_2}{\mu_1}}{\mu_2}{\mu_0}\quad \Compatible{\mu_\beta}{\mu_0}{\mu_\alpha}$である事を考慮して、\\
+次のように$trail$を考える。\\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%trail設定%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+$\mu_0 = \Trail{t_1}{t_2}{\mu_0}\quad \mu_2 = \Trail{\epsilon}{\epsilon'}{\mu'}$\\
+$\mu_{\beta} = \Trail{\delta}{\delta'}{\mu}\quad \mu_{\alpha} = \Trail{\delta}{\delta'}{\mu_{\alpha}}$\\
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%trail設定%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\\
+(E)の$::$と$@$を展開する。
+%% (E)\ $(\DAppend{t_l}{\Lam{v_1}{\Lam{t_1'}{\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}}\ v_1\ \Cons{\ConsP{k_1}{t_{l2}}}{t_1'}}},\\
+%% \qquad \DAppend{t_r}{\Lam{v_1}{\Lam{t_1'}{\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{\Cons{k_1'}{t_1}}]}}}\ v_1\ \ConsP{t_{r2}}{t_1'}}})\in T_{\mu_{\alpha}}$\\
+%% 次に$@$を展開する。
+また、$\mu_{\alpha} = \Trail{\delta}{\delta'}{\mu_{\alpha}}$なので\\
+(E)\ $(\Lam{v_2}{\Lam{t_2'}{t_l\ v_2\ \Cons{\LamP{v_1}{\Lam{t_1'}{\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}}\ v_1\ \Cons{\ConsP{k_1}{t_{l2}}}{t_1'}}}{t_2'}}},\\
+\qquad \Lam{v_2}{\Lam{t_2'}{t_r\ v_2\ \Cons{\LamP{v_1}{\Lam{t_1'}{\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{\Cons{k_1'}{t_1}}]}}}\ v_1\ \ConsP{t_{r2}}{t_1'}}}{t_2'}}})\in T_{\delta(\mu_{\alpha})\delta'}$\\
+\\
+$T_{\delta(\mu_{\alpha})\delta'}$の定義から\\
+$(V_{delta},V_{delta}')\in R_{\delta}$を満たす$V,V'$と$(t_3, t_4)\in T_{\mu_{\alpha}}$を満たす$t_3, t_4$について\\
+$(t_l\ V_{delta}\ \Cons{\LamP{v_1}{\Lam{t_1'}{\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}}\ v_1\ \Cons{\ConsP{k_1}{t_{l2}}}{t_1'}}}{t_3},\\
+t_r\ V_{delta}'\ \Cons{\LamP{v_1}{\Lam{t_1'}{\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{\Cons{k_1'}{t_1}}]}}}\ v_1\ \ConsP{t_{r2}}{t_1'}}}{t_4})
+\in R_{\delta'}$を示せば良い。\\
+\\
+ここで、$(t_l, t_r)\in T_{\mu_{\beta}}$つまり$(t_l, t_r)\in T_{\delta{\mu}\delta'}$なので定義より、\\
+$(V_{delta},V_{delta}')\in R_{\delta}$を満たす$V,V'$とと$(t_{\mu}, t_{\mu}')\in T_{\mu}$を満たす$t_{\mu}, t_{\mu'}$について\\
+$(t_l\ V_{delta}\ t_{\mu},t_r\ V_{delta}'\ t_{\mu}')\in R_{\delta'}$となるから\\
+\\
+(F)\ $(\Cons{\LamP{v_1}{\Lam{t_1'}{\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}}\ v_1\ \Cons{\ConsP{k_1}{t_{l2}}}{t_1'}}}{t_3},\\
+\qquad \Cons{\LamP{v_1}{\Lam{t_1'}{\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{\Cons{k_1'}{t_1}}]}}}\ v_1\ \ConsP{t_{r2}}{t_1'}}}{t_4})
+\in T_{\mu}$を示せば良い。\\
+\\
+ここで、(F)の$::$を展開し\\
+(F)\ $(\Lam{v_2}{\Lam{t_2'}{\LamP{v_1}{\Lam{t_1'}{\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}}\ v_1\ \Cons{\ConsP{k_1}{t_{l2}}}{t_1'}}}\ v_2\ \ConsP{t_3}{t_2'}},\\
+\qquad \Lam{v_2}{\Lam{t_2'}{\LamP{v_1}{\Lam{t_1'}{\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{\Cons{k_1'}{t_1}}]}}}\ v_1\ \ConsP{t_{r2}}{t_1'}}}\ v_2\ \ConsP{t_4}{t_2'}})\in T_{\mu}$となる。\\
+\\
+$\mu$について、\\
+\begin{figure}[h]
+\[
+\begin{array}{lcl}
+  \Compatible{\mu_\beta}{\mu_0}{\mu_\alpha} &=& \Compatible{\Trail{\delta}{\delta'}{\mu}}{\Trail{t_1}{\mu_0}{t_2}}{\Trail{\delta}{\mu_{\alpha}}{\delta'}}\\
+  &=& \Compatible{\Trail{t_1}{\mu_0}{t_2}}{\mu_{\alpha}}{\mu}
+\end{array}
+\]
+\caption{\textsf{comptible}展開1}
+\label{Compatible1}
+\end{figure}
+より$\mu=\Trail{t_1}{t_2}{\mu'}$と置くことができるので(F)は次のようになる。\\
+\\
+(F)\ $(\Lam{v_2}{\Lam{t_2'}{\LamP{v_1}{\Lam{t_1'}{\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}}\ v_1\ \Cons{\ConsP{k_1}{t_{l2}}}{t_1'}}}\ v_2\ \ConsP{t_3}{t_2'}},\\
+\qquad \Lam{v_2}{\Lam{t_2'}{\LamP{v_1}{\Lam{t_1'}{\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{\Cons{k_1'}{t_1}}]}}}\ v_1\ \ConsP{t_{r2}}{t_1'}}}\ v_2\ \ConsP{t_4}{t_2'}})\in T_{t_1(\mu')t_2}$を示す。\\
+定義より、\\
+$(V_1,V_1')\in R_{t_1}$と$(t_{\mu_2},t_{\mu_2}')\in T_{\mu'}$について\\
+(G)\ $(\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}\ V_1\ \Cons{\ConsP{k_1}{t_{l2}}}{\ConsP{t_3}{t_{\mu_2}}},\\
+\qquad \LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{\Cons{k_1'}{t_1}}]}}\ V_1'\ \Cons{t_{r2}}{\ConsP{t_4}{t_{\mu_2}'}})\in R_{t_2}$を示せば良い。\\
+\\
+ここで、補題\ref{ConsAssoc}より、$\Cons{\ConsP{k_1}{t_{l2}}}{\ConsP{t_3}{t_{\mu_2}}} =_{\beta} \Cons{k_1}{\ConsP{t_{l2}}{\ConsP{t_3}{t_{\mu_2}}}}$なので\\
+(G)\ $(\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}\ V_1\ \Cons{k_1}{\ConsP{t_{l2}}{\ConsP{t_3}{t_{\mu_2}}}},\\
+\qquad \LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{\Cons{k_1'}{t_1}}]}}\ V_1'\ \Cons{t_{r2}}{\ConsP{t_4}{t_{\mu_2}'}})\in R_{t_2}$を示せば良い。\\
+\\
+ここで、$K_1$が$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in K^{k_1k_1'}_{t_1 (\mu_1) t_2}$を満たすので、\\
+$(V_1,V_1')\in R_{t_1}$と$(t,t')\in T_{\mu_1}$について\\
+$(\LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{t_1}]}}\ V_1\ \ConsP{k_1}{t}, \LamP{v_0}{\Lam{t_0}{K_1[\Lam{t_1}{\Cons{k_1'}{t_1}}]}}\ V_1'\ t)
+\in R_{\tau_2}$が言える。\\
+\\
+つまり、(H)\ $(\ConsP{t_{l2}}{\ConsP{t_3}{t_{\mu_2}}},\Cons{t_{r2}}{\ConsP{t_4}{t_{\mu_2}'}})\in T_{\mu_1}$を示せば良い。
+\\
+ここで、\\
+\begin{figure}[h]
+\[
+\begin{array}{lcl}
+  \Compatible{\Trail{t_1}{t_2}{\mu_1}}{\mu_2}{\mu_0} &=& \Compatible{\Trail{t_1}{t_2}{\mu_1}}{\mu_2}{\Trail{t_1}{t_2}{\mu_0}}\\
+  &=& \Compatible{\mu_2}{\mu_0}{\mu_1}
+\end{array}
+\]
+\caption{\textsf{comptible}展開2}
+\label{Compatible2}
+\end{figure}\\
+\\
+また、図\ref{Compatible1}の続きから\\
+\begin{figure}[h]
+\[
+\begin{array}{lcl}
+  \Compatible{\Trail{t_1}{\mu_0}{t_2}}{\mu_{\alpha}}{\mu} &=& \Compatible{\Trail{t_1}{\mu_0}{t_2}}{\mu_{\alpha}}{\Trail{t_1}{t_2}{\mu'}}\\
+  &=& \Compatible{\mu_{\alpha}}{\mu'}{\mu_0}
+\end{array}
+\]
+\caption{\textsf{comptible}展開3}
+\label{Compatible3}
+\end{figure}\\
+\\
+(H)を示す。\\
+$(t_3,t_4)\in T_{\mu_{\alpha}}\ (t_{\mu_2},t_{\mu_2}')\in T_{\mu'}$で図\ref{Compatible3}より$\Compatible{\mu_{\alpha}}{\mu'}{\mu_0}$\\
+補題\ref{TCompatible}より$(\Cons{t_3}{t_{\mu_2}},\Cons{t_4}{t_{\mu_2}'})\in T_{\mu_0}$\\
+また、$(t_{l2},t_{r2})\in T_{\mu_2}$で図\ref{Compatible2}より$\Compatible{\mu_2}{\mu_0}{\mu_1}$なので\\
+補題\ref{TCompatible}より$(\Cons{t_{l2}}{\ConsP{t_3}{t_{\mu_2}}},\Cons{t_{r2}}{\ConsP{t_4}{t_{\mu_2}'}})\in T_{\mu_1}$となる。\\
+これで(H)が示せた。\\
+(B),(D)についても同様に示す。\\
