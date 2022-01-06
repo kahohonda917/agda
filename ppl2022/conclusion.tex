@@ -1,2 +1,23 @@
-\section{まとめと今後の課題}
-本稿では、control/prompt入り$\lambda$計算の体系において、CPS変換の正当性を証明した。CPSインタプリタとCPS変換をAgdaで定式化し、正当性の証明については一部を除いてAgdaに実装した。今後は手証明で行った部分をAgdaに実装していきたい。
+\section{まとめと今後の方向性}
+本稿では、control/prompt入り$\lambda$計算の体系において、
+CPS変換の正当性を型付きで証明した。
+CPSインタプリタとCPS変換をAgdaで定式化し、正当性の証明については
+ほとんどを Agda で定式化したが、論理関係を使った同値関係を示す部分は
+手による証明を行った。
+
+我々のグループでは、４種類の限定継続演算子
+（shift/reset \cite{DF1990,DF1992}、
+control/prompt \cite{POPL88},
+shift0/ reset0 \cite{materzok-subtyping},
+control0/prompt0 \cite{gunter-cupto}）
+に対する型付き CPS 変換の正当性の証明を行っている。
+本研究はその一環で、control/prompt に対する証明は一段落したと
+考えているが、
+これまでの shift/reset に対する証明に比べ複雑になっており、
+証明の整理が必要と思われる。
+ここでの成果は、同じく trail を使用する control0/prompt0 を含む
+体系でも役に立つと期待される。
+また、algebraic effects and handlers \cite{bauer-tutorial}
+についても、同様に trail を使った CPS インタプリタが
+作られており、
+その正当性の証明を定式化する際にも役に立つ可能性がある。
