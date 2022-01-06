@@ -292,11 +292,11 @@ trailsはtrailの差分情報を表している。$\mu_{\alpha}$をベースと�
   \begin{array}{cl}
   \Longleftrightarrow &
   \forall (V, V')\in R_{\tau_2}.\\
-& \forall\  k:\mu_{k}. (k, k)\in T_{\mu_k}\\
+& \forall\  k\\
 & \forall (\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^k_{\tau_1(\mu_{\alpha})\alpha}.\\
 & \forall (t, t')\in T_{\mu_{\beta}}.\\
-& (M\ V \ \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t}, M\ V' \ \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ t')\in R_{\beta}\\
-& (M\ V \ \Lam{t_0}{K[\Lam{t_1}{t_1}]}\ t, M\ V' \ \Lam{t_0}{K[\Lam{t_1}{t_1}]}\ t')\in R_{\beta}\\
+& (M\ V \ \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t}, M'\ V' \ \Lam{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ t')\in R_{\beta}\\
+  & (M\ V \ \Lam{t_0}{K[\Lam{t_1}{t_1}]}\ t, M'\ V' \ \Lam{t_0}{K[\Lam{t_1}{t_1}]}\ t')\in R_{\beta}\\
   \end{array}
 \end{array}
 \]
@@ -550,7 +550,7 @@ $(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}
 \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ t'}}})
 \in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$をまず考える。
 \\
-$(k, k)\in T_{\mu_k}\ (V,V')\in R_{\tau_2}\  (\LamP{v_0}{\Lam{t_0}{K[]}},\LamP{v_0}{\Lam{t_0}{K[]}})\in K^k_{\tau_1(\mu_{\alpha})\alpha}\  (t_2,t_2')\in_{\mu_{\beta}}$について、\\
+$(k, k)\in T_{\mu_k}\ (V,V')\in R_{\tau_2}\  (\LamP{v_0}{\Lam{t_0}{K[]}},\LamP{v_0}{\Lam{t_0}{K[]}})\in K^k_{\tau_1(\mu_{\alpha})\alpha}\  (t_2,t_2')\in T_{\mu_{\beta}}$について、\\
 \\
 (A)\ $(\LamP{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k'}{t'}}}}\ V\ k\ t_2,\\
 \qquad \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t'}}}\ V'\ k\ t_2')\in R_{\beta}$と\\

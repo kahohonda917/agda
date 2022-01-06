@@ -37,14 +37,15 @@
  $T=b$のとき$M_l =_{\beta} M_r$を示す。仮定より、$M_l = _{\beta} M_l'$\ $(M_l',M_r')\in R_b$\ 仮定より、$M_r' = _{\beta} M_r$なので$M_l =_{\beta} M_r$\ 。よって$(M_l,M_r)\in R_b$\\
  \\
  $T=\TypeArrow{\tau_2}{\tau_1}{\mu_{\alpha}}{\alpha}{\mu_{\beta}}{\beta}$のとき\\
- 適切な$s,s'$について$(s,s')\in R_{\tau_2}$であると仮定する。また、$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^k_{\tau_1(\mu_{\alpha})\alpha}$、$(t, t')\in T_{\mu_{\beta}}$とする。\\
+ 適切な$s,s'$について$(s,s')\in R_{\tau_2}$であると仮定する。また、任意の$(k,k')\in T_{\mu_k}$で\\
+ $(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^k_{\tau_1(\mu_{\alpha})\alpha}$、$(t, t')\in T_{\mu_{\beta}}$とする。\\
  示したいことは、\\
  $(M_l', M_r') \in R_{\TypeArrow{\tau_2}{\tau_1}{\mu_{\alpha}}{\alpha}{\mu_{\beta}}{\beta}}、M_l \rightarrow_{\beta} M_l'、M_r \rightarrow_{\beta} M_r'$のとき$(M_l, M_r) \in R_{\TypeArrow{\tau_2}{\tau_1}{\mu_{\alpha}}{\alpha}{\mu_{\beta}}{\beta}}$\\
  $(M_l', M_r') \in R_{\TypeArrow{\tau_2}{\tau_1}{\mu_{\alpha}}{\alpha}{\mu_{\beta}}{\beta}}$の定義から、\\
  $(M_l'\ s \ \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t}, M_r'\ s' \ \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ t')\in R_{\beta}$\\
  $(M_l'\ s \ \LamP{t_0}{K[\Lam{t_1}{t_1}]}\ t, M_r'\ s' \ \LamP{t_0}{K[\Lam{t_1}{t_1}]}\ t')\in R_{\beta}$\\
  ここで、\\
- $M_l\ s \ \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t} \rightarrow^* M_l'\ s \ \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \Cons{k}{t}$\\
+ $M_l\ s \ \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t} \rightarrow^* M_l'\ s \ \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t}$\\
  $M_r\ s' \ \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ t' \rightarrow^* M_r'\ s' \ \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ t'$\\
  また、\\
  $M_l\ s \ \LamP{t_0}{K[\Lam{t_1}{t_1}]}\ t \rightarrow^* M_l'\ s \ \LamP{t_0}{K[\Lam{t_1}{t_1}]}\ t$\\
@@ -55,7 +56,7 @@
  前提と$(M_l, M_r) \in R_{\TypeArrow{\tau_2}{\tau_1}{\mu_{\alpha}}{\alpha}{\mu_{\beta}}{\beta}}$の定義から、$(M_l, M_r) \in R_{\TypeArrow{\tau_2}{\tau_1}{\mu_{\alpha}}{\alpha}{\mu_{\beta}}{\beta}}$が言える。
 \\
 \begin{lemma}
-  $(k,k)\in T_{\mu_k}$の時、コンテキスト$\Lam{v_0}{\Lam{t_0}{K[f]}}\ =\ \Lam{v_0}{\Lam{t_0}{\Idk\ v_0\ (f\ t_0)}}$は$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^k_{\beta(\mu_{id})\beta'}$を満たす。
+  $(k,k)\in T_{\mu_k}$の時、コンテキスト$\Lam{v_0}{\Lam{t_0}{K[f]}}\ =\ \Lam{v_0}{\Lam{t_0}{\Idk\ v_0\ (f\ t_0)}}$は\\$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^k_{\beta(\mu_{id})\beta'}$を満たす。
 \label{IdkContext}
 \end{lemma}
 この補題はcontrolとpromptのケースで使用する。
@@ -153,7 +154,17 @@ $(V_3,V_3')\in R_{\tau_3}$...(6)と$(t_2,t_2')\in T_{\mu_2'}$...(I)を満たし�
 (3),(4)より$(\Cons{t_1}{t_2},\Cons{t_1'}{t_2'})\in T_{\mu_3'}$を示せば良い。\\
 (G),(H),(I)と帰納法の仮定より、$(\Cons{t_1}{t_2},\Cons{t_1'}{t_2'})\in T_{\mu_3'}$が示せる。
 \\
-
+補題\ref{DiffCompatible}と補題\ref{ExtendCompatible'}についてはAgdaで実装し証明している。
+\setcounter{definition}{12}
+\begin{lemma}
+  $\Trails{\mu_{\alpha}}{\mu_{\beta}}$型のtrailsがあった時、ある$\mu_0$について$\Compatible{\mu_{\beta}}{\mu_0}{\mu_{\alpha}}$が成り立つ。
+\label{DiffCompatible}
+\end{lemma}
+$\mu_{\beta}$型のtrailをベースに0個以上のtrailが連なって$\mu_{\alpha}$型になっている時、上記の\textsf{compatible}が成り立つ事を示している。$\mu_0$で場合分けを行い、再帰によって証明した。
+\begin{lemma}
+  $\Compatible{\Trail{\tau_1}{\tau_2}{\mu_{\alpha}}}{\mu_{\beta}}{\mu_{\beta}}$と$\Compatible{\Trail{\tau_1}{\tau_2}{\mu_{\alpha}}}{\mu_{\alpha}}{\mu_{\alpha}}$が成り立ち、\\$\Compatible{\mu_{\beta}}{\mu_0}{\mu_{\gamma}}$の時、$\Compatible{\Trail{\tau_1}{\tau_2}{\mu_{\alpha}}}{\mu_{\gamma}}{\mu_{\gamma}}$が成り立つ。
+\label{ExtendCompatible'}
+\end{lemma}
 
 \subsection*{B.証明}
 
@@ -178,20 +189,20 @@ $(V_3,V_3')\in R_{\tau_3}$...(6)と$(t_2,t_2')\in T_{\mu_2'}$...(I)を満たし�
 \]
 \\
 示すことは以下のようになる。\\
-$x_i:\tau_i\ ,\ x:\tau\vdash e:\tau \TrailType{\alpha} \TrailType{\alpha}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i}\ \ (v,v')\in R_{\tau}$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K_{\tau_1(\mu_{\alpha})\alpha}$を満たすような任意のコンテキスト$K$と、$(t, t') \in T_{\mu_{\alpha}}$を満たす任意の$t, t'$について、\\
+$x_i:\tau_i\ ,\ x:\tau\vdash e:\tau \TrailType{\alpha} \TrailType{\alpha}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i}\ \ (v,v')\in R_{\tau}$かつ$(k,k)\in T_{\mu_k}$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^k_{\tau_1(\mu_{\alpha})\alpha}$を満たすような任意のコンテキスト$K$と、$(t, t') \in T_{\mu_{\alpha}}$を満たす任意の$t, t'$について、\\
 (A)\ $(\rho[x \rightarrow v] \CPSTh{x} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t}, \rho[x \rightarrow v'] \CPSTh{x} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t')\in R_{\alpha}$\\
-(ただし、$k$は任意の$\mu_k$型で、$\Compatible{\mu_k}{\mu_{\alpha}}{\mu_{\alpha}}$と$(k,k)\in T_{\mu_k}$を満たす)\\
+(ただし、$k$は任意の$\mu_k$型で、$\Compatible{\mu_k}{\mu_{\alpha}}{\mu_{\alpha}}$)\\
   (B)\ $(\rho[x \rightarrow v] \CPSTh{x} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t, \rho[x \rightarrow v'] \CPSTh{x} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t')\in R_{\alpha}$が成り立つ。\\
 \\
 (A)CPS変換を展開して、\\
 $(\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ v\ \ConsP{k}{t}, \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ v'\ t')\in R_{\mu_{\alpha}}$を示す。\\
-ここでコンテキスト$K$は$K_{\tau_1(\mu_{\alpha})\alpha}$を満たすので、$(V,V')\in R_{\tau}$を満たす$V,V'$と$(t_1, t_1')\in T_{\mu_{\alpha}}$を満たす$t_1, t_1'$について\\
+ここでコンテキスト$K$は$K^k_{\tau_1(\mu_{\alpha})\alpha}$を満たすので、$(V,V')\in R_{\tau}$を満たす$V,V'$と$(t_1, t_1')\in T_{\mu_{\alpha}}$を満たす$t_1, t_1'$について\\
 $(\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ \ConsP{k}{t_1}, \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ V'\ t_1')\in R_{\mu_{\alpha}}$が言える。\\
 前提より、$(v,v')\in R_{\tau}$ $(t, t') \in T_{\mu_{\alpha}}$なので示せた。\\
 \\
 (B)CPS変換を展開して、\\
 $(\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ v\ t, \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ v'\ t')\in R_{\mu_{\alpha}}$を示す。\\
-ここでコンテキスト$K$は$K_{\tau_1(\mu_{\alpha})\alpha}$を満たすので、$(V,V')\in R_{\tau}$を満たす$V,V'$と$(t_1, t_1')\in T_{\mu_{\alpha}}$を満たす$t_1, t_1'$について\\
+ここでコンテキスト$K$は$K^k_{\tau_1(\mu_{\alpha})\alpha}$を満たすので、$(V,V')\in R_{\tau}$を満たす$V,V'$と$(t_1, t_1')\in T_{\mu_{\alpha}}$を満たす$t_1, t_1'$について\\
 $(\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ t_1, \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V'\ t_1')\in R_{\mu_{\alpha}}$が言える。\\
 前提より、$(v,v')\in R_{\tau}$ $(t, t') \in T_{\mu_{\alpha}}$なので示せた。\\
 \\
@@ -214,9 +225,9 @@ $(\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ t_1, \LamP{v_0}{\Lam{t_0}{K[\Lam{
 \]
 \\
 示すことは以下のようになる。\\
-$x_i:\tau_i \vdash \Lam{x}{e}:\ArrowTrailP{\tau_2}{\tau_1}{\TrailType{\alpha}}{\TrailType{\beta}}, \TrailType{\gamma}, \TrailType{\gamma}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i}$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K_{\ArrowTrailP{\tau_2}{\tau_1}{\TrailType{\alpha}}{\TrailType{\beta}} \TrailType{\gamma}}$を満たすような任意のコンテキスト$K$と、$(t_2, t_2') \in T_{\mu_{\gamma}}$を満たす任意の$t_2, t_2'$について、\\
+$x_i:\tau_i \vdash \Lam{x}{e}:\ArrowTrailP{\tau_2}{\tau_1}{\TrailType{\alpha}}{\TrailType{\beta}}, \TrailType{\gamma}, \TrailType{\gamma}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i}$かつ$(k,k)\in T_{\mu_k}$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^k_{\ArrowTrailP{\tau_2}{\tau_1}{\TrailType{\alpha}}{\TrailType{\beta}} \TrailType{\gamma}}$を満たすような任意のコンテキスト$K$と、$(t_2, t_2') \in T_{\mu_{\gamma}}$を満たす任意の$t_2, t_2'$について、\\
 (A)\ $(\rho \CPSTh{\Lam{x}{e}} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t_2}, \rho \CPSTh{\Lam{x}{e}} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ t_2')\in R_{\gamma}$\\
-(ただし、$k$は任意の$\mu_k$型で、$\Compatible{\mu_k}{\mu_{\gamma}}{\mu_{\gamma}}$と$(k,k)\in T_{\mu_k}$を満たす)\\
+(ただし、$k$は任意の$\mu_k$型で、$\Compatible{\mu_k}{\mu_{\gamma}}{\mu_{\gamma}}$を満たす)\\
   (B)\ $(\rho \CPSTh{\Lam{x}{e}} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2, \rho \CPSTh{\Lam{x}{e}} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2')\in R_{\gamma}$が成り立つ。\\
 \\
 (A)CPS変換を展開して、\\
@@ -228,7 +239,7 @@ $(\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}
           \LamP{v}{\Lam{k'}{\Lam{t'}{\CPS{e}{\rho[\Change{x}{v}]}
            {\LamP{a}{\Lam{t''}
                {\App{\App{k'}{a}}{t''}}}}{t'}}}}\ t_2')\in R_{\gamma}$を示したい。\\
-コンテキスト$K$は$K_{\ArrowTrailP{\tau_2}{\tau_1}{\TrailType{\alpha}}{\TrailType{\beta}} \TrailType{\gamma}}$を満たすので、\\
+コンテキスト$K$は$K^k_{\ArrowTrailP{\tau_2}{\tau_1}{\TrailType{\alpha}}{\TrailType{\beta}} \TrailType{\gamma}}$を満たすので、\\
 $(V,V')\in R_{\ArrowTrailP{\tau_2}{\tau_1}{\TrailType{\alpha}}{\TrailType{\beta}}}$を満たす$V,V'$ と $(t_2, t_2') \in T_{\mu_{\gamma}}$ を満たす $t_2, t_2'$ について\\
 $(\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ \ConsP{k}{t_2}, \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ V'\ t_2')\in R_{\gamma}$となる。\\
 つまり、\\
@@ -240,7 +251,7 @@ $(\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ V\ \ConsP{k}{t_2}, \LamP{v_0}{\Lam{t
                {\App{\App{k'}{a}}{t''}}}}{t'}}}})\in R_{\ArrowTrailP{\tau_2}{\tau_1}{\TrailType{\alpha}}{\TrailType{\beta}}}$を示せば良い。\\
 \\
 $R_{\ArrowTrailP{\tau_2}{\tau_1}{\TrailType{\alpha}}{\TrailType{\beta}}}$の定義から、\\
-任意の$(s,s')\in R_{\tau_2}$と$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K_{\tau_1(\mu_{\alpha})\alpha}$を満たすコンテキストと
+任意の$(s,s')\in R_{\tau_2}$と$(k,k)\in T_{\mu_k}$と$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^k_{\tau_1(\mu_{\alpha})\alpha}$を満たすコンテキストと
 $(t_3,t_3')\in T_{\mu_{\beta}}$を満たす$t_3, t_3'$と任意の$k_1$について次の2つを示せば良い。\\
 (C)\ $(\CPS{e}{\rho[\Change{x}{s}]}
            {\LamP{a}{\Lam{t''}
@@ -248,6 +259,7 @@ $(t_3,t_3')\in T_{\mu_{\beta}}$を満たす$t_3, t_3'$と任意の$k_1$につい
   \qquad \CPS{e}{\rho[\Change{x}{s'}]}
            {\LamP{a}{\Lam{t''}
                {\App{\App{\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k_1}{t_1}}]}}}{a}}{t''}}}}{t_3'}))\in R_{\beta}$\\
+ (ただし、$k$は任意の$\mu_k$型で、$\Compatible{\mu_k}{\mu_{\alpha}}{\mu_{\alpha}}\ \Compatible{\mu_k}{\mu_{\beta}}{\mu_{\beta}}$を満たす)
 \\
 (D)\ $(\CPS{e}{\rho[\Change{x}{s}]}
            {\LamP{a}{\Lam{t''}
@@ -257,9 +269,9 @@ $(t_3,t_3')\in T_{\mu_{\beta}}$を満たす$t_3, t_3'$と任意の$k_1$につい
                {\App{\App{\LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}}{a}}{t''}}}}{t_3'}))\in R_{\beta}$\\
 \\
 $e$に対しての帰納法の仮定より、\\
-$x_i:\tau_i, x:\tau_2 \vdash e:\tau_1 \TrailType{\alpha} \TrailType{\beta}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i} (v, v')\in R_{\tau_2}$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K_{\tau_1(\mu_{\alpha})\alpha}$を満たすような任意のコンテキスト$K$と、$(t_3, t_3') \in T_{\mu_{\beta}}$を満たす任意の$t_3, t_3'$について、\\
+$x_i:\tau_i, x:\tau_2 \vdash e:\tau_1 \TrailType{\alpha} \TrailType{\beta}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i} (v, v')\in R_{\tau_2}$かつ$(k,k)\in T_{\mu_k}$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^k_{\tau_1(\mu_{\alpha})\alpha}$を満たすような任意のコンテキスト$K$と、$(t_3, t_3') \in T_{\mu_{\beta}}$を満たす任意の$t_3, t_3'$について、\\
 (C)'\ $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t_3}, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k}{t_1}}]}}\ t_3')\in R_{\gamma}$\\
-(ただし、$k$は任意の$\mu_k$型で、$\Compatible{\mu_k}{\mu_{\alpha}}{\mu_{\alpha}} \Compatible{\mu_k}{\mu_{\beta}}{\mu_{\beta}}$と$(k,k)\in T_{\mu_k}$を満たす)\\
+(ただし、$k$は任意の$\mu_k$型で、$\Compatible{\mu_k}{\mu_{\alpha}}{\mu_{\alpha}} \Compatible{\mu_k}{\mu_{\beta}}{\mu_{\beta}}$を満たす)\\
 (D)'\ $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_3, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_3')\in R_{\gamma}$が成り立つ。\\
 帰納法の仮定で(C),(D)を示すために、\\
 $\Compatible{\mu_k}{\mu_{\alpha}}{\mu_{\alpha}} \Compatible{\mu_k}{\mu_{\beta}}{\mu_{\beta}}$を満たす事を調べる。\\
