@@ -1,2 +1,6 @@
 \section{関連研究}
-CPS変換の正当性をshift/reset入りの体系で示した論文に\cite{CHAM2020,CHAM2018}が挙げられる。
+限定継続演算子の型システムにおいては、CPSを基に構築する手法が採られてきた。その中にshift/reset\cite{DF1989,AK2007},control/prompt\cite{KY2008}がある。Danvy, Filinski\cite{DF1989}は全ての限定継続演算子に対応できる型システムを考えている。
+
+CPS変換はこれまで様々な形で実装されてきたが、Isabelle/HOL による$\alpha$同値性を使った定式化\cite{YK2003} 、Coq による de Bruijn index を使った定式化\cite{ZX2007}、Twelf による HOAS を用いた定式化\cite{YH2006} がある。
+
+CPS変換の正当性をshift/reset入りの体系で示した論文に\cite{CHAM2020}が挙げられる。また、\cite{CHAM2018}は単純型付き$\lambda$計算に\textsf{let}多相が入った体系のための正当性の証明である。
