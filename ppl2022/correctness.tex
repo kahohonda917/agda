@@ -3,13 +3,16 @@ CPS変換の正当性を、一部を除いてAgdaで実装した。この節で�
 \subsection{補題}
 \begin{lemma}[CPS変換と代入の可換性]\upshape
   任意の項$e_1$、値$v$、継続$k$、trail $t$について$\LamP{x}{e_1\,x}[v]\mapsto e_2$が成り立つとき、$\LamP{x}{\CPSTh{e_1\,x} \SAppS k \SAppS t}[\CPSTh{v}] \mapsto \CPSTh{e_2} \SAppS k \SAppS t$が成り立つ。
+\label{eSubst}
 \end{lemma}
-これは$e_1$の中にある$x$を$v$に置き換えると$e_2$になる時、$e_1$のCPS変化後の項にある$x$を$v$のCPS変換後の値で置き換えると$e_2$のCPS変換結果になる、つまり代入とCPS変換の可換性を示している。
+これは$e_1$の中にある$x$を$v$に置き換えると$e_2$になる時、$e_1$のCPS変化後の項にある$x$を$v$のCPS変換後の値で置き換えると$e_2$のCPS変換結果になる、つまり代入とCPS変換の可換性を示している。代入規則によって場合分けを行い証明した。
 
 \begin{lemma}[継続に関する代入演算]\upshape
   任意の項$e$、値$v$、trail $t$、schematicな継続$k$について\\
   $\LamP{x}{\CPSTh{e} \SAppS (k\, x) \SAppS t}[v] \mapsto \CPSTh{e} \SAppS (k\,v) \SAppS t$が成り立つ。
+\label{kSubst}
 \end{lemma}
+これは$e$で場合分けをして帰納法の仮定を使う事で示せた。\\
 継続$k$が schematic な場合（引数の構造を尊重する場合）、
 $k$の中の$x$を$v$で置き換えられることを示している。
 schematic \cite{DF1992}というのは、「引数の構造を尊重する」性質のことで、
@@ -27,7 +30,7 @@ schematic \cite{DF1992}というのは、「引数の構造を尊重する」性
   $(k_1 \SAppS \CPSTh{v} \SAppS t) \to (k_2 \SAppS \CPSTh{v} \SAppS t)$が成り立つとき、
   $\CPSTh{e}\SAppS k_1 \SAppS t_2 \to \CPSTh{e}\SAppS k_2 \SAppS t_2$が成り立つ。
 \end{lemma}
-継続の部分を同じ意味を持つものに置き換え証明を進めたい時に使う。
+継続の部分を同じ意味を持つものに置き換え証明を進めたい時に使う。$e$に関して場合分けを行い帰納法の仮定によって示せた。
 
 \subsection{正当性の証明}
 CPS変換前の項を簡約した後にCPS変換した項と、CPS変換後の項が$\beta$同値であること、
@@ -49,7 +52,7 @@ $\CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\SAppS k \SAppS t =_{\beta} \CPSTh{\Promp
   任意の項$e$、trail $t$、schematicな継続$k$について\\
   $\CPSTh{\Prompt{E_p[e]}}\,k\,t =_{\beta} \CPSTh{\App{\LamP{x}{E_p[x]}}{e}}\,k\,t$
 \end{lemma}
-（context-lemma の証明について、一言触れる。）
+context-lemmaは、評価文脈によって場合分けを行い帰納法の仮定を使う事で証明できた。
 
 そして、$\CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\SAppS k \SAppS t =_{\beta} \CPSTh{\Prompt{\App{\LamP{c}{e_1}}{\LamP{x}{E_p[x]}}}} \SAppS k \SAppS t$を示すためにこの両辺をCPS変換の定義によって展開していく。
 
@@ -269,7 +272,7 @@ trailsはtrailの差分情報を表している。$\mu_{\alpha}$をベースと�
 \end{lemma}
 
 
-\subsection{論理関係を使った手証明}
+\subsection{論理関係の定義}
 補題\ref{KMove}を示すにあたって、Appのケースでは2つの部分項の再帰だけではなく、関数部分の項が実行された結果の値$v$においても補題を満たさなければならないと分かった。
 つまり、単純な項に関する帰納法では証明はできない。
 そこで、これを示すために論理関係を定義した。
@@ -318,6 +321,9 @@ $k$について\\
 \end{array}
 \]
 \\
+
+
+\subsection{手証明のメイン定理とcontrol}
 ここで、環境が入った次の定理を示した。
 \begin{theorem}
   $x_i:\tau_i \vdash e:\tau \TrailsType{\alpha}{\beta} \TrailType{\beta}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i}$かつ$(k,k')\in k_{\tau_1(\mu_{\alpha})\alpha}$を満たす$k,k'$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}$を満たすような任意のコンテキスト$K$と、$(t, t') \in T_{\mu_{\beta}}$を満たす任意の$t, t'$とについて、\\
@@ -325,53 +331,7 @@ $k$について\\
   $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t')\in R_{\beta}$が成り立つ。
 \label{HandMain}
 \end{theorem}
-%% この定理を示すことで\\
-%% $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t}, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t')\in R_{\beta}$が得られる。\\
-定理\ref{HandMain}を使って補題\ref{KMove}の\\
-$(\DLam{v}{\DLam{k}{\DLam{t}{\CPSTh{e}[\Change{x}{v}] \SLamP{v_0}{\SLam{t_0}{\DApp{\Idk}{\DApp{v_0}{t_0}}}}\ \ConsP{k}{t}}}},\\
-\ \DLam{v}{\DLam{k}{\DLam{t}{\CPSTh{e}[\Change{x}{v}] \SLamP{v_0}{\SLam{t_0}{\SApp{\Idk}{\SApp{v_0}{\ConsP{k}{t_0}}}}}\ t}}})
-\in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$を示していく。\\
-次の補題を使う。\\
-\begin{lemma}[簡約と論理関係の保存]
-  $(M_l', M_r') \in R_{\tau}、M_l \rightarrow_{\beta} M_l'、M_r \rightarrow_{\beta} M_r'$のとき$(M_l, M_r) \in R_{\tau}$が成り立つ。
-\label{Reduction2}
-\end{lemma}
-$(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ \ConsP{k'}{t'}}}},\\
-\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ t'}}})
-\in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$をまず考える。
-\\
-任意の$(V,V')\in R_{\tau_2}\  (k_2,k_2')\in k_{\tau_1(\mu_{\alpha})\alpha}\  (\LamP{v_0}{\Lam{t_0}{K[]}},\LamP{v_0}{\Lam{t_0}{K[]}})\in K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}\  (t_2,t_2')\in_{\mu_{\beta}}$について、\\
-(A)\ $(\LamP{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k'}{t'}}}}\ V\ k_2\ t_2,\\
-\qquad \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t'}}}\ V'\ k_2'\ t_2')\in R_{\beta}$と\\
-(B)\ $(\LamP{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k'}{t'}}}}\ V\ k_2\ t_2,\\
-\qquad \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t'}}}\ V'\ k_2'\ t_2')\in R_{\beta}$を示せば良い。\\
-補題\ref{Reduction2}より簡約できるので\\
-(A)\ $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k_2}{t_2},
- \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k_2'}{t_1}}]}}\ t_2')\in R_{\beta}$\\
-(B)\ $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2,
- \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2')\in R_{\beta}$\\
-\\
-定理\ref{HandMain}より、\\
-(A)'\ $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k_2}{t_2}, \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k_2'}{t_1}}]}}\ t_2')\in R_{\beta}$と\\
-(B)'\  $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2, \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2')\in R_{\beta}$が成り立つ。\\
-これで\\
-$(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ \ConsP{k'}{t'}}}},\\
-\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ t'}}})
-\in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$が示せた。
-\\
-ここで、次の補題を使う。
-\begin{lemma}
-  コンテキスト$\Lam{v_0}{\Lam{t_0}{K[f]}}=\Lam{v_0}{\Lam{t_0}{\Idk\ v_0\ (f\ t_0)}}$は\\
-  $(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\beta(\mu_{id})\beta'}$を満たす。
-\label{IdkContext}
-\end{lemma}
-これにより補題\ref{KMove}が示せた。\\
-$(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{t_0}}}}\ \ConsP{k'}{t'}}}},\\
-\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{\ConsP{k'}{t_0}}}}}\ t'}}})
-\in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$\\
-\\
-メイン定理や補題の詳細な証明方法については付録に記載するが、この証明の核心であるcontrolのケースについて下に示していく。
-\subsection{controlケースの手証明}
+定理\ref{HandMain}は$e$について場合分けを行って証明した。証明の核心であるcontrolのケースについて下に示す。その他のケースについては付録に記載している。\\
 controlのケースを示すために次の補題が必要となった。
 \begin{lemma}
   $\Compatible{\Trail{\tau_1}{\tau_1'}{\mu_1}}{\mu_2}{\mu_3}$かつ$(t_1, t_1')\in T_{\tau_1(\mu_1)\tau_1'}、(t_2, t_2')\in T_{\mu_2}、$のとき\\
@@ -379,7 +339,7 @@ controlのケースを示すために次の補題が必要となった。
 \label{TCompatible}
 \end{lemma}
 補題\ref{TCompatible}は、論理関係の$T$の定義と持っている\textsf{compatible}関係から新たな$T$の関係を示すものである。\\
-次の\textsf{cons-assoc}についてはAgdaに実装済みである。
+次の\textsf{cons-assoc}についてはAgdaに実装済みである。trailの形で場合分けを行い、帰納法の仮定を使う事で示せた。
 \begin{lemma}
   任意のtrail\ $t_1,t_2,t_3$について以下が成り立つ。\\
   $\Cons{\ConsP{t_1}{t_2}}{t_3} =_{\beta} \Cons{t_1}{\ConsP{t_2}{t_3}}$
@@ -544,3 +504,51 @@ $(t_3,t_4)\in T_{\mu_{\alpha}}\ (t_{\mu_2},t_{\mu_2}')\in T_{\mu'}$で図\ref{Co
 補題\ref{TCompatible}より$(\Cons{t_{l2}}{\ConsP{t_3}{t_{\mu_2}}},\Cons{t_{r2}}{\ConsP{t_4}{t_{\mu_2}'}})\in T_{\mu_1}$となる。\\
 これで(H)が示せた。\\
 (B),(D)についても同様に示す。\\
+
+
+\subsection{補題\ref{KMove}の証明}
+定理\ref{HandMain}を使って補題\ref{KMove}の\\
+$(\DLam{v}{\DLam{k}{\DLam{t}{\CPSTh{e}[\Change{x}{v}] \SLamP{v_0}{\SLam{t_0}{\DApp{\Idk}{\DApp{v_0}{t_0}}}}\ \ConsP{k}{t}}}},\\
+\ \DLam{v}{\DLam{k}{\DLam{t}{\CPSTh{e}[\Change{x}{v}] \SLamP{v_0}{\SLam{t_0}{\SApp{\Idk}{\SApp{v_0}{\ConsP{k}{t_0}}}}}\ t}}})
+\in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$を示していく。\\
+次の補題を使う。\\
+\begin{lemma}[簡約と論理関係の保存]
+  $(M_l', M_r') \in R_{\tau}、M_l \rightarrow_{\beta} M_l'、M_r \rightarrow_{\beta} M_r'$のとき$(M_l, M_r) \in R_{\tau}$が成り立つ。
+\label{Reduction2}
+\end{lemma}
+$(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ \ConsP{k'}{t'}}}},\\
+\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ t'}}})
+\in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$をまず考える。
+\\
+任意の$(V,V')\in R_{\tau_2}\  (k_2,k_2')\in k_{\tau_1(\mu_{\alpha})\alpha}\  (\LamP{v_0}{\Lam{t_0}{K[]}},\LamP{v_0}{\Lam{t_0}{K[]}})\in K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}\  (t_2,t_2')\in_{\mu_{\beta}}$について、\\
+(A)\ $(\LamP{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k'}{t'}}}}\ V\ k_2\ t_2,\\
+\qquad \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t'}}}\ V'\ k_2'\ t_2')\in R_{\beta}$と\\
+(B)\ $(\LamP{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k'}{t'}}}}\ V\ k_2\ t_2,\\
+\qquad \Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t'}}}\ V'\ k_2'\ t_2')\in R_{\beta}$を示せば良い。\\
+補題\ref{Reduction2}より簡約できるので\\
+(A)\ $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k_2}{t_2},
+ \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k_2'}{t_1}}]}}\ t_2')\in R_{\beta}$\\
+(B)\ $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2,
+ \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2')\in R_{\beta}$\\
+\\
+定理\ref{HandMain}より、\\
+(A)'\ $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k_2}{t_2}, \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k_2'}{t_1}}]}}\ t_2')\in R_{\beta}$と\\
+(B)'\  $(\rho \CPSTh{e}[\Change{x}{V}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2, \rho \CPSTh{e}[\Change{x}{V'}] \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ t_2')\in R_{\beta}$が成り立つ。\\
+これで\\
+$(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ \ConsP{k'}{t'}}}},\\
+\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\Lam{t_0}{K[]}}\ t'}}})
+\in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$が示せた。
+\\
+ここで、次の補題を使う。
+\begin{lemma}
+  コンテキスト$\Lam{v_0}{\Lam{t_0}{K[f]}}=\Lam{v_0}{\Lam{t_0}{\Idk\ v_0\ (f\ t_0)}}$は\\
+  $(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\beta(\mu_{id})\beta'}$を満たす。
+\label{IdkContext}
+\end{lemma}
+これにより補題\ref{KMove}が示せた。\\
+$(\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{t_0}}}}\ \ConsP{k'}{t'}}}},\\
+\Lam{v'}{\Lam{k'}{\Lam{t'}{\CPSTh{e}[\Change{x}{v'}] \LamP{v_0}{\LamP{t_0}{\SApp{\Idk}{\SApp{v_0}{\ConsP{k'}{t_0}}}}}\ t'}}})
+\in R_{\tau_2 \rightarrow \TrailType{\alpha} \TrailType{\beta}}$\\
+\\
+この節に出てくる補題については手で証明を行ったため付録に記載する。
+
