@@ -115,7 +115,7 @@ $\Prompt{e}$ を実行する際には、$e$ を初期継続 $\Idk$ と初期 tra
 
 $\Control{c}{e}$ を実行する際にも、その body 部分である $e$ は $\Idk$ と $\Idt$ の元で実行される。しかし、prompt の場合とは違って $e$ では変数 $c$ を通じて限定継続にアクセスできるようになっている。その定義 $x'$ は、捕捉した限定継続 $k$を実行するというものだが、その際、捕捉した trail である $t$ を「$x'$ を実行したときの継続 $k'$ と trail $t'$」（つまり呼び出し文脈）と結合している。このようにすることで、$k$ の実行中に再び control が使われた際、呼び出し文脈も含めて補足することができるようになっている。
 
-ここで、trail を結合するのに使われる @ と :: の定義は図\ref{ConsAppend}に示されている \cite{shan-simulation}。@ と :: をリストの \textsf{append} と \textsf{cons} と解釈すると Yonezawa, Kameyama \cite{KY2008} らが採用しているように、trail は呼び出し文脈のリストになるが、本稿では trail は関数で表現されており、図\ref{ConsAppend}に示す形で合成される。
+ここで、trail を結合するのに使われる @ と :: の定義は図\ref{ConsAppend}に示されている \cite{shan-simulation}。@ と :: をリストの \textsf{append} と \textsf{cons} と解釈すると Kameyama, Yonezawa \cite{KY2008} らが採用しているように、trail は呼び出し文脈のリストになるが、本稿では trail は関数で表現されており、図\ref{ConsAppend}に示す形で合成される。
 \begin{figure}[h]
 \[
 \begin{array}{lcl}

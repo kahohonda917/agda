@@ -1,6 +1,28 @@
 \section{関連研究}
-限定継続演算子の型システムにおいては、CPSを基に構築する手法が採られてきた。その中にshift/reset\cite{DF1989,AK2007},control/prompt\cite{KY2008}がある。Danvy, Filinski\cite{DF1989}は全ての限定継続演算子に対応できる型システムを考えている。
+control/prompt に対する型システムと CPS 変換の正当性の証明は Kameyama,
+Yonezawa \cite{KY2008} が与えている。しかし、彼らの CPS 変換は trail
+の実装にリストを使っているのに対して、本論文では高階の関数を使用してい
+る。また、彼らの型システムでは全ての trail が同じ型を持たなくてはなら
+ないのに対し、本論文の型システムにはそのような制約はない。（両者の詳細
+な比較は \cite{FSCD2021} を参照されたい。）そのため、正当性の証明の大
+枠は両者で似たものになっているが、trail の型の整合性の取り方など特有の
+手法が必要となっている。
 
-CPS変換はこれまで様々な形で実装されてきたが、Isabelle/HOL による$\alpha$同値性を使った定式化\cite{YK2003} 、Coq による de Bruijn index を使った定式化\cite{ZX2007}、Twelf による HOAS を用いた定式化\cite{YH2006} がある。
+これまで我々のグループでは let 多相の入ったラムダ計算に対する CPS 変換
+の正当性の証明 \cite{CHAM2018} や、shift/reset の入った体系に対する選
+択的な CPS 変換の証明 \cite{CHAM2020} などを Agda で型付きで定式化して
+きた。これらに比べ、本論文での証明は論理関係を使った証明を必要としてい
+たため、一部を Agda にのせることができていない。それを Agda にのせるの
+は今後の課題だが、環境を明示的に扱うのは PHOAS \cite{chlipala-phoas}
+による項の表現を使っていると難しいと予想されるため、簡単ではないと思わ
+れる。de Bruijn index を使うなどの方法は考えられるが、証明はとても大き
+くなることが予想され \cite{YK2003}、control/prompt の体系のように証明
+が大きくなると現実的ではない可能性がある。
 
-CPS変換の正当性をshift/reset入りの体系で示した論文に\cite{CHAM2020}が挙げられる。また、\cite{CHAM2018}は単純型付き$\lambda$計算に\textsf{let}多相が入った体系のための正当性の証明である。
+%Isabelle/HOL による$\alpha$同値性を使った定式化\cite{YK2003} 、Coq による de Bruijn index を使った定式化\cite{ZX2007}、Twelf による HOAS を用いた定式化\cite{YH2006} がある。
+
+%限定継続演算子の型システムにおいては、CPSを基に構築する手法が採られてきた。その中にshift/reset\cite{DF1989,AK2007},control/prompt\cite{KY2008}がある。Danvy, Filinski\cite{DF1989}は全ての限定継続演算子に対応できる型システムを考えている。
+
+%CPS変換はこれまで様々な形で実装されてきたが、Isabelle/HOL による$\alpha$同値性を使った定式化\cite{YK2003} 、Coq による de Bruijn index を使った定式化\cite{ZX2007}、Twelf による HOAS を用いた定式化\cite{YH2006} がある。
+
+%CPS変換の正当性をshift/reset入りの体系で示した論文に\cite{CHAM2020}が挙げられる。また、\cite{CHAM2018}は単純型付き$\lambda$計算に\textsf{let}多相が入った体系のための正当性の証明である。
