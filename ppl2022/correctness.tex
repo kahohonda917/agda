@@ -38,6 +38,7 @@ CPS変換前の項を簡約した後にCPS変換した項と、CPS変換後の�
 % 定理4
 \begin{theorem}[正当性の証明]\upshape
   任意の項$e$,$\, e'$について$e \to e'$が成り立つならば任意のtrail $t$とschematicな継続$k$に対して$\CPSTh{e}\SAppS k \SAppS t =_{\beta} \CPSTh{e'} \SAppS k \SAppS t$が成り立つ。
+\label{TheoremCorrectEta}
 \end{theorem}
 
 ここで$=_{\beta}$は$\beta$同値である。
@@ -52,9 +53,11 @@ $\CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\SAppS k \SAppS t =_{\beta} \CPSTh{\Promp
   任意の項$e$、trail $t$、schematicな継続$k$について\\
   $\CPSTh{\Prompt{E_p[e]}}\,k\,t =_{\beta} \CPSTh{\App{\LamP{x}{E_p[x]}}{e}}\,k\,t$
 \end{lemma}
-context-lemmaは、評価文脈によって場合分けを行い帰納法の仮定を使う事で証明できた。
-
-そして、$\CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\SAppS k \SAppS t =_{\beta} \CPSTh{\Prompt{\App{\LamP{c}{e_1}}{\LamP{x}{E_p[x]}}}} \SAppS k \SAppS t$を示すためにこの両辺をCPS変換の定義によって展開していく。
+context-lemmaは、評価文脈 $E_p$ に関する帰納法で証明することができる。
+この補題を使って定理 \ref{TheoremCorrectEta} の control のケースを証明
+するには、まず
+$\CPSTh{\Prompt{E_p[\Control{c}{e_1}]}}\SAppS k \SAppS t =_{\beta} \CPSTh{\Prompt{\App{\LamP{c}{e_1}}{\LamP{x}{E_p[x]}}}} \SAppS k \SAppS t$
+の両辺をCPS変換の定義によって展開していく。
 
 \begin{figure}
 \[
@@ -277,7 +280,8 @@ trailsはtrailの差分情報を表している。$\mu_{\alpha}$をベースと�
 つまり、単純な項に関する帰納法では証明はできない。
 そこで、これを示すために論理関係を定義した。
 論理関係のメイン定理は、環境を明示的に表現する必要があり、環境部分を
-メタレベル（Agda のレベル）で扱うPHOASで実装するのは難しい。
+メタレベル（Agda のレベル）で扱うPHOAS \cite{chlipala-phoas}
+で実装するのは難しい。
 そこで補題\ref{KMove}の証明に関しては手証明で進めることにする。
 補題\ref{KMove}を証明できるように定義した論理関係を下に示す。
 
@@ -320,10 +324,23 @@ $k$について\\
   (t, t')\in T_{\tau(\mu_{\alpha})\alpha}\ \Longleftrightarrow\ t=_{\beta}t'\\
 \end{array}
 \]
-\\
+
+この論理関係は、ふたつの値が同じように振る舞うことを示すものである。
+特に、関数型を持った場合、同じように振る舞う引数を受け取ったら、関数呼
+び出しをした結果も同じように振る舞うことを示している。
+これを使うと、関数呼び出しのケースで関数部分を実行した結果についても良
+い性質を満たすことを言えるようになる。
+$R$ 関係はふたつの結論がある。
+最初のものが $k::$ を移動できることを示すものだが、この性質を証明する
+際、control と prompt のケースで同一の継続、trail について同値関係が成
+り立つことが必要になるため、ふたつ目の結論を用意した。
+上手に定式化すると両者をひとつにまとめられると思われるが、それは今後の
+課題である。
 
 \subsection{手証明のメイン定理と補題}
-ここで、環境が入った次の定理を提示する。定理\ref{HandMain}を使う事で補題\ref{KMove}を示すことが出来る。今後の節では定理\ref{HandMain}の証明、補題\ref{KMove}の証明の順に見ていく。
+ここで、環境が入った次の定理（論理関係のメイン定理）を提示する。
+定理\ref{HandMain}を使う事で補題\ref{KMove}を系の形で示すことが出来る。
+今後の節では定理\ref{HandMain}の証明、補題\ref{KMove}の証明の順に見ていく。
 \begin{theorem}
   $x_i:\tau_i \vdash e:\tau \TrailsType{\alpha}{\beta} \TrailType{\beta}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i}$かつ$(k,k')\in k_{\tau_1(\mu_{\alpha})\alpha}$を満たす$k,k'$かつ$(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\tau_1(\mu_{\alpha})\alpha}$を満たすような任意のコンテキスト$K$と、$(t, t') \in T_{\mu_{\beta}}$を満たす任意の$t, t'$とについて、\\
   $(\rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{t_1}]}}\ \ConsP{k}{t}, \rho \CPSTh{e} \LamP{v_0}{\Lam{t_0}{K[\Lam{t_1}{\Cons{k'}{t_1}}]}}\ t')\in R_{\beta}$と\\
@@ -340,15 +357,19 @@ $k$について\\
   $(\Lam{v_0}{\Lam{t_0}{K[]}}, \Lam{v_0}{\Lam{t_0}{K[]}})\in  K^{kk'}_{\beta(\mu_{id})\beta'}$を満たす。
 \label{IdkContext}
 \end{lemma}
-これは該当のコンテキストがKの条件を満たす事を示しており、$\Idk$が登場するcontrolとpromptのケースで使う。\\
+これは該当のコンテキストが$K$の条件を満たす事を示しており、$\Idk$が登場するcontrolとpromptのケースで使う。
+
 controlのケースを示すためにさらに次の二つの補題が必要となった。
-\begin{lemma}
+\begin{lemma}\upshape
   $\Compatible{\Trail{\tau_1}{\tau_1'}{\mu_1}}{\mu_2}{\mu_3}$かつ$(t_1, t_1')\in T_{\tau_1(\mu_1)\tau_1'}、(t_2, t_2')\in T_{\mu_2}、$のとき\\
   $(\Cons{t_1}{t_2}, \Cons{t_1'}{t_2'})\in T_{\mu_3}$
 \label{TCompatible}
 \end{lemma}
-補題\ref{TCompatible}は、論理関係の$T$の定義と持っている\textsf{compatible}関係から新たな$T$の関係を示すものである。\\
-\begin{lemma}
+補題\ref{TCompatible}は、論理関係の$T$の定義と持っている\textsf{compatible}関係から新たな$T$の関係を示すものである。
+このように $::$ や $@$ を使って trail を結合するたびに、その
+\textsf{compatible} 関係を示す必要がある。
+
+\begin{lemma}\upshape
   任意のtrail\ $t_1,t_2,t_3$について以下が成り立つ。\\
   $\Cons{\ConsP{t_1}{t_2}}{t_3} =_{\beta} \Cons{t_1}{\ConsP{t_2}{t_3}}$
 \label{ConsAssoc}
@@ -357,7 +378,8 @@ controlのケースを示すためにさらに次の二つの補題が必要と�
 補題\ref{ConsAssoc}以外については手で証明を行ったため付録に記載する。
 
 \subsection{定理\ref{HandMain}の証明}
-定理\ref{HandMain}は$e$について場合分けを行って証明した。証明の核心であるcontrolのケースについて下に示す。その他のケースについては付録に記載している。\\
+定理\ref{HandMain}は$e$についての帰納法で証明した。
+証明の核心であるcontrolのケースについて下に示す。その他のケースについては付録に記載している。\\
 \\
 示すことは以下のようになる。\\
 $x_i:\tau_i\ \vdash \Control{k}{e}:\tau \TrailType{\alpha} \TrailType{\beta}$であり、かつ各$v_i$が$\vdash v_i:\tau_i$かつ$(v_i,v_i') \in R_{\tau_i}$かつ\\
